@@ -325,11 +325,6 @@ def delete_event(uid, evs):
 
 def collect_ev(ev_type):
     new_ev = vobject.icalendar.RecurringComponent(name = ev_type)
-    root = Tkinter.Tk(className = WM_WINDOW_CLASS)
-    root.wm_geometry(newGeometry = WM_WINDOW_GEOMETRY)
-    root.wm_title(string="collect new event")
-    w = Tkinter.Label(root, text="New " + ev_type + ":")
-    w.pack()
     event_dict = dict([  ( HUMAN_FLDS[ev_type][j] , ["",j] ) 
                          for j in range(len(HUMAN_FLDS[ev_type]))  ])
     urwid_update_dict(event_dict)
@@ -383,18 +378,11 @@ def update_events(evs, cl, fname, ev_type):
                                          'PRMS': old_ev_dict[f]['PRMS']} ) 
                                   for f in old_ev_dict.keys()])
         new_ev = vobject.icalendar.RecurringComponent(name = ev_type)
-
-        root = Tkinter.Tk(className = WM_WINDOW_CLASS)
-        root.wm_geometry(newGeometry = WM_WINDOW_GEOMETRY)
-        root.wm_title(string="update event")
-        w = Tkinter.Label(root, text="Modify " + ev_type + ":")
-        w.pack()
         new_ev_dict = dict([  ( HUMAN_FLDS[ev_type][j] , 
                                 [old_ev_dict_human[HUMAN_FLDS[ev_type][j]]['VL'], j] )
                               for j in range(len(HUMAN_FLDS[ev_type]))  ])
         # Tk_update_dict(new_ev_dict, root); root.mainloop()
         urwid_update_dict(new_ev_dict)
-
         for k in new_ev_dict.keys():
             new_contline = human2machine(k, new_ev_dict[k][0], old_ev_dict[k]['PRMS'])
             if new_contline != None:
