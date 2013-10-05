@@ -1,0 +1,87 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from optparse import OptionParser
+
+from tables.addr import *
+from os import system, getenv
+import sys
+
+# sqli.starter(abk,"first,workphone,homephone,cellphone","where last like ")
+
+
+parser = OptionParser()
+parser.add_option("-a", "--add", dest="new_entry", default=False, action="store_true",
+                  help="""add new entry""")
+parser.add_option("-b", "--buttons", dest="do_buttons", action="store_true", default=False,
+                  help="""to show the button box""")
+parser.add_option("-w", "--where", dest="criterium", default="",
+                  help="""search criterium, minus the first word 'where', """ +
+                       """for example -w "tags('br',country)" """, metavar="QUERY")
+parser.add_option("-o", "--order", dest="order", default="",
+                  help="""order prescription, minus the words 'order by'""", metavar="PRESCRIPTION")
+parser.add_option("-s", "--starter", dest="do_start", default=False, action="store_true",
+                  help="""show linii starter""")
+parser.add_option("-u", "--update", dest="do_update", action="store_true",
+                  default=False, help="update")
+
+(options, args) = parser.parse_args()
+
+
+def choosecols():
+    alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
+                "v", "w", "x", "y", "z"]
+    coldict = dict(zip(alphabet, linii.my.columns('abk')))
+    for a in alphabet:
+        if (a in coldict.keys()): print(a + ": " + coldict[a])
+    charstring = raw_input("Enter string (default befh):")
+    if charstring == "":
+        colstring = "first,workphone,homephone,cellphone"
+    else:
+        colstring = ",".join([coldict[x] for x in list(charstring)])
+    return colstring
+
+
+def main():
+    selection = ""
+    values = None
+    separator = " "
+    where_clause_present = False
+
+    # parsing WHERE clause:
+    if not options.criterium == "":
+        selection = selection + separator + options.criterium
+        separator = " AND "
+        where_clause_present = True
+
+    # parsing ORDER:
+    if not options.order == "":
+        selection = selection + " ORDER BY " + options.order
+
+    def show_items():
+        query = selection
+        if where_clause_present: query = " WHERE " + query
+        linii.show(abk, query, "*", values)
+
+    if options.do_start:
+        linii.starter(abk, "first,workphone,homephone,cellphone", "where last like ")
+    elif options.new_entry:
+        linii.collect(abk)
+    elif options.do_buttons:
+        crit = ""
+        if where_clause_present:
+            crit = "WHERE " + selection
+        else:
+            crit = selection
+        linii.buttons(abk, crit, choosecols())
+    elif options.do_update:
+        linii.update(abk, "WHERE " + selection, values)
+    else:
+        if selection != "":
+            show_items()
+        else:
+            system("ipython -i -c \"%run " + sys.argv[0] + " --start\"")
+
+
+if __name__ == '__main__':
+    main(); 
