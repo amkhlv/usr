@@ -6,16 +6,12 @@
          (tap (thing-at-point 'filename))
          (external-command (read-from-minibuffer "external command: "))
          )
-    (start-process 
-     external-command 
-     external-command 
-     external-command
-     tap)))
+    (start-process external-command external-command external-command tap)))
 
 (defun ainsert-date () (interactive)
   (insert (format-time-string "%Y-%m-%d")))
 
-(defun mypdf/jumplabel () (interactive) 
+(defun amkhlv/jumplabel () (interactive) 
   (save-excursion 
     (let* ((bfn (buffer-file-name))
            (bfn-noext 
@@ -107,7 +103,7 @@
 
 
 (defun amkhlv/vlc () (interactive)
-  "This is to import the image from camera using VLC"
+  "This is to import the image from webcam using VLC"
   (let* (
          (tap (thing-at-point 'filename))
          (import-command 
@@ -132,14 +128,10 @@
 (defun amkhlv/ffap ()
   "This is the replacement of ffap to open correctly filenames like file://filename"
   (interactive)
-  (let* (
-         (fap (thing-at-point 'filename))
+  (let* ((fap (thing-at-point 'filename))
          (fname (if (string-match "^file:\/\/\\(.*\\)" fap)
                     (match-string 1 fap)
-                  fap
-                  )
-                )
-         )
+                  fap)))
     (find-file fname)))
 
 (defun amkhlv/print/ () 
