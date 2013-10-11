@@ -147,3 +147,56 @@ To choose size, use ps-print-customize"
   (interactive)
   (setq printer-name (read-from-minibuffer "Enter the printer name: "))
   (setq ps-printer-name printer-name))
+
+;; This below is for sqlite insertion:
+
+(defvar alphabet 
+  (list "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z"))
+
+(defun auxsqli (dbfile tbl) 
+  (let* ((collist 
+          (mapcar* 
+           #'cons
+           alphabet 
+           (split-string 
+            (shell-command-to-string 
+             (concat 
+              "sqlite3 " dbfile " 'pragma table_info(" tbl ")' | awk -F'|' '{print $2}'")))))
+         (colhash (make-hash-table :test 'equal)))
+    (mapc (lambda (x) (puthash  (car x)  (cdr x)  colhash)) collist) 
+    (let* ((cols (read-from-minibuffer 
+                  (concat 
+                   "COLUMNS (press ENTER for *): " 
+                   (apply #'concat (mapcar (lambda (x) (concat (car x) ":" (cdr x) "   ")) collist))
+                   "=> ")))
+           (colnames0 
+            (delq nil (mapcar   (lambda (x) (gethash x colhash))    (split-string cols ""))))
+           (colnames (if colnames0 (mapconcat 'identity colnames0 ",") "*")) 
+           ;; if user did not select column (just press ENTER) default to all columns
+           (sqlite3com
+            (if colnames0 "sqlite3 -separator ' | ' " "sqlite3 -line ")) 
+           ;; if did not select column (just press ENTER) default to all columns
+           (query0 (concat "select " colnames " from " tbl " where "))
+           (query (replace-regexp-in-string "%" "%%" (read-from-minibuffer "" query0))))
+      (message query)
+      (insert (shell-command-to-string (concat sqlite3com dbfile " \"" query "\"")))
+      )))
+
+(defun linii (dbfile tbl)
+  "This function is for use inline, there is a corresponding yasnippet called linii"
+  (let ((curpos (point-marker)))
+    (backward-sexp)
+    (kill-region (point-marker) curpos)
+    (auxsqli dbfile tbl)
+    )
+  )
+
+(defmacro mydef-sqli (name dbfile tbl)
+  `(defun ,name ()
+     (interactive)
+     (auxsqli ,dbfile ,tbl)
+     )
+  )
+
+(mydef-sqli amkhlv/linii-abk            "/home/andrei/a/tech/base/addr.db"       "abk") 
+(mydef-sqli amkhlv/linii-myaddresses    "/home/andrei/alcl/tech/base/mylist.db"  "my_addresses")
