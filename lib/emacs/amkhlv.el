@@ -1,5 +1,7 @@
 (provide 'amkhlv)
 
+(require 'json)
+
 (defun amkhlv/open-file-at-point () (interactive)
   "To open file at point with an external program"
   (let* (
@@ -200,3 +202,134 @@ To choose size, use ps-print-customize"
 
 (mydef-sqli amkhlv/linii-abk            "/home/andrei/a/tech/base/addr.db"       "abk") 
 (mydef-sqli amkhlv/linii-myaddresses    "/home/andrei/alcl/tech/base/mylist.db"  "my_addresses")
+
+(defun amkhlv/pdfview ()
+  "View the PDF file corresponding to this TeX file using pdfviewer"
+  (interactive)
+  (make-local-variable 'pdfviewerPID)
+  (make-local-variable 'pdfviewerProcess)
+  (make-local-variable 'pdfFileName)
+  (set 'pdfFileName (replace-regexp-in-string "\.tex$" ".pdf" (buffer-file-name)))
+  (set 'pdfviewerProcess 
+       (start-process 
+        (concat "viewer-for-" (buffer-file-name))
+        nil
+        "/usr/local/bin/pdfviewer"
+        pdfFileName))
+  (set 'pdfviewerPID (process-id pdfviewerProcess)))
+
+(defun amkhlv/pdfjump ()
+  "Jump to the location in the pdf file"
+  (interactive)
+  (shell-command-to-string
+   (concat 
+    "qdbus glad.PdfViewer"
+    (number-to-string pdfviewerPID)
+    " /MainWindow glad.PdfViewer.syncFromSource "
+    (buffer-file-name)
+    " "
+    (number-to-string (line-number-at-pos)))))
+  
+(defun amkhlv/yaml2json (filename)
+   (shell-command-to-string 
+    (concat 
+     "python -c '"
+     "import sys; import fileinput; import yaml; import json; "
+     "fl = open(\"" 
+     filename
+     "\",\"r\"); "
+     "x = yaml.safe_load(fl); "
+     "print(json.dumps(x)); fl.close()"
+     "'")))
+
+(defun myscribble/compile ()
+  "Runs scribble on the file"
+  (interactive)
+  (save-buffer)
+  (let* ((filename (file-name-nondirectory (buffer-file-name)))
+         (registry
+          (if (file-exists-p "REGISTRY.yaml")
+              (json-read-from-string (amkhlv/yaml2json "REGISTRY.yaml"))
+            '())))
+    (if (cdr registry)
+        (progn 
+          (message (concat "looking up " filename " in registry"))
+                                        ; First we iterate over --html :
+          (dolist
+              (h (mapcar (lambda (x) x) ; this is to convert vector to list
+                         (cdr (assoc 'html registry))))
+            (message (concat "considering " (cdr (assoc 'name h))))
+            (when (string= filename (concat (cdr (assoc 'name h)) ".scrbl"))
+              (if (cdr (assoc 'dest h))
+                  (progn
+                    (message (concat "scribble single html " filename " ⇨ " (cdr (assoc 'dest h)) "/"))
+                    (shell-command (concat "scribble --dest " (cdr (assoc 'dest h)) " " filename)))
+                (progn
+                  (message (concat "scribble " filename))
+                  (shell-command (concat "scribble " filename))))))
+                                        ; Then iterate over --htmls :
+          (dolist
+              (h (mapcar (lambda (x) x) ; this is to convert vector to list
+                         (cdr (assoc 'htmls registry))))
+            (when (string= filename (concat h ".scrbl")) 
+              (message (concat "scribble  multipage " filename))
+              (shell-command (concat "scribble --htmls " filename)))))
+      (progn
+        (message "no registry found, proceeding with single html")
+        (shell-command (concat "scribble " filename))))))
+
+(defun myscribble/compile-htmls ()
+  "Runs scribble -htmls on the file"
+  (interactive)
+  (save-buffer)
+  (let* ((filepath (buffer-file-name)))
+    (shell-command (concat "scribble --htmls " filepath))
+    )
+  )
+
+(defun myscribble/view ()
+  "This is mapped to C-c C-v in the scribble mode;
+ looks up the corresponding .html file and runs firefox on it"
+  (interactive)
+  (let* ((filepath (buffer-file-name))
+         (filename (file-name-nondirectory filepath))
+         (htmlpath (progn
+                     (string-match "\\(.*\\)\.scrbl$" filepath)
+                     (match-string 1 filepath)))
+         (registry
+          (if (file-exists-p "REGISTRY.yaml")
+              (json-read-from-string (amkhlv/yaml2json "REGISTRY.yaml"))
+            '())))
+    (if (cdr registry)
+        (progn 
+          (message (concat "looking up " filename " in registry"))
+                                        ; First we iterate over --html :
+          (dolist
+              (h (mapcar (lambda (x) x) ; this is to convert vector to list
+                         (cdr (assoc 'html registry))))
+            (message (concat "considering " (cdr (assoc 'name h))))
+            (when (string= filename (concat (cdr (assoc 'name h)) ".scrbl"))
+              (if (cdr (assoc 'dest h))
+                  (progn
+                    (message (concat "viewing single html " 
+                                     (cdr (assoc 'dest h)) 
+                                     "/" 
+                                     (cdr (assoc 'name h)) 
+                                     ".html"))
+                    (shell-command (concat "firefox " 
+                                           (cdr (assoc 'dest h)) 
+                                           "/" 
+                                           (cdr (assoc 'name h))
+                                           ".html"
+                                           )))
+                (progn
+                  (message (concat "viewing single html " (cdr (assoc 'name h)) ".html"))
+                  (shell-command (concat "firefox " (cdr (assoc 'name h)) ".html"))))))
+                                        ; Then iterate over --htmls :
+          (dolist
+              (h (mapcar (lambda (x) x) ; this is to convert vector to list
+                         (cdr (assoc 'htmls registry))))
+            (when (string= filename (concat h ".scrbl")) 
+              (message (concat "viewing multipage, starting at " h "/index.html"))
+              (shell-command (concat "firefox " h "/index.html")))))
+    (shell-command (concat "firefox "  htmlpath ".html")))))
