@@ -69,14 +69,15 @@ def command_line_arguments(parser):
                                                       "select * from sqlite_master  --- this is to see all tables")
     parser.add_option("-w", "--where", dest="criterium",
                       help="""print the msgids for those satisfying the where criterium""" +
-                           """ e.g. --where "from_whom like '%foo.bar%' and subject like '%something%'" """ + "\n" +
-                           """ e.g. --where "betw('2012-09-21','2012-09-25',timestamp)" """ + "\n" +
-                           """ or equiv: --where "timestamp between ts('2012-09-21') and ts('2012-09-25')" """ + "\n" +
-                           """ (here "betw" and "ts" are my custom functions which I defined) """ + "\n" +
-                           """ Or simply "timestamp > ts(date('now', '-5 days'))" """ + "\n" +
-                           """ More examples: http://sqlite.org/lang_datefunc.html """ + "\n" +
-                           """ Column names are: """ + "\n" +
-                           """  (file, timestamp, messageid, from_whom, to_whom, cc, bcc, subject, header_date, xlabel, mime, tags) """)
+                      """ e.g. --where "to_whom like '%somename%' and mime like '%pdf%'""" +
+                      """ e.g. --where "from_whom like '%foo.bar%' and subject like '%something%'" """ + "\n" +
+                      """ e.g. --where "betw('2012-09-21','2012-09-25',timestamp)" """ + "\n" +
+                      """ or equiv: --where "timestamp between ts('2012-09-21') and ts('2012-09-25')" """ + "\n" +
+                      """ (here "betw" and "ts" are my custom functions which I defined) """ + "\n" +
+                      """ Or simply "timestamp > ts(date('now', '-5 days'))" """ + "\n" +
+                      """ More examples: http://sqlite.org/lang_datefunc.html """ + "\n" +
+                      """ Column names are: """ + "\n" +
+                      """  (file, timestamp, messageid, from_whom, to_whom, cc, bcc, subject, header_date, xlabel, mime, tags) """)
 
 
 class EmailMeta(object):
