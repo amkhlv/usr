@@ -1,0 +1,28 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : insert listing from sqlite
+#expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
+# --
+`(progn (setq amkhlv/dbtable nil) "")` 
+@(centered @(apply nested  (mysqli-tables
+   #:dbfile "${1:/home/andrei/a/tech/base/addr.db$(if yas/moving-away-p
+                    (progn (setq amkhlv/dbtable text) "")
+                    )}" 
+   #:sql    "SELECT * FROM  ${2:<WAITING for FIELD 1>$(if amkhlv/dbtable 
+                                         (yas/choose-value 
+                                           (split-string
+                                             (shell-command-to-string 
+                                               (concat 
+                                                 "sqlite3 \'" 
+                                                 amkhlv/dbtable 
+                                                 "\' \'SELECT name FROM sqlite_master WHERE type = \"table\"\'"
+                                                 )
+                                               )
+                                             )
+                                           ) 
+                                       )}  WHERE $3 " 
+   #:to-highlight '(${4:"last" "first"})
+   #:to-hide      '(${5:"datecollected" "country"})
+   )))
+
+$0
+

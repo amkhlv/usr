@@ -1,0 +1,5 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : insert title
+#expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
+# --
+@title[#:style ${1:'(no-toc hidden)}]{$2}$0

@@ -1,0 +1,5 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : init MathJax
+#expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
+# --
+@(amkhlv/init-MathJax)

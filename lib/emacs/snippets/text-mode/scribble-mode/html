@@ -1,0 +1,5 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : inject javascript into scribble
+# --
+
+@amkhlv/js{document.write($0)}

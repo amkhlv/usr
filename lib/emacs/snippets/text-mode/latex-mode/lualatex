@@ -1,0 +1,12 @@
+\usepackage{xcolor}
+\usepackage{fontspec}
+
+\usepackage[english,russian]{babel}
+
+\input{/home/andrei/a/other/emacs/tex-cyrillic-letters.tex}
+
+\setmainfont[Scale=1.2,Ligatures=TeX]{FreeSerif}
+\newcommand{\latin}[1]{{\fontspec{DejaVuSans} #1}}
+
+`(amkhlv/files/setup-lualatex)`
+

@@ -1,0 +1,12 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : insert the myorg header
+#expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
+# --
+% -*- andrei: LaTeX -*-
+\documentclass[12pt]{article}
+\input{/home/andrei/a/other/emacs/tex-outline-hat.tex}
+\begin{document} 
+
+$0
+
+\end{document}

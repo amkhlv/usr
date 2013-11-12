@@ -1,0 +1,5 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : STYLE
+# --
+@(define amkhlv/css-dir (string->path "/home/andrei/usr/lib/racket/scribble/css/"))
+@elem[#:style (make-style #f (list (make-css-addition (build-path amkhlv/css-dir "`(yas/choose-value (directory-files "~/usr/lib/racket/scribble/css/" nil "^[^.]"))`"))))]{$0}

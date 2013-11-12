@@ -1,0 +1,16 @@
+\usepackage{polyglossia}
+\setmainlanguage{russian} 
+\setotherlanguage{english}
+\setmainfont{FreeSerif}
+\newfontfamily\cyrillicfont{FreeSerif}
+\newfontfamily\cyrillicfontsf{FreeSerif}
+\newfontfamily\cyrillicfonttt{FreeSerif}
+`(let ((pt (point)))
+  (local-set-key (kbd "C-c C-c") 'axe)
+  (beginning-of-buffer)
+  (re-search-forward "andrei: LaTeX" 50)
+  (replace-match "andrei: XeLaTeX")
+  (goto-char pt)
+  "% NOTE: C-c C-c bound to XeLaTeX"
+  )`
+

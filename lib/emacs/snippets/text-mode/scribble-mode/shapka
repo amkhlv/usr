@@ -1,0 +1,20 @@
+
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : insert the universal scribble header
+#expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
+# --
+#lang scribble/base
+@(require scribble/core scribble/html-properties scriblib/render-cond)
+@(require amkhlv/bystroTeX/common amkhlv/scribble/common amkhlv/scribble/sqli)
+@(amkhlv/init-scrbl)
+
+@amkhlv/style{no-margin.css}
+
+@title[#:style '(no-toc no-sidebar)]{$1}
+
+@table-of-contents[]
+@amkhlv/ribbon[]
+
+$0
+
+@amkhlv/ribbon[]
