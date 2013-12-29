@@ -474,18 +474,9 @@ class Aux(object):
                     my.prnt("about to UPDATE " + specs['tablename'] + " where " + where_qmarks + \
                             "\n(?,...,?) ---> " + str(tuple(all_in_row)))
                     #update(specs, "where " + where_qmarks, tuple(all_in_row), self, readonly=True)
-                    ##this is to use with Tkinter
-
-                    #p = Process(
-                    #    target = qupdate,
-                    #    args   = (specs, "where " + where_qmarks),
-                    #    kwargs = dict(data_tuple=tuple(all_in_row), readonly = True)
-                    #)
-                    #p.start()
-                    ##this does not work!
-
+                    ##this^^ is to use with Tkinter
                     qupdate(specs, "where " + where_qmarks, data_tuple=tuple(all_in_row), readonly = True)
-                    #this is to use with Qt
+                    #this^^ is to use with Qt
                     return "break"
                 return returned_fn
 
@@ -575,20 +566,7 @@ class Aux(object):
             bot_frame.pack(fill=Tkinter.X)
             # preparing the ``NEW'' and ``RELOAD'' buttons:
             def new_fn(event=None):
-                #collect(specs,self)
-                #p = Process(target = qcollect, args = (specs,))
-                #p.start()
-
-                #app, donext = qcollect(specs)
-
                 startCollector(CollectParameters(specs))
-
-                print("Returned in Buttons")
-                #for x in donext:
-                #    print("Doing donext")
-                #    app = x(app)
-                #    print("Returned inside donext in new_fn of Buttons")
-                #print("After doing donext in new_fn of buttons")
                 return "break"
 
             def reload_fn(dummy_for_event=None):
@@ -820,13 +798,9 @@ config = my.cnf
 def startCollector(params):
     def qform(q):
         params = q.get()
-        print("About to collect")
         app,donext = qcollect(params.specs, buttonsObj=params.buttonsObj, prefill = params.prefill, flags = params.flags)
-        print("Returned from qcollect inside startQtServerA")
         for x in donext:
-            print("Doing donext")
             app = x(app)
-            print("Returned inside donext in qform")
         sys.exit(0)
     q = Queue()
     p = Process(
@@ -835,6 +809,18 @@ def startCollector(params):
     )
     p.start()
     q.put(params)
+
+class CollectorLabel(QtGui.QLabel):
+    def __init__(self, text , font = None, tooltip = None, parent=None):
+        super(CollectorLabel, self).__init__(parent)
+        # Enable mouse hover event tracking
+        self.setText(text)
+        self.setFont(font)
+        self.setMouseTracking(True)
+        self.tooltip = tooltip
+        self.setStyleSheet("background-color:white")
+    def mouseMoveEvent(self, event):
+        if self.tooltip: QtGui.QToolTip.showText(event.globalPos(), self.tooltip, self, QtCore.QRect(0,0,100,100))
 
 class QCollectorGUI(QtGui.QWidget):
     def __init__(self, specs, columns_to_collect, prefill, inserted_values, flags, donext):
@@ -847,17 +833,25 @@ class QCollectorGUI(QtGui.QWidget):
         self.prefill = prefill
         self.flags = flags
         self.donext = donext
+        self.balloons = specs['balloons'] if 'balloons' in specs.keys() else None
         self.initUI(prefill)
     def initUI(self, prefill):
         grid = QtGui.QGridLayout()
         j = 0;
         for column in self.columns_to_collect:
-            label = QtGui.QLabel(str(j % 10) + " " + column[0])
+            label_font = QtGui.QFont("Monospace")
+            if self.balloons and column[0] in self.balloons.keys():
+                label_font.setBold(True)
+                tooltip = self.balloons[column[0]]
+            else: tooltip = None
+            label = CollectorLabel(" " + str(j % 10) + " " + column[0] + " ", font=label_font, tooltip = tooltip)
             self.text_entry[column] = QtGui.QPlainTextEdit(prefill[column[0]])
             f = self.text_entry[column].font()
             qfm = QtGui.QFontMetrics(f)
             self.text_entry[column].setFixedHeight(( 1 + column[2] ) * qfm.lineSpacing()  )
             self.text_entry[column].setTabChangesFocus(True)
+            if 'READONLY' in self.flags: self.text_entry[column].setReadOnly(True)
+            self.text_entry[column].setStyleSheet("background-color:white")
             grid.addWidget(label, j, 0)
             grid.addWidget(self.text_entry[column], j, 1)
             if j == 0: self.text_entry[column].setFocus()
@@ -872,23 +866,32 @@ class QCollectorGUI(QtGui.QWidget):
             confirmationLabel = QtGui.QLabel("Are you sure you want to delete this?")
             grid.addWidget(confirmationLabel, j, 1)
             yesButton = QtGui.QPushButton("Yes, do delete")
+            yesButton.setStyleSheet("background-color: red; color: white")
             noButton  = QtGui.QPushButton("No, wait !")
             grid.addWidget(yesButton, j+1, 0)
             grid.addWidget(noButton, j+1, 1)
             yesButton.clicked.connect(self.collectFn) # this will make inserted_values nonempty, and signal to go ahead and do delete!
             noButton.clicked.connect(self.doNothingFn)
+            self.setStyleSheet("background-color: rgb(255, 192, 203)")
         elif 'READONLY' in self.flags:
             unlockButton = QtGui.QPushButton("Unlock")
+            unlockButton.setStyleSheet("color:blue")
             unlockButton.clicked.connect(self.unlockFn)
             grid.addWidget(unlockButton, j, 0)
         else:
+            if not('UPDATE' in self.flags): self.setStyleSheet("background-color: rgb(147, 197, 114)")
             collectButton = QtGui.QPushButton("Update" if 'UPDATE' in self.flags else "Collect")
+            collectButton.setStyleSheet("color:white")
             collectButton.clicked.connect(self.collectFn)
             grid.addWidget(collectButton, j, 0)
         if 'UPDATE' in self.flags:
-            deleteButton = QtGui.QPushButton("DEL")
+            deleteButton = QtGui.QPushButton("Delete")
             deleteButton.clicked.connect(self.deleteFn)
             grid.addWidget(deleteButton, j, 1)
+            cloneButton = QtGui.QPushButton("Clone")
+            cloneButton.clicked.connect(self.cloneFn)
+            grid.addWidget(cloneButton, j + 1, 0)
+            self.setStyleSheet("background-color: rgb(251, 206, 177)")
         self.setLayout(grid)
     def makeFocusFn(self,column):
         def focusFn():
@@ -900,30 +903,24 @@ class QCollectorGUI(QtGui.QWidget):
             self.values.append(t)
         self.close()
     def unlockFn(self):
-        #p = Process(
-        #target = qcollect,
-        #args   = (self.specs,),
-        #kwargs = {'prefill' : self.prefill, 'flags' : ('UPDATE',)}
-        #)
-        #p.start()
         def f(a):
             app, donext = qcollect(self.specs, prefill = self.prefill, flags = ('UPDATE',), qtmain = a)
             for x in donext:
-                    print("Doing donext")
                     app = x(app)
-                    print("Returned inside donext inside unlockFn")
-            print("After doing donext inside unlockFn")
         self.donext.append(f)
         self.close()
     def deleteFn(self):
         def f(a):
             app, donext = qcollect(self.specs, prefill=self.prefill, flags=('DELETE',), qtmain = a)
-            print("returned from qcollect inside deleteFn")
             for x in donext:
-                    print("Doing donext")
                     app = x(app)
-                    print("Returned inside donext inside deleteFn")
-            print("After doing donext inside deleteFn")
+        self.donext.append(f)
+        self.close()
+    def cloneFn(self):
+        def f(a):
+            app, donext = qcollect(self.specs, prefill=self.prefill, flags=(), qtmain = a)
+            for x in donext:
+                    app = x(app)
         self.donext.append(f)
         self.close()
     def doNothingFn(self):
@@ -938,8 +935,6 @@ def qcollect(specs, buttonsObj=None, prefill=None, flags=(), qtmain = None):
     @param flags: e.g. ("UPDATE", "READONLY"), possible flags are "UPDATE", "READONLY" and "DELETE"
     @return:
     """
-    print("INSIDE Qcollect with flags:" )
-    print(flags)
     if not prefill: prefill = {}
     columns_to_collect = specs['columns'] if ('UPDATE' in flags or
                                               'DELETE' in flags) else [x for x in specs['columns'] if x[3]]
@@ -962,12 +957,9 @@ def qcollect(specs, buttonsObj=None, prefill=None, flags=(), qtmain = None):
     w.setWindowTitle(winTitle)
     w.show()
 
-    print("ABOUT to EXEC_")
     app.exec_()
-    print("AFTER EXEC_")
 
     if len(donext) > 0 :
-        print("About to return")
         if app: app.quit()
         return app, donext
     if len(inserted_values) == 0:
@@ -1026,8 +1018,6 @@ def qcollect(specs, buttonsObj=None, prefill=None, flags=(), qtmain = None):
     if buttonsObj:
         buttonsObj.clearwin()
         buttonsObj.rebuild()
-    print("About to return from qcollect, flags were:")
-    print(flags)
     if app: app.quit()
     return app, donext
 
