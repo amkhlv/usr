@@ -4,13 +4,40 @@
 #expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
 # --
 #lang scribble/base
-@(require scribble/core scribble/html-properties scriblib/render-cond)
-@(require amkhlv/bystroTeX/common amkhlv/scribble/common amkhlv/scribble/sqli)
-@(amkhlv/init-scrbl)
+@(require racket scribble/core scribble/base scribble/html-properties)
+@(require (for-syntax "defs_for-syntax.rkt" (planet amkhlv/bystroTeX/slides_for-syntax)))
+@(require "defs.rkt" (planet amkhlv/bystroTeX/common) (planet amkhlv/bystroTeX/slides))
+@(require (only-in (planet jaymccarthy/sqlite) close))
+@; ---------------------------------------------------------------------------------------------------
+@; User definitions:
+@(define bystro-conf   
+   (bystro (find-executable-path "amkhlv-java-formula.sh")
+           "${1:`(progn (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))`}.sqlite"  ; name for the database
+           "${2:`(progn (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))`}" ; directory where to store .png files of formulas
+           25  ; formula size
+           (list 255 255 255) ; formula background color
+           (list 0 0 0) ; formula foreground color
+           2   ; automatic alignment adjustment
+           0   ; manual alignment adjustment
+           ))
+@; This controls the single page mode:
+@(define singlepage-mode #t)
+@; ---------------------------------------------------------------------------------------------------
+@(begin ;do not change anything here:
+   (define (start-formula-database)
+     (configure-bystroTeX-using bystro-conf)
+     (bystro-initialize-formula-collection bystro-conf))
+   (define formula-database (start-formula-database))
+   (unless (bystro-formula-processor bystro-conf)
+     (error "*** could not find executable for formula processing ***"))
+   (define-syntax (syntax-setter x) (defines-syntax-for-formulas x))                
+   (syntax-setter defineshiftedformula)
+   (defineshiftedformula "formula-enormula-humongula!")
+   (bystro-titlepage-init #:singlepage-mode singlepage-mode))
+@; ---------------------------------------------------------------------------------------------------
+@(require (planet amkhlv/scribble/sqli) (only-in (planet amkhlv/scribble/common) amkhlv/ribbon))
 
-@amkhlv/style{no-margin.css}
-
-@title[#:style '(no-toc no-sidebar)]{$1}
+@title[#:style '(no-toc no-sidebar)]{$3}
 
 @table-of-contents[]
 @amkhlv/ribbon[]
@@ -18,3 +45,7 @@
 $0
 
 @amkhlv/ribbon[]
+
+@; ---------------------------------------------------------------------------------------------------
+
+@close[formula-database]

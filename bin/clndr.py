@@ -261,6 +261,7 @@ def Tk_update_dict(a, tkwin, set_dtend=False):
 
 def urwid_update_dict(a, set_dtend=False):
     """a is dict of type: {"key": ["value",n]} where n is intended order of line in form"""
+    urwid.set_encoding('utf-8')
     e = {};
     sorted_keys = sorted(a.keys(), key=lambda x: a[x][1])
     key = dict(zip(range(1, 100), sorted_keys))
@@ -274,7 +275,7 @@ def urwid_update_dict(a, set_dtend=False):
         return inp
 
     for k in sorted_keys:
-        e[k] = urwid.Edit(caption=k + " ", edit_text=a[k][0], multiline=True)
+        e[k] = urwid.Edit(caption=k + u" ", edit_text= u"" + unicode(a[k][0]), multiline=True)
 
     def collect(button):
         print("----HERE---")
@@ -548,7 +549,6 @@ def show_todolist(evs, serObj):
 
 def convert_to_gtd(evs):
     import linii
-
     linii.read_yaml("/home/andrei/a/tech/base/addr.yaml")
     print(linii.my.dbfile)
     new_evs = evs
@@ -663,6 +663,34 @@ def gen_html(evs, tdy, serObj=None):
 </html> """
     return result
 
+def remove_duplicates(evs):
+    encountered = []
+    def event_data(ev):
+        lns = ev.lines()
+        ev_dict = dict((ln.name, ln.value) for ln in lns)
+        uid = ev_dict['UID'] if 'UID' in ev_dict.keys() else "NOUID"
+        return uid, [(f, ev_dict[f]) for f in HUMAN_FLDS['VEVENT'] if f in ev_dict.keys()]
+    for ev in evs:
+        evntuid, evntdata = event_data(ev)
+        if evntdata in [x[1] for x in encountered] :
+            for x in encountered:
+                if x[1] == evntdata:
+                    try:
+                        print(x[0] + " <-- already exists  : " + dict(x[1])['SUMMARY'])
+                    except KeyError:
+                        print(x[0] + " <-- already exists BUT NO SUMMARY ")
+            if evntuid != 'NOUID':
+                try:
+                    print(evntuid + " <-- will be deleted : " + dict(evntdata)['SUMMARY'])
+                    _ , evs = delete_event(evntuid, evs)
+                except KeyError:
+                    print(evntuid + " <-- will NOT be deleted because SUMMARY not found!")
+            else:
+                print("--- UID NOT FOUND for the following: ")
+                print(evntdata)
+        else:
+            encountered.append((evntuid, evntdata))
+    return evs
 
 class PickleObj():
     def __init__(self, f):
@@ -744,6 +772,7 @@ def command_line_arguments(parser):
     parser.add_option("--2gtd", dest="do_convert_to_gtd", default=False, action="store_true",
                       help="""push items to gtd""")
     parser.add_option("--xml", dest="give_xml", default=False, action="store_true", help="output as XML")
+    parser.add_option("--remove-duplicates", dest="remove_dups", default=False, action="store_true", help="remove duplicate events")
 
 
 if __name__ == '__main__':
@@ -866,6 +895,10 @@ if __name__ == '__main__':
             show_todolist(evs, srlz)
     if options.do_convert_to_gtd:
         convert_to_gtd(evs)
+    if options.remove_dups:
+        new_evs = remove_duplicates(evs)
+        print("================================")
+        write_calendar(build_calendar(new_evs), fname)
     else:
         inrange = mywalk(evs, tdy=tdy, frw=options.forw, rwnd_hrs=8, rgx=options.rgx)
         if options.show_today_and_tomorrow:

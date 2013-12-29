@@ -16,6 +16,9 @@ import yaml
 import Pmw
 from inspect import currentframe, getargvalues
 import IPython.utils as utils
+from PyQt4 import QtGui, QtCore
+import time
+from multiprocessing import Process, Queue
 
 
 class Aux(object):
@@ -470,10 +473,20 @@ class Aux(object):
                 def returned_fn(dummy_for_event=None):
                     my.prnt("about to UPDATE " + specs['tablename'] + " where " + where_qmarks + \
                             "\n(?,...,?) ---> " + str(tuple(all_in_row)))
-                    update(specs, "where " + where_qmarks, tuple(all_in_row), self,
-                           readonly=True)
-                    return "break"
+                    #update(specs, "where " + where_qmarks, tuple(all_in_row), self, readonly=True)
+                    ##this is to use with Tkinter
 
+                    #p = Process(
+                    #    target = qupdate,
+                    #    args   = (specs, "where " + where_qmarks),
+                    #    kwargs = dict(data_tuple=tuple(all_in_row), readonly = True)
+                    #)
+                    #p.start()
+                    ##this does not work!
+
+                    qupdate(specs, "where " + where_qmarks, data_tuple=tuple(all_in_row), readonly = True)
+                    #this is to use with Qt
+                    return "break"
                 return returned_fn
 
             middle_frame = Tkinter.Frame(self.mainwin_but)
@@ -562,7 +575,20 @@ class Aux(object):
             bot_frame.pack(fill=Tkinter.X)
             # preparing the ``NEW'' and ``RELOAD'' buttons:
             def new_fn(event=None):
-                collect(specs, self)
+                #collect(specs,self)
+                #p = Process(target = qcollect, args = (specs,))
+                #p.start()
+
+                #app, donext = qcollect(specs)
+
+                startCollector(CollectParameters(specs))
+
+                print("Returned in Buttons")
+                #for x in donext:
+                #    print("Doing donext")
+                #    app = x(app)
+                #    print("Returned inside donext in new_fn of Buttons")
+                #print("After doing donext in new_fn of buttons")
                 return "break"
 
             def reload_fn(dummy_for_event=None):
@@ -776,13 +802,257 @@ class Aux(object):
         def __str__(self):
             return repr(self.value)
 
+    server_not_running = True
 
 class Dataclass(): pass
 
+class CollectParameters:
+    def __init__(self,specs, buttonsObj=None, prefill=None, flags=()):
+        self.specs = specs
+        self.buttonsObj = buttonsObj
+        self.prefill = prefill
+        self.flags = flags
 
 data = Dataclass()
 my = Aux()
 config = my.cnf
+
+def startCollector(params):
+    def qform(q):
+        params = q.get()
+        print("About to collect")
+        app,donext = qcollect(params.specs, buttonsObj=params.buttonsObj, prefill = params.prefill, flags = params.flags)
+        print("Returned from qcollect inside startQtServerA")
+        for x in donext:
+            print("Doing donext")
+            app = x(app)
+            print("Returned inside donext in qform")
+        sys.exit(0)
+    q = Queue()
+    p = Process(
+        target = qform,
+        args = (q,)
+    )
+    p.start()
+    q.put(params)
+
+class QCollectorGUI(QtGui.QWidget):
+    def __init__(self, specs, columns_to_collect, prefill, inserted_values, flags, donext):
+        super(QCollectorGUI, self).__init__()
+        self.values = inserted_values
+        self.text_entry = {}
+        self.shortcut = {}
+        self.specs = specs
+        self.columns_to_collect = columns_to_collect
+        self.prefill = prefill
+        self.flags = flags
+        self.donext = donext
+        self.initUI(prefill)
+    def initUI(self, prefill):
+        grid = QtGui.QGridLayout()
+        j = 0;
+        for column in self.columns_to_collect:
+            label = QtGui.QLabel(str(j % 10) + " " + column[0])
+            self.text_entry[column] = QtGui.QPlainTextEdit(prefill[column[0]])
+            f = self.text_entry[column].font()
+            qfm = QtGui.QFontMetrics(f)
+            self.text_entry[column].setFixedHeight(( 1 + column[2] ) * qfm.lineSpacing()  )
+            self.text_entry[column].setTabChangesFocus(True)
+            grid.addWidget(label, j, 0)
+            grid.addWidget(self.text_entry[column], j, 1)
+            if j == 0: self.text_entry[column].setFocus()
+            skey = QtCore.Qt.CTRL + QtCore.Qt.Key_0 + ( j % 10 )
+            if j > 9:
+                skey = QtCore.Qt.SHIFT + skey
+            if j < 20:
+                self.shortcut[column] = QtGui.QShortcut(QtGui.QKeySequence(skey), self);
+                self.shortcut[column].activated.connect(self.makeFocusFn(column))
+            j = j + 1
+        if  'DELETE' in self.flags:
+            confirmationLabel = QtGui.QLabel("Are you sure you want to delete this?")
+            grid.addWidget(confirmationLabel, j, 1)
+            yesButton = QtGui.QPushButton("Yes, do delete")
+            noButton  = QtGui.QPushButton("No, wait !")
+            grid.addWidget(yesButton, j+1, 0)
+            grid.addWidget(noButton, j+1, 1)
+            yesButton.clicked.connect(self.collectFn) # this will make inserted_values nonempty, and signal to go ahead and do delete!
+            noButton.clicked.connect(self.doNothingFn)
+        elif 'READONLY' in self.flags:
+            unlockButton = QtGui.QPushButton("Unlock")
+            unlockButton.clicked.connect(self.unlockFn)
+            grid.addWidget(unlockButton, j, 0)
+        else:
+            collectButton = QtGui.QPushButton("Update" if 'UPDATE' in self.flags else "Collect")
+            collectButton.clicked.connect(self.collectFn)
+            grid.addWidget(collectButton, j, 0)
+        if 'UPDATE' in self.flags:
+            deleteButton = QtGui.QPushButton("DEL")
+            deleteButton.clicked.connect(self.deleteFn)
+            grid.addWidget(deleteButton, j, 1)
+        self.setLayout(grid)
+    def makeFocusFn(self,column):
+        def focusFn():
+            self.text_entry[column].setFocus()
+        return focusFn
+    def collectFn(self):
+        for column in self.columns_to_collect:
+            t = str(self.text_entry[column].document().toPlainText()).decode('utf-8')
+            self.values.append(t)
+        self.close()
+    def unlockFn(self):
+        #p = Process(
+        #target = qcollect,
+        #args   = (self.specs,),
+        #kwargs = {'prefill' : self.prefill, 'flags' : ('UPDATE',)}
+        #)
+        #p.start()
+        def f(a):
+            app, donext = qcollect(self.specs, prefill = self.prefill, flags = ('UPDATE',), qtmain = a)
+            for x in donext:
+                    print("Doing donext")
+                    app = x(app)
+                    print("Returned inside donext inside unlockFn")
+            print("After doing donext inside unlockFn")
+        self.donext.append(f)
+        self.close()
+    def deleteFn(self):
+        def f(a):
+            app, donext = qcollect(self.specs, prefill=self.prefill, flags=('DELETE',), qtmain = a)
+            print("returned from qcollect inside deleteFn")
+            for x in donext:
+                    print("Doing donext")
+                    app = x(app)
+                    print("Returned inside donext inside deleteFn")
+            print("After doing donext inside deleteFn")
+        self.donext.append(f)
+        self.close()
+    def doNothingFn(self):
+        self.close()
+
+
+def qcollect(specs, buttonsObj=None, prefill=None, flags=(), qtmain = None):
+    """
+    @param specs:
+    @param buttonsObj:
+    @param prefill:
+    @param flags: e.g. ("UPDATE", "READONLY"), possible flags are "UPDATE", "READONLY" and "DELETE"
+    @return:
+    """
+    print("INSIDE Qcollect with flags:" )
+    print(flags)
+    if not prefill: prefill = {}
+    columns_to_collect = specs['columns'] if ('UPDATE' in flags or
+                                              'DELETE' in flags) else [x for x in specs['columns'] if x[3]]
+    for t in [z[0] for z in columns_to_collect]:
+        if not prefill.has_key(t): prefill[t] = ''
+    ordered_cols = ",".join(z[0] for z in columns_to_collect)
+    inserted_values = []
+    donext = []
+    if qtmain:
+        app = qtmain
+    else:
+        app = QtGui.QApplication([])
+    app.setQuitOnLastWindowClosed(True)
+    w = QCollectorGUI(specs, columns_to_collect, prefill, inserted_values, flags, donext)
+    winTitle = "collect " + specs['tablename']
+    if 'UPDATE' in flags:
+        winTitle = "update" + specs['tablename']
+    elif 'DELETE' in flags:
+        winTitle = "delete from " + specs['tablename']
+    w.setWindowTitle(winTitle)
+    w.show()
+
+    print("ABOUT to EXEC_")
+    app.exec_()
+    print("AFTER EXEC_")
+
+    if len(donext) > 0 :
+        print("About to return")
+        if app: app.quit()
+        return app, donext
+    if len(inserted_values) == 0:
+        # this happens e.g. if we have to unlock the read-only update window
+        # or if the user simply closes the collector window without pressing the "Collect" button
+        # in this case we simply bailout
+        print("EXITING DOING NOTHING")
+        if app: app.quit()
+        return app, donext
+    values = tuple(inserted_values)
+    print(values)
+    qmarks =  '(' + ','.join(["?" for i in range(0,len(values))]) + ')'
+    where_qmarks = " AND ".join(["eqli(" + z[0] + ",?)" for z in columns_to_collect])
+    if 'DELETE' in flags:
+        link = my.getlink()
+        curs = link.cursor()
+        my.prnt("delete from " + specs['tablename'] + " where " + where_qmarks \
+                + "\nWHERE DATA WAS " + str(tuple([prefill[k] for k in [z[0] for z in columns_to_collect]])))
+        my.prnt("--- we always try to delete only one row ---")
+        try:
+        # First try to use the rowid trick to remove only one record,
+        # as described here: http://stackoverflow.com/questions/2791006/sqlite-simple-delete-statement-did-not-work
+        # This is needed in case if there are several identical rows.
+            curs.execute(" delete from " + specs['tablename'] +
+                         " where rowid = ( select rowid from " + specs['tablename'] +
+                         " where " + where_qmarks + " limit 1 ) ",
+                         tuple([prefill[k] for k in [z[0] for z in columns_to_collect]]))
+        except sqlite3.Error as e:
+            print("|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|")
+            print("| FAILED TO REMOVE ONLY ONE RECORD BY USING rowid |")
+            print("|          THE TABLE DOES NOT HAVE rowid?         |")
+            print("|  proceeding bluntly, perhaps removing all rows  |")
+            print("|_________________________________________________|")
+            curs.execute("delete from " + specs['tablename'] + " where " + where_qmarks,
+                         tuple([prefill[k] for k in [z[0] for z in columns_to_collect]]))
+        link.commit()
+        curs.close()
+    elif 'UPDATE' in flags:
+        my.prnt("about to UPDATE " + specs['tablename'] + " set " +
+                ", ".join([z[0] + " = ?" for z in specs['columns']]) + " where " + where_qmarks)
+        ex("update " + specs['tablename'] + " set " +
+           ", ".join([z[0] + " = ?" for z in specs['columns']]) + " where " + where_qmarks,
+        values + tuple([prefill[k] for k in [z[0] for z in columns_to_collect]])).close()
+    else:
+        # means we are just collecting new data
+        my.prnt("about to INSERT into " + specs['tablename'] +
+        " (" + ordered_cols + ") values " + qmarks + "\n(?,...?) ---> " + str(values))
+        ex("insert into " + specs['tablename'] + " (" + ordered_cols + ") values " + qmarks, values).close()
+    # verify the insertion of the new data:
+    for a in ex(u"select * from " + specs['tablename'] + " where " + where_qmarks, tuple(values)):
+        for y in zip(map(lambda u: "__________" + u + "_" * (32 - len(u)), my.columns(specs['tablename'])), list(a)):
+            if y[1]:
+                print(y[0])
+                my.prnt(y[1])
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    if buttonsObj:
+        buttonsObj.clearwin()
+        buttonsObj.rebuild()
+    print("About to return from qcollect, flags were:")
+    print(flags)
+    if app: app.quit()
+    return app, donext
+
+def qupdate(specs, criterium, data_tuple = None, buttonsObj = None, readonly = False):
+    """
+Update entry using Qt
+    @param specs:
+    @param criterium:
+    @param data_tuple:
+    @param buttonsObj:
+    @param readonly:
+    """
+    ordered_cols   = ",".join([z[0] for z in specs['columns']])
+    rows_matching = list(ex("select " + ordered_cols +
+                            " from " + specs['tablename'] + " " + criterium,
+                            data_tuple))
+    for selected_row in iter(rows_matching):
+        prefill = dict(zip(map(lambda z: z[0], specs['columns']), selected_row))
+        startCollector(
+            CollectParameters(
+                specs, prefill=prefill, flags = ('UPDATE', 'READONLY') if readonly else ('UPDATE',)
+            )
+        )
+    print("About to return from qupdate")
+
 
 
 def collect(specs, buttonsObj=None, **prefill):
@@ -847,8 +1117,7 @@ def collect(specs, buttonsObj=None, **prefill):
     return inserted_values
 
 
-def update(specs, criterium, data_tuple=None,
-           buttonsObj=None, readonly=False):
+def update(specs, criterium, data_tuple=None, buttonsObj=None, readonly=False):
     """linii.update(table_descr,"criterium") ,
        where table_descr was imported from the file databasename.py
        and criterium is something like "where nick='Andrei'" """
@@ -866,7 +1135,6 @@ def update(specs, criterium, data_tuple=None,
         def returned_fn(dummy_for_event=None):
             card.mainwin.destroy()
             update(specs, criterium, data_tuple, buttonsObj, readonly=False)
-
         return returned_fn
 
     def update_fn(card, newdata_qmarks, where_qmarks, selected_row,
@@ -1255,7 +1523,7 @@ def ex(statement, x=None):
     except Exception as e:
         curs.close()
         link.close()
-        print(my.clr_error + e + my.clr_normal)
+        print(my.clr_error); print(e); print(my.clr_normal)
         raise my.LiniiError("******* linii: error in ex() *******")
     curs.close()
     link.close()
