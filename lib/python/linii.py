@@ -821,6 +821,16 @@ class CollectorLabel(QtGui.QLabel):
     def mouseMoveEvent(self, event):
         if self.tooltip: QtGui.QToolTip.showText(event.globalPos(), self.tooltip, self, QtCore.QRect(0,0,100,100))
 
+class MyQTextEdit(QtGui.QPlainTextEdit):
+    def __init__(self, text , font = None, tooltip = None, parent=None, escapeFn = None):
+        super(QtGui.QPlainTextEdit, self).__init__(text, parent)
+        self.escapeFn = escapeFn
+    def keyPressEvent(self,e):
+        if e.key() == QtCore.Qt.Key_Escape :
+            self.escapeFn()
+        else:
+            QtGui.QPlainTextEdit.keyPressEvent(self, e)
+
 class QCollectorGUI(QtGui.QWidget):
     def __init__(self, specs, columns_to_collect, prefill, inserted_values, flags, donext):
         super(QCollectorGUI, self).__init__()
@@ -844,7 +854,8 @@ class QCollectorGUI(QtGui.QWidget):
                 tooltip = self.balloons[column[0]]
             else: tooltip = None
             label = CollectorLabel(" " + str(j % 10) + " " + column[0] + " ", font=label_font, tooltip = tooltip)
-            self.text_entry[column] = QtGui.QPlainTextEdit(prefill[column[0]])
+            #self.text_entry[column] = QtGui.QPlainTextEdit(prefill[column[0]])
+            self.text_entry[column] = MyQTextEdit(prefill[column[0]], parent = self, escapeFn=self.escapeFn)
             f = self.text_entry[column].font()
             qfm = QtGui.QFontMetrics(f)
             self.text_entry[column].setFixedHeight(( 1 + column[2] ) * qfm.lineSpacing()  )
@@ -873,17 +884,26 @@ class QCollectorGUI(QtGui.QWidget):
             noButton.clicked.connect(self.doNothingFn)
             self.setStyleSheet("background-color: rgb(255, 192, 203)")
         elif 'READONLY' in self.flags:
-            unlockButton = QtGui.QPushButton("Unlock")
-            unlockButton.setStyleSheet("color:blue")
+            unlockKey = QtCore.Qt.Key_U
+            unlockShortcut = QtGui.QShortcut(QtGui.QKeySequence(unlockKey),self)
+            unlockShortcut.activated.connect(self.unlockFn)
+            unlockButton = QtGui.QPushButton("Unlock<u>")
+            unlockButton.setStyleSheet("color:red")
             unlockButton.clicked.connect(self.unlockFn)
             grid.addWidget(unlockButton, j, 0)
         else:
             if not('UPDATE' in self.flags): self.setStyleSheet("background-color: rgb(147, 197, 114)")
-            collectButton = QtGui.QPushButton("Update" if 'UPDATE' in self.flags else "Collect")
-            collectButton.setStyleSheet("color:white")
+            collectKey = QtCore.Qt.Key_U if 'UPDATE' in self.flags else QtCore.Qt.Key_C
+            collectShortcut = QtGui.QShortcut(QtGui.QKeySequence(collectKey),self)
+            collectShortcut.activated.connect(self.collectFn)
+            collectButton = QtGui.QPushButton("Update<u>" if 'UPDATE' in self.flags else "Collect<c>")
+            collectButton.setStyleSheet("color:green")
             collectButton.clicked.connect(self.collectFn)
             grid.addWidget(collectButton, j, 0)
         if 'UPDATE' in self.flags:
+            deleteKey = QtCore.Qt.Key_D
+            deleteShortcut = QtGui.QShortcut(QtGui.QKeySequence(deleteKey),self)
+            deleteShortcut.activated.connect(self.deleteFn)
             deleteButton = QtGui.QPushButton("Delete")
             deleteButton.clicked.connect(self.deleteFn)
             grid.addWidget(deleteButton, j, 1)
@@ -922,6 +942,8 @@ class QCollectorGUI(QtGui.QWidget):
                     app = x(app)
         self.donext.append(f)
         self.close()
+    def escapeFn(self):
+        self.setFocus()
     def doNothingFn(self):
         self.close()
 
