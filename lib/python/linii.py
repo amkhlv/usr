@@ -8,6 +8,7 @@ import sqlite3
 import re
 import Tkinter
 import tkFont
+from PyQt4 import QtGui, QtCore
 import sys
 import os
 import itertools
@@ -16,9 +17,7 @@ import yaml
 import Pmw
 from inspect import currentframe, getargvalues
 import IPython.utils as utils
-from PyQt4 import QtGui, QtCore
-import time
-from multiprocessing import Process, Queue
+from multiprocessing import Process
 
 
 class Aux(object):
@@ -566,7 +565,10 @@ class Aux(object):
             bot_frame.pack(fill=Tkinter.X)
             # preparing the ``NEW'' and ``RELOAD'' buttons:
             def new_fn(event=None):
+                #collect(specs,self)
+                ## this^^ to use with Tkinter
                 startCollector(CollectParameters(specs))
+                # this^^ to use with Qt
                 return "break"
 
             def reload_fn(dummy_for_event=None):
@@ -784,6 +786,10 @@ class Aux(object):
 
 class Dataclass(): pass
 
+data = Dataclass()
+my = Aux()
+config = my.cnf
+
 class CollectParameters:
     def __init__(self,specs, buttonsObj=None, prefill=None, flags=()):
         self.specs = specs
@@ -791,24 +797,17 @@ class CollectParameters:
         self.prefill = prefill
         self.flags = flags
 
-data = Dataclass()
-my = Aux()
-config = my.cnf
-
 def startCollector(params):
-    def qform(q):
-        params = q.get()
-        app,donext = qcollect(params.specs, buttonsObj=params.buttonsObj, prefill = params.prefill, flags = params.flags)
+    def bgstarter(prms):
+        app,donext = qcollect(prms.specs, buttonsObj=prms.buttonsObj, prefill = prms.prefill, flags = prms.flags)
         for x in donext:
             app = x(app)
         sys.exit(0)
-    q = Queue()
     p = Process(
-        target = qform,
-        args = (q,)
+        target = bgstarter,
+        args = (params,)
     )
     p.start()
-    q.put(params)
 
 class CollectorLabel(QtGui.QLabel):
     def __init__(self, text , font = None, tooltip = None, parent=None):
@@ -925,7 +924,6 @@ class QCollectorGUI(QtGui.QWidget):
         self.close()
     def doNothingFn(self):
         self.close()
-
 
 def qcollect(specs, buttonsObj=None, prefill=None, flags=(), qtmain = None):
     """
