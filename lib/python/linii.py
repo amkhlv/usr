@@ -1475,11 +1475,18 @@ def starter(specs, default_checked='', default_query=''):
     # cmdline.bind("<KeyPress-Return>", cmd_fn(checked, specs, cmdline, widthline))
     cmdline.pack(fill=Tkinter.X)
     cmdline.focus_set()
-
-    def exit_fn(mainwin_start):
-        def return_fn():
+    
+    def exit_fn_for_kbshortcut(mainwin_start):
+        def return_fn(event=None):
+            if mainwin_start.focus_get() != cmdline:
+                mainwin_start.destroy()
+            return "break"
+        return return_fn
+    
+    def exit_fn_for_mouse(mainwin_start):
+        def return_fn(event=None):
             mainwin_start.destroy()
-
+            return "break"
         return return_fn
 
     def new_fn(specs):
@@ -1497,11 +1504,12 @@ def starter(specs, default_checked='', default_query=''):
 
         return return_fn
 
-    my.button(frame, text="EXIT", bg=my.cnf.starter_button_color,
-              command=exit_fn(mainwin_start)).pack(side=Tkinter.RIGHT)
+    my.button(frame, text="EXIT<q>", bg=my.cnf.starter_button_color,
+              command=exit_fn_for_mouse(mainwin_start)).pack(side=Tkinter.RIGHT)
     starter_new_but = my.button(frame, text="NEW<n>", bg=my.cnf.starter_button_color,
                                 command=new_fn_for_mouse(specs))
     starter_new_but.pack(side=Tkinter.LEFT)
+    mainwin_start.bind("<q>", exit_fn_for_kbshortcut(mainwin_start))
     mainwin_start.bind("<n>", new_fn(specs))
     just_to_fill = Tkinter.Label(frame, bg=my.cnf.starter_frame_bg, width=3)
     just_to_fill.pack(side=Tkinter.LEFT)
