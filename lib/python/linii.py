@@ -810,11 +810,11 @@ def startCollector(params):
     p.start()
 
 class CollectorLabel(QtGui.QLabel):
-    def __init__(self, text , font = None, tooltip = None, parent=None):
+    def __init__(self, text = None , font = None, tooltip = None, parent=None):
         super(CollectorLabel, self).__init__(parent)
         # Enable mouse hover event tracking
-        self.setText(text)
-        self.setFont(font)
+        if text: self.setText(text)
+        if font: self.setFont(font)
         self.setMouseTracking(True)
         self.tooltip = tooltip
         self.setStyleSheet("background-color:white")
@@ -862,16 +862,25 @@ class QCollectorGUI(QtGui.QWidget):
             self.text_entry[column].setTabChangesFocus(True)
             if 'READONLY' in self.flags: self.text_entry[column].setReadOnly(True)
             self.text_entry[column].setStyleSheet("background-color:white")
+            if j < 10:
+                self.shortcut[column] = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_0 + ( j % 10 )), self)
+                label.setText("  " + str(j) + " " + column[0] + " ")
+            elif j < 25:
+                self.shortcut[column] = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_F1 + ( j - 10 )), self)
+                label.setText(" F" + str(j-9) + " " + column[0] + " ")
+            else:
+                label.setText("    " + column[0] + " ")
+            if j < 25: self.shortcut[column].activated.connect(self.makeFocusFn(column))
             grid.addWidget(label, j, 0)
             grid.addWidget(self.text_entry[column], j, 1)
             if j == 0: self.text_entry[column].setFocus()
-            skey = QtCore.Qt.CTRL + QtCore.Qt.Key_0 + ( j % 10 )
-            if j > 9:
-                skey = QtCore.Qt.SHIFT + skey
-            if j < 20:
-                self.shortcut[column] = QtGui.QShortcut(QtGui.QKeySequence(skey), self);
-                self.shortcut[column].activated.connect(self.makeFocusFn(column))
             j = j + 1
+        exitButton = QtGui.QPushButton("Exit<q>")
+        exitButton.setStyleSheet("color:black")
+        exitButton.clicked.connect(self.doNothingFn)
+        exitKey = QtCore.Qt.Key_Q
+        exitShortcut = QtGui.QShortcut(QtGui.QKeySequence(exitKey),self)
+        exitShortcut.activated.connect(self.doNothingFn)
         if  'DELETE' in self.flags:
             confirmationLabel = QtGui.QLabel("Are you sure you want to delete this?")
             grid.addWidget(confirmationLabel, j, 1)
@@ -890,7 +899,8 @@ class QCollectorGUI(QtGui.QWidget):
             unlockButton = QtGui.QPushButton("Unlock<u>")
             unlockButton.setStyleSheet("color:red")
             unlockButton.clicked.connect(self.unlockFn)
-            grid.addWidget(unlockButton, j, 0)
+            grid.addWidget(unlockButton, j, 1)
+            grid.addWidget(exitButton, j+1, 1)
         else:
             if not('UPDATE' in self.flags): self.setStyleSheet("background-color: rgb(147, 197, 114)")
             collectKey = QtCore.Qt.Key_U if 'UPDATE' in self.flags else QtCore.Qt.Key_C
@@ -899,14 +909,14 @@ class QCollectorGUI(QtGui.QWidget):
             collectButton = QtGui.QPushButton("Update<u>" if 'UPDATE' in self.flags else "Collect<c>")
             collectButton.setStyleSheet("color:green")
             collectButton.clicked.connect(self.collectFn)
-            grid.addWidget(collectButton, j, 0)
+            grid.addWidget(collectButton, j, 1)
         if 'UPDATE' in self.flags:
             deleteKey = QtCore.Qt.Key_D
             deleteShortcut = QtGui.QShortcut(QtGui.QKeySequence(deleteKey),self)
             deleteShortcut.activated.connect(self.deleteFn)
-            deleteButton = QtGui.QPushButton("Delete")
+            deleteButton = QtGui.QPushButton("Delete<d>")
             deleteButton.clicked.connect(self.deleteFn)
-            grid.addWidget(deleteButton, j, 1)
+            grid.addWidget(deleteButton, j, 0)
             cloneButton = QtGui.QPushButton("Clone")
             cloneButton.clicked.connect(self.cloneFn)
             grid.addWidget(cloneButton, j + 1, 0)
