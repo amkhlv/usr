@@ -35,7 +35,7 @@
    (defineshiftedformula "formula-enormula-humongula!")
    (bystro-titlepage-init #:singlepage-mode singlepage-mode))
 @; ---------------------------------------------------------------------------------------------------
-@(require (planet amkhlv/scribble/sqli) (only-in (planet amkhlv/scribble/common) amkhlv/ribbon))
+@(require amkhlv/scribble/sqli (only-in amkhlv/scribble/common amkhlv/ribbon))
 
 @title[#:style '(no-toc no-sidebar)]{$3}
 
@@ -49,3 +49,12 @@ $0
 @; ---------------------------------------------------------------------------------------------------
 
 @close[formula-database]
+
+`(let ((x (call-process-shell-command 
+           "find ~/usr/share/scribble/myscribbles -type f | 
+            while read N ; do F=$(basename $N); ( [ -e $F ] || ln -s $N $F ; ) ; done"
+           nil
+           nil
+           )))
+   "")` 
+  
