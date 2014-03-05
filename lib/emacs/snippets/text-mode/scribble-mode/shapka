@@ -35,16 +35,18 @@
    (defineshiftedformula "formula-enormula-humongula!")
    (bystro-titlepage-init #:singlepage-mode singlepage-mode))
 @; ---------------------------------------------------------------------------------------------------
-@(require amkhlv/scribble/sqli (only-in amkhlv/scribble/common amkhlv/ribbon))
+@(require amkhlv/scribble/sqli)
+
+@(bystro-inject-style "misc.css" "no-margin.css")
 
 @title[#:style '(no-toc no-sidebar)]{$3}
 
 @table-of-contents[]
-@amkhlv/ribbon[]
+@bystro-www-ribbon[]
 
 $0
 
-@amkhlv/ribbon[]
+@bystro-www-ribbon[]
 
 @; ---------------------------------------------------------------------------------------------------
 

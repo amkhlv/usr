@@ -26,6 +26,7 @@ from glob import glob
 import subprocess
 import datetime
 import dateutil.parser
+import fileinput
 
 
 dbfile = "/home/andrei/a/maildirs/mymail.db"
@@ -50,6 +51,8 @@ def command_line_arguments(parser):
     parser.add_option("-m", "--mutt", dest="msgid", default=False, action="store_true",
                       help="open in mutt the emails with Message IDs remaining arguments\n see also option --tmp",
                       metavar="MSGID")
+    parser.add_option("--tombox", dest="convert_to_this_mbox", 
+                      help="given a list of MessageID on stding, add them all to the mbox MBOXNAME", metavar="MBOXNAME")
     parser.add_option("--just-prep-tmp", dest="just_prep_maildir", action="store_true",
                       help="prepare the maildir with symlinks to Message IDs remaining arguments \n" +
                            "and print its path to stdout; see also the option --tmp")
@@ -461,6 +464,15 @@ def main():
             print(u[1])
     elif options.criterium:
         exec_query(options.criterium)
+    elif options.convert_to_this_mbox:
+        idlist = list(sys.stdin)
+        for message_id in idlist:
+            print "\n Processing " + message_id.rstrip()
+            efs = emailfiles(message_id.rstrip())
+            if not(efs): efs = []
+            for ef in efs:
+                print("adding to MBOX " + options.convert_to_this_mbox + " the email file: " + ef)
+                os.system("formail < " + glob(ef + "*")[0] + " >> " + options.convert_to_this_mbox)
     else:
         places = list_files()
         safety_check(places, options.forced)
