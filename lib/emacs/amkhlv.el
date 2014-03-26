@@ -251,7 +251,7 @@ To choose size, use ps-print-customize"
           (if (file-exists-p "REGISTRY.yaml")
               (json-read-from-string (amkhlv/yaml2json "REGISTRY.yaml"))
             '())))
-    (if (cdr registry)
+    (if (car registry)
         (progn 
           (message (concat "looking up " filename " in registry"))
                                         ; First we iterate over --html :

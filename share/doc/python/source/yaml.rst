@@ -9,7 +9,7 @@ Contents:
 To load associative array `y`::
 
     with open(yaml_filename, 'r') as yamlfl:
-        y = yaml.safe_load(yamfl)
+        y = yaml.safe_load(yamlfl)
 
 (notice that `with` statements do **not** create scope!)
 

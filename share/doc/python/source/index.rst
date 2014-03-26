@@ -23,6 +23,7 @@ Contents:
    amkhlv_bib   
    amkhlv_music
    yaml
+   curses
 
 Indices and tables
 ==================

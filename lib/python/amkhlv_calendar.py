@@ -577,14 +577,12 @@ def specify_dates(tdy,threeweeks):
     dt_cur_month = tdy.month
     dt_cur_week_starts = (tdy -
                           timedelta(days=((tdy.weekday() + 1) % 7))
-    ).replace(hour=0, minute=0, second=1)
+                      ).replace(hour=0, minute=0, second=1)
     dt_cur_month_starts = (tdy -
                            timedelta(days=(tdy.day - 1))
-    ).replace(hour=0, minute=0, second=1)
-    dt_display_starts = (dt_cur_month_starts -
-                         timedelta(days=(dt_cur_month_starts.weekday() + 1) % 7))
+                       ).replace(hour=0, minute=0, second=1)
     if threeweeks:
-        if tdy.weekday() > 3 and tdy.weekday() != 6:
+        if tdy.weekday() > 1 and tdy.weekday() != 6:
             dt_display_starts = dt_cur_week_starts
         else:
             dt_display_starts = dt_cur_week_starts - timedelta(days=7)
@@ -685,7 +683,7 @@ class TableCell:
         return [ cgi.escape(ev[0]['SUMMARY']) for ev in self.evs ]
 
 def gen_matrix_of_cells(evs, tdy, nweeks):
-    dt_cur_month, dt_cur_week_starts, dt_cur_month_starts, dt_display_starts = specify_dates(tdy, threeweeks=False)
+    dt_cur_month, dt_cur_week_starts, dt_cur_month_starts, dt_display_starts = specify_dates(tdy, threeweeks=True)
 
     def running_dt(d, w):
         return dt_display_starts + timedelta(days=d + 7 * w)
