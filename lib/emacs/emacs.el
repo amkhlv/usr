@@ -23,6 +23,7 @@
 (require 'amkhlv-dired)
 (require 'amkhlv-tex)
 (require 'amkhlv-pod)
+(require 'amkhlv-md)
 ;(require 'amkhlv-org)
 ;(require 'amkhlv-mail)
 ;(require 'amkhlv-html)
@@ -148,6 +149,9 @@
                                     ))
 
 (add-hook 'scheme-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
+(add-hook 'markdown-mode-hook '(lambda () 
+                                 (local-set-key (kbd "C-c C-c") 'markdown-to-html)
+                                 (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
 
 (setq TeX-outline-extra
       '(("\\\\section" 2)))
