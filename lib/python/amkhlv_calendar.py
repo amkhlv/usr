@@ -870,7 +870,7 @@ def command_line_arguments(parser):
     parser.add_option("--remove-duplicates", dest="remove_dups", default=False, action="store_true", help="remove duplicate events")
     parser.add_option("--get-ics-from-caldav",
                       dest="caldav_yaml",
-                      help="get .ics from CalDAV with login data specified in a YAML file",
+                      help="get .ics from CalDAV with login data specified in a YAML file, which is a dictionary with the keys: 'uri', 'login', 'password', 'filename' ",
                       metavar="YAML_FILE")
 
 if __name__ == '__main__':

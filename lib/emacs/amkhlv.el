@@ -127,14 +127,14 @@
       (find-file "~/a/bm.md")
       (hide-body))))
 
-(defun amkhlv/ffap ()
+(defun amkhlv/ffap (x)
   "This is the replacement of ffap to open correctly filenames like file://filename"
-  (interactive)
+  (interactive "sEnter command name, or leave empty to just open in Emacs: ")
   (let* ((fap (thing-at-point 'filename))
          (fname (if (string-match "^file:\/\/\\(.*\\)" fap)
                     (match-string 1 fap)
                   fap)))
-    (find-file fname)))
+    (if (string= "" x) (find-file fname) (shell-command (concat x " " fname)))))
 
 (defun amkhlv/print/ () 
   "In emacs there are 2 types of print commands:
