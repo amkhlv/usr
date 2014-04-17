@@ -325,7 +325,7 @@
   "\n$" 
   "" 
   (shell-command-to-string 
-   "find /home/andrei/.racket/planet/300/ -type f -path '*/cache/neil/scribble-emacs.plt/*/scribble.el' | head -n1 "
+   "find ~/.racket/planet/300/ -type f -path '*/cache/neil/scribble-emacs.plt/*/scribble.el' | head -n1 "
   )))
 
 (require 'quack)
