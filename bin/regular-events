@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# cur_dir="$pwd"
+# cd ~/a/tech/base
+
+ipython ~/usr/lib/python/regular-events.py "$1"
+
+# cd "$cur_dir"
+ 
