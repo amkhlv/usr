@@ -5,7 +5,7 @@ import sys
 
 with open(sys.argv[1],'r') as fh:
     md = markdown.Markdown(extensions=['toc'])
-    orig = fh.read()
+    orig = fh.read().decode('utf-8') 
     html = md.convert(orig)
     toc  = md.toc
     print("""
