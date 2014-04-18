@@ -8,7 +8,16 @@ with open(sys.argv[1],'r') as fh:
     orig = fh.read()
     html = md.convert(orig)
     toc  = md.toc
-    print("<HTML>")
+    print("""
+<!DOCTYPE html>
+<html>
+<body>
+<meta charset=\"utf-8\">'<meta charset=\"utf-8\">
+""")
     print(toc)
     print(html)
-    print("</HTML>")
+    print("""
+</html>
+</body>
+""")
+    
