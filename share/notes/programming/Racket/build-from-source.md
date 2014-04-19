@@ -8,7 +8,7 @@ From [http://www.extellisys.com/articles/racket-on-debian-wheezy](http://www.ext
     cd racket-6.0/src
     mkdir build
     cd build
-    ../configure --prefix=/usr/local/opt/racket-6.0
+    ../configure --prefix=/usr/local/
     make
     sudo make install
 
