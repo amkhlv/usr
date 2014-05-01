@@ -765,15 +765,6 @@ class Aux(object):
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
             return ch
 
-    class _GetchWindows:
-        def __init__(self):
-            import msvcrt
-
-        def __call__(self):
-            import msvcrt
-
-            return WindowsError("Andrei: Configure for Windows!")
-            #return msvcrt.getch()
 
     class LiniiError(Exception):
         def __init__(self, value):

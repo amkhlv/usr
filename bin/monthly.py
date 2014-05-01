@@ -4,19 +4,27 @@ __author__    = "Andrei Mikhailov"
 __copyright__ = "Copyright 2013, Andrei Mikhailov"
 __license__   = "GPL"
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+
 import os
 from datetime import date, timedelta
 from itertools import product 
-
+from optparse import OptionParser
 from tables.addr import *
 
+parser = OptionParser()
+parser.add_option("-a", "--all", dest="do_show_all", action="store_true", default=False,
+                  help="""show all""", metavar="NEW_ENTRY")
+(options, args) = parser.parse_args()
+
+if not(options.do_show_all):
+    import pygtk
+    pygtk.require('2.0')
+    import gtk
+
 querystr = "message,months,days,advance,dismissed"
-gtk.rc_parse(os.environ['HOME'] +"/.monthlyrc")
 
 def start_over(datalines):
+    print("about to start over")
     prepare_and_show_gui(datalines)
 
 def destroy(widget, data=None):
@@ -37,9 +45,13 @@ def modify(message):
 
 def show_all():
     linii.buttons(monthly,"",querystr)
+    print("exited from buttons in monthly")
+    # linii.starter(monthly, default_checked=querystr)
     start_over(read_data())
 
 def prepare_and_show_gui(datalines):
+
+    gtk.rc_parse(os.environ['HOME'] +"/.monthlyrc")
     window = gtk.Window(type=gtk.WINDOW_TOPLEVEL)
     window.set_wmclass("todo-reminder","todo-reminder")
     window.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_DIALOG)
@@ -253,6 +265,13 @@ def read_data() :
     map(augment, rowdict)
     return filter(lambda a: ('first_match' in a.keys()) or ('error' in a.keys()) , rowdict)
 
-if __name__ == '__main__': prepare_and_show_gui(read_data())
 
 
+if __name__ == '__main__': 
+
+
+    if options.do_show_all:
+        linii.buttons(monthly,"",querystr)
+    else:
+
+        prepare_and_show_gui(read_data())

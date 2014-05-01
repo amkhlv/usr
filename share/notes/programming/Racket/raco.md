@@ -18,4 +18,10 @@ To install:
 
     raco pkg install github://github.com/amkhlv/amkhlv/master
 
-(notice that the first `amkhlv` is my name on `github`, and the second is the name of the package).
+Notice that the first `amkhlv` is my name on `github`, and the second is the name of the package.
+Also notice that this installs the package (not planet) so it should then be called
+
+    (require amkhlv/bystroTeX/common)
+
+(but not `(require (planet amkhlv/bystroTeX/common))` !)
+
