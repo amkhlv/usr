@@ -1,0 +1,117 @@
+gtk-font-name = "Sans 11" 
+gtk-cursor-blink-time = 300
+
+pixmap_path "/home/andrei/a/other/Ubuntu/pixmaps"
+gtk-key-theme-name = "Emacs"
+
+style "xfdesktop-icon-view" {
+    XfdesktopIconView::label-alpha = 255
+
+    base[NORMAL] = "#f4a460"
+    base[SELECTED] = "#c6e2ff"
+    base[ACTIVE] = "#caff70"
+
+    fg[NORMAL] = "#000000"
+    fg[SELECTED] = "#000000"
+    fg[ACTIVE] = "#000000"
+}
+
+widget_class "*XfdesktopIconView*" style "xfdesktop-icon-view"
+
+# This was needed I think because I wanted red cursor in Firefox:
+style "custom" {
+  GtkWidget::cursor-color           = "#FF0000"
+  GtkWidget::secondary-cursor-color = "#FF0000"
+  bg[NORMAL] = "#e3e3e3"
+  GtkScrollbar::slider-width        = 11 
+}
+
+# The main reason for the following is to decrease ythickness:
+style "menu" = "default"
+{
+    xthickness = 2
+    ythickness = 0
+
+    bg[INSENSITIVE]   = "#e3e3e3"
+    bg[NORMAL]        = "#e3e3e3"
+}
+
+style "menuitem" = "menu"
+{
+    xthickness = 1
+    ythickness = 1
+}
+
+style "menubar" = "default"
+{
+    xthickness = 2
+    ythickness = 0
+}
+
+style "button" = "default"
+{
+    xthickness = 2
+    ythickness = 0
+
+    bg[PRELIGHT]      = "#f2f4f7"
+    bg[NORMAL]        = "#e6e8ea"
+    bg[ACTIVE]        = "#c2cacf"
+
+}
+
+# This is needed to vertically shrink tabs in applications,
+# such as gvim and terminator
+style "notebook" = "default"
+{
+    xthickness = 0
+    ythickness = 0
+
+    bg[NORMAL]        = "#BFEFFF"
+    bg_pixmap[NORMAL] = "autumnabstract.xpm"
+    # bg_pixmap[NORMAL] = "smoky.xpm"
+    # bg_pixmap[NORMAL] = "virtual_cloud.xpm"
+
+    bg[ACTIVE]        = "#f5f5f5"
+    # bg_pixmap[ACTIVE] = "fiore.xpm"
+    bg_pixmap[ACTIVE] = "winter.xpm"
+
+}
+
+style "notebook_maybelabel" = "default"
+{ 
+    fg[NORMAL]        = "#0000AA"
+    text[NORMAL]        = "#0000AA"
+}
+
+style "scrollbar" = "default"
+{
+    bg[NORMAL] = "#27408B"
+    bg_pixmap[ACTIVE] = "winter.xpm"
+}
+
+widget_class "*" style "custom"
+
+widget_class "*Menu*"		       style "menu"
+class "*Menu*"                     style "menu"
+
+widget_class "*MenuItem*"          style "menuitem"
+class "*MenuItem*"                 style "menuitem"
+
+widget_class "*ToolBar"            style "menubar"
+class "*ToolBar"                   style "menubar"
+widget_class "*MenuBar"            style "menubar"
+class "*MenuBar"                   style "menubar"
+
+widget_class "*Button*"            style "button"
+class "*Button*"                   style "button"
+widget_class "*button*"            style "button"
+class "*button*"                   style "button"
+widget_class "*OptionMenu*"        style "button"
+class "*OptionMenu*"               style "button"
+
+widget_class "terminator*.GtkNotebook"       style "notebook"
+class "terminator*.GtkNotebook"              style "notebook"
+widget_class "terminator*.GtkNotebook*"       style "notebook_maybelabel"
+class "terminator*.GtkNotebook*"              style "notebook_maybelabel"
+
+widget_class "*Scrollbar*"         style "scrollbar"
