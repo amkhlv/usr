@@ -12,7 +12,7 @@ with open(sys.argv[1],'r') as fh:
 <!DOCTYPE html>
 <html>
 <body>
-<meta charset=\"utf-8\">'<meta charset=\"utf-8\">
+<meta charset=\"utf-8\">
 """)
     print(toc)
     print(html)

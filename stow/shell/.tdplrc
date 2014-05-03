@@ -1,0 +1,84 @@
+# include "/usr/share/themes/Industrial/gtk-2.0/gtkrc"
+include "/usr/share/themes/Simple/gtk-2.0/gtkrc"
+
+
+# This determines the font:
+
+style "default_tdpl"
+{
+  font_name="DejaVu Sans 11"
+  GtkButton::focus-line-width = 2
+  GtkButton::focus-line-pattern = "\008\001"
+}
+class "GtkWidget" style "default_tdpl"
+
+
+# This determines the default color of the button:
+
+style "other_buttons"
+{
+bg[NORMAL]="#FFD39B"
+bg[PRELIGHT]="#FFD39B"
+}
+class "GtkButton" style "other_buttons" 
+
+# This determines the background color of the window:
+# 
+# style "background_window_style"
+# {
+#   bg[NORMAL] = "#00ccff"
+# }
+# widget "*main_window" style "background_window_style"
+
+
+style "mypink"
+{
+bg[NORMAL] = "#FF9eaa"
+bg[PRELIGHT] = "#FF9eaa"
+}
+widget "*time-button" style "mypink"
+
+style "regbutton"
+{
+  bg[NORMAL] = "#e4eef7"
+  bg[PRELIGHT] = "#ffffff"
+  fg[NORMAL] = "#de5322"
+}
+widget "*regular-item" style "regbutton"
+
+style "repeating"
+{
+  bg[NORMAL] ="#B4DF73"
+  bg[PRELIGHT] ="#BDFF59"
+}
+widget "*regular-repeating-item" style "repeating"
+
+style "important"
+{
+  bg[NORMAL] = "#ffff33"
+  bg[PRELIGHT] = "#ffff66"
+}
+widget "*important-item" style "important"
+
+style "superimportantlabel"
+{
+  font_name="DejaVu Sans 13"
+  fg[NORMAL] = "#44eeff"
+  fg[PRELIGHT] = "#ffffff"
+# fg[NORMAL] = "#44bbff"
+}
+widget "*super-important-label" style "superimportantlabel"
+
+style "superimportantbutton"
+{
+  bg[NORMAL] = "#ff3300"
+  bg[PRELIGHT] = "#ff4500"
+}
+widget "*super-important-button" style "superimportantbutton"
+
+style "titlelabel"
+{
+  font_name="Monospace 16"
+  fg[NORMAL] = "#0000cc"
+}
+widget "*title-label" style "titlelabel"

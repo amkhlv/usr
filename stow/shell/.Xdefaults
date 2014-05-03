@@ -1,0 +1,94 @@
+
+Rxvt*keysym.0xFF50:\001
+Rxvt*keysym.0xFF57:\005
+!Rxvt*menu: /root/.rxvt.menu
+Rxvt*saveLines: 3500
+
+!warning, needs about 500 bytes per line for scrollback buffer...
+URxvt.saveLines: 3500
+! idea here is 7x14 only iso8859-1, xft:mono fills in other characters...
+!URxvt.font: x:10x20
+!URxvt.font: x:12x24
+!URxvt.font: x:kanji24,xft:mono
+
+URxvt.font: -xos4-terminus-medium-r-normal-*-*-160-*-*-*-*-iso8859-1
+URxvt.boldFont: -xos4-terminus-bold-r-normal-*-*-160-*-*-*-*-iso8859-1
+URxvt.keysym.F2: command:\033]710;-xos4-terminus-medium-r-normal-*-*-160-*-*-*-*-koi8-r\007
+URxvt.keysym.F1: command:\033]710;-xos4-terminus-medium-r-normal-*-*-160-*-*-*-*-iso8859-1\007
+URxvt.keysym.S-F2: command:\033]710;-xos4-terminus-medium-r-normal-*-*-200-*-*-*-*-koi8-r\007
+URxvt.keysym.S-F1: command:\033]710;-xos4-terminus-medium-r-normal-*-*-200-*-*-*-*-iso8859-1\007
+!URxvt.font: xft:Terminus-14:dpi=89
+!URxvt.boldFont: xft:Terminus-14:bold:dpi=89
+!URxvt.font: xft:Terminus-16
+!URxvt.boldFont: xft:Terminus-16:bold
+
+!URxvt.boldFont: x:kanji24,xft:mono
+!URxvt.boldFont: x:10x20
+
+!URxvt.italicFont: xft:mono:italic:autohint=true
+
+URxvt.perl-ext-common: default,tabbed,matcher
+URxvt.urlLauncher: firefox
+
+URxvt.tabbar-fg: 3
+URxvt.tabbar-bg: 7
+URxvt.tab-fg: 2
+URxvt.tab-bg: 7
+
+URxvt.searchable-scrollback: C-s
+
+URxvt.lineSpace: 3
+
+! control + - results in a small font size (10)
+URxvt.keysym.C-minus: command:\033]710;xft:Terminus-10\007
+! control + 0 for medium font size (16)
+URxvt.keysym.C-0: command:\033]710;xft:Terminus-18\007
+! control + = for a great font size (26)
+URxvt.keysym.C-equal: command:\033]710;xft:Bitstream Vera Sans Mono:pixelsize=24\007
+
+
+URxvt.cursorColor:  #FF9933
+URxvt.pointerColor: #FF9933
+
+
+!URxvt.background:  #330000
+URxvt.background:  #2a2a30
+URxvt.foreground:  #eeeeee
+
+URxvt.color2:   #339900
+URxvt.color3:   #FF6600
+URxvt.color4:   #3300FF
+URxvt.color5:   #A800A8
+URxvt.color6:   #00A8A8
+
+! kind of gray:
+URxvt.color7:   #D0C8B8
+
+
+
+URxvt.color8:   #6666FF
+URxvt.color9:   #FFCC00
+URxvt.color10:  #00CC00
+!URxvt.color10:  #00A800
+URxvt.color11:  #CC6666
+URxvt.color12:  #3399FF
+!URxvt.color12:  #6060F0
+URxvt.color13:  #FF33FF
+URxvt.color14:  #33FFCC
+URxvt.color15:  #FFFFFF
+
+xclock*Width:  300
+xclock*Height: 300
+xclock*secondColor: yellow
+
+
+xterm*faceName: xft:DejaVu Sans Mono
+xterm*eightBitInput: false
+
+xterm*faceSize:  12
+xterm*faceSize1: 8
+xterm*faceSize2: 9
+xterm*faceSize3: 10
+xterm*faceSize4: 14
+xterm*faceSize5: 16
+xterm*faceSize6: 18

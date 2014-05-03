@@ -1,0 +1,38 @@
+_gtd() {
+    local cur prev opts car cdr x
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="$( sqlite3 $HOME/a/tech/base/addr.db "select '-t'||tagname from tags_gtd" | xargs echo )"
+    # opts="-tsyncin -tsyncout -talert -tyell -tbefore -tafter -tlater -toffice -thome -tshow -tfreetime"
+    # opts="$(echo "$opts0" | sed -e's/\([^\ ]*\)[\ |$]/\1\ \1,\ /g')"
+    o1="$( echo "$opts" | sed -e's/-t//g' )"
+
+    if [[ ${cur} == -t* ]] ; then
+       if [ "$( echo ${cur} | grep ',')" ] ; then
+          car="$( echo ${cur} | sed -e's/.*,//g' )"
+          cdr="$( echo ${cur} | sed -e's/,[^,]*$//g' )"','
+          x=$(compgen -W "${o1}" -- $car)
+          COMPREPLY=( $cdr$x )
+       else
+          COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+       fi
+       return 0
+    fi
+
+    ## We want to write task like ``area: item'' so the part before the column is area (e.g. music:, math:, etc.)
+    if [[ "${cur}" == -k* ]] ; then
+          list="$(sqlite3 /home/andrei/a/tech/base/addr.db 'select task from gtd' | grep -o '^[[:alnum:]_.]*:' | sort -u | sed -e's/^/-k/')"
+          COMPREPLY=( $(compgen -W "$list" -- "${cur}") )
+       return 0
+    fi
+
+    if [[ "${cur}" == -a* ]] ; then
+          list="$(sqlite3 /home/andrei/a/tech/base/addr.db 'select task from gtd' | grep -o '^[[:alnum:]_.]*:' | sort -u | sed -e's/^/-a/' )"
+          COMPREPLY=( $(compgen -W "$list" -- "${cur}") )
+       return 0
+    fi
+
+}
+complete -onospace -F _gtd gtd
+

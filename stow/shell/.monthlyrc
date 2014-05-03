@@ -1,0 +1,13 @@
+# include "/usr/share/themes/Industrial/gtk-2.0/gtkrc"
+include "/usr/share/themes/Simple/gtk-2.0/gtkrc"
+
+# This determines the font:
+
+style "default_tdpl"
+{
+  font_name="DejaVu Sans 16"
+  GtkButton::focus-line-width = 2
+  GtkButton::focus-line-pattern = "\008\001"
+}
+class "GtkWidget" style "default_tdpl"
+
