@@ -154,6 +154,10 @@
                                  (local-set-key (kbd "C-c C-c") 'markdown-to-html)
                                  (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
 
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+
+
 (setq TeX-outline-extra
       '(("\\\\section" 2)))
 

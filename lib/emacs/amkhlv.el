@@ -221,14 +221,17 @@ To choose size, use ps-print-customize"
 (defun amkhlv/pdfjump ()
   "Jump to the location in the pdf file"
   (interactive)
-  (shell-command-to-string
-   (concat 
-    "qdbus glad.PdfViewer"
-    (number-to-string pdfviewerPID)
-    " /MainWindow glad.PdfViewer.syncFromSource "
-    (buffer-file-name)
-    " "
-    (number-to-string (line-number-at-pos)))))
+  (let ((cmd 
+         (concat 
+          "qdbus glad.PdfViewer"
+          (number-to-string pdfviewerPID)
+          " /MainWindow glad.PdfViewer.syncFromSource "
+          (buffer-file-name)
+          " "
+          (number-to-string (line-number-at-pos)))))      
+    (shell-command-to-string cmd)
+    (message cmd)
+  ))
   
 (defun amkhlv/yaml2json (filename)
    (shell-command-to-string 
