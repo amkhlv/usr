@@ -36,7 +36,7 @@
 
 
 #hide-mouse
-"xte 'mousemove 1 80'"
+"xte 'mousemove 1 85'"
     m:0x40 + c:56
     Mod4 + b 
 

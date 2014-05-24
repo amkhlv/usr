@@ -35,7 +35,7 @@
    (defineshiftedformula "formula-enormula-humongula!")
    (bystro-titlepage-init #:singlepage-mode singlepage-mode))
 @; ---------------------------------------------------------------------------------------------------
-@(require amkhlv/scribble/sqli)
+
 
 @(bystro-inject-style "misc.css" "no-margin.css")
 

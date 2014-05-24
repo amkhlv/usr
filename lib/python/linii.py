@@ -733,9 +733,8 @@ class Aux(object):
         link.create_function("eqli", 2, self.eqsql)
         return link
 
-    alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-                'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-                'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
     class Getch: #use: inpt = my.Getch(my)()
         """Gets a single character from standard input.  Doesn't echo to screen."""
