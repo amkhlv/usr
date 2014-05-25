@@ -1,1 +1,1 @@
-../a/other/usr/lib/python/linii2.py
+/home/andrei/a/other/usr/lib/python/linii2.py

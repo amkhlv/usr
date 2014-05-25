@@ -1734,6 +1734,8 @@ if __name__ == '__main__':
                       help="""build the .yaml file from the .db file""")
     parser.add_option("-i", "--interactive", dest="do_start_ipython", action="store_true", default=False,
                       help="""start ipython""")
+    parser.add_option("--gen-yaml-for-linii2", dest="gen_yaml_for_linii2", action = "store_true", default = False,
+                      help="""generate a linii2-style YAML file""")
 
     (options, args) = parser.parse_args()
 
@@ -1762,6 +1764,29 @@ if __name__ == '__main__':
             # banner = ip_banner,
             # exit_msg = 'Leaving Interpreter, back to program.'
         )
+    elif options.gen_yaml_for_linii2:
+        yamfl = open(options.yaml_file, 'r')
+        y = yaml.safe_load(yamfl)
+        yamfl.close()
+        ny = {'tables': [], 'dbfile': y['dbfile']}
+        ydata = y['data']
+        for tbl in y['data'].keys():
+            ntbl = {
+                    'tablename': y['data'][tbl]['tablename'],
+                    'style': "/home/andrei/.config/amkhlv/linii2.css",
+                    'columns': [
+                        dict(
+                            [('columntitle', c[0]), ('nlines', c[2]), ('hide', not(bool(c[3])))]
+                        ) for c in y['data'][tbl]['columns']
+                    ]
+                }
+            ny['tables'].append(ntbl)
+            if 'balloons' in y['data'][tbl].keys():
+                for bkey in y['data'][tbl]['balloons'].keys():
+                    for col in [ c for c in ntbl['columns'] if bkey == c['columntitle'] ] :
+                        col['balloon'] = y['data'][tbl]['balloons'][bkey]
+        print(yaml.dump(ny, default_flow_style = False))
+
     else:
         charhint = dict(zip(my.alphabet, filter(lambda u: u[:2] != '__', dir(data))))
         choose_table_for_starter(charhint)

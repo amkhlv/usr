@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 
-__author__ = 'andrei'
+__author__ = "Andrei Mikhailov"
+__copyright__ = "Copyright 2014, Andrei Mikhailov"
+__license__ = "GPL"
 
 from gi.repository import Gtk, Gdk
 import sqlite3
 import sys
 import yaml
 import functools
+import xml.sax.saxutils
 
+class Parameters:
+    results_batch_size = 12
+    tooltip_truncate = 100
 
 def read_yaml(yaml_filename):
     """
@@ -197,7 +203,7 @@ class ColumnLabels(Gtk.Box):
         clmns_to_show = [ c for c in tbl.columns if c.name in toshow ]
         for c in clmns_to_show :
             self.labels[c] = Gtk.Label()
-            self.labels[c].set_markup(c.name)
+            self.labels[c].set_markup(xml.sax.saxutils.escape(c.name))
             self.pack_start(self.labels[c], True, True, 3)
 
 class Row(Gtk.Box):
@@ -218,7 +224,8 @@ class Row(Gtk.Box):
         self.pack_start(self.item_button, True, True, 3)
         for item in row_of_items :
             self.labels[item] = Gtk.Label()
-            self.labels[item].set_markup(truncate(item,7))
+            self.labels[item].set_markup(xml.sax.saxutils.escape(truncate(item,7)))
+            self.labels[item].set_tooltip_markup(xml.sax.saxutils.escape(truncate(item, Parameters.tooltip_truncate)))
             self.pack_start(self.labels[item], True, True, 3)
     def update_fn(self, button):
         p = Prefill(dict(zip(list(self.row_of_items.keys()), self.row_of_items)), ['UPDATE'])
@@ -292,7 +299,10 @@ class CollectorGUI(Gtk.Window):
             if column.name not in self.prefill.columns:
                 continue
             self.label[column] = Gtk.Label()
-            self.label[column].set_markup(" " + str(j % 10) + " " + column.name + " ")
+            escaped_column_name = xml.sax.saxutils.escape(column.name)
+            decorated_column_name = "<b>" + escaped_column_name +"</b>" if column.balloon else escaped_column_name
+            self.label[column].set_markup(" " + str(j % 10) + " " + decorated_column_name + " ")
+            if column.balloon: self.label[column].set_tooltip_markup(xml.sax.saxutils.escape(column.balloon))
             if prev_label:
                 grid.attach_next_to(self.label[column], prev_label, Gtk.PositionType.BOTTOM, 1, 1)
             else:
@@ -426,12 +436,23 @@ class Results(Gtk.VBox):
         self.columns_to_show = columns_to_show
         self.query = query
         self.data = data
+        self.batch_no = 0
         Gtk.VBox.__init__(self)
         self.set_name("Results")
         self.set_can_focus(True)
         self.initWidget()
     def initWidget(self):
+        rows = sqlite_execute(self.specs, self.query, self.data)
         self.tophbox = Gtk.HBox()
+        self.go_prev_batch_button = Gtk.Button("<-" if self.batch_no > 0 else "--")
+        exist_more_batches = self.batch_no < int((len(rows) - 1)/Parameters.results_batch_size)
+        self.go_next_batch_button = Gtk.Button(
+            "->" if exist_more_batches else "--"
+        )
+        if self.batch_no > 0: self.go_prev_batch_button.connect("clicked", self.go_prev_batch_fn)
+        if exist_more_batches: self.go_next_batch_button.connect("clicked", self.go_next_batch_fn)
+        self.tophbox.add(self.go_prev_batch_button)
+        self.tophbox.add(self.go_next_batch_button)
         self.refresh_btn = Gtk.Button("refresh")
         self.refresh_btn.connect("clicked", self.refresh_fn)
         self.tophbox.add(self.refresh_btn)
@@ -441,13 +462,18 @@ class Results(Gtk.VBox):
         self.destroy_btn = Gtk.Button("destroy")
         self.destroy_btn.connect("clicked", self.destroy_fn)
         self.tophbox.add(self.destroy_btn)
-        rows = sqlite_execute(self.specs, self.query, self.data)
-        self.buttons = Buttons(self.specs, self.table, self.columns_to_show, rows)
+        self.buttons = Buttons(
+            self.specs,
+            self.table,
+            self.columns_to_show,
+            rows[self.batch_no * Parameters.results_batch_size: (self.batch_no + 1) * Parameters.results_batch_size]
+        )
         self.bottomhbox = Gtk.HBox()
         self.add(self.tophbox)
         self.add(self.buttons)
         self.add(self.bottomhbox)
         self.show_all()
+        self.context.mainwin.resize(1,1)
     def new_fn(self,b):
         prefill = Prefill.empty([c.name for c in self.table.columns if c.do_show], [])
         collector = CollectorGUI(self.specs, self.table, prefill)
@@ -457,6 +483,12 @@ class Results(Gtk.VBox):
         self.buttons.destroy()
         self.bottomhbox.destroy()
         self.initWidget()
+    def go_prev_batch_fn(self, b):
+        self.batch_no = self.batch_no - 1
+        self.refresh_fn(b)
+    def go_next_batch_fn(self, b):
+        self.batch_no = self.batch_no + 1
+        self.refresh_fn(b)
     def destroy_fn(self, b):
         self.destroy()
         self.context.commander.results.remove(self)
@@ -517,7 +549,7 @@ class Commander(Gtk.VBox):
         self.top.add(self.toggles_box)
         self.toggle = []
         self.primary_key_label = self.wrap(Gtk.Label(), "PrimaryKeyLabel")
-        self.primary_key_label.set_markup(self.table.primary_key)
+        self.primary_key_label.set_markup(xml.sax.saxutils.escape(self.table.primary_key))
         self.toggles_box.add(self.primary_key_label)
         for j in range(1,len(self.table.columns)):
             self.toggle.append(
