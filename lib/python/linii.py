@@ -1773,7 +1773,7 @@ if __name__ == '__main__':
         for tbl in y['data'].keys():
             ntbl = {
                     'tablename': y['data'][tbl]['tablename'],
-                    'style': "/home/andrei/.config/amkhlv/linii2.css",
+                    'style': "~/usr/share/linii2/linii2.css",
                     'columns': [
                         dict(
                             [('columntitle', c[0]), ('nlines', c[2]), ('hide', not(bool(c[3])))]

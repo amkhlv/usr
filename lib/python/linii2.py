@@ -7,6 +7,7 @@ __license__ = "GPL"
 from gi.repository import Gtk, Gdk
 import sqlite3
 import sys
+import os
 import yaml
 import functools
 import xml.sax.saxutils
@@ -32,7 +33,7 @@ def register_css(css_filename):
     """
     style_provider = Gtk.CssProvider()
 
-    css = open(css_filename, 'rb') # rb needed for python 3 support
+    css = open(os.path.expanduser(css_filename), 'rb') # rb needed for python 3 support
     css_data = css.read()
     css.close()
 
@@ -72,7 +73,7 @@ class Tbl:
 class Specs:
     def __init__(self, yamlfile):
         y = read_yaml(yamlfile)
-        self.dbfile = y['dbfile']
+        self.dbfile = os.path.expanduser(y['dbfile'])
         self.tables = [Tbl(t) for t in y['tables']]
 
 def get_sqlite_connection(specs):
@@ -191,20 +192,19 @@ def truncate(s, length, encoding='utf-8'):
     else:
         return s
 
-class ColumnLabels(Gtk.Box):
+class ColumnHighlightToggles(Gtk.Box):
     def __init__(self, tbl, toshow):
         """
         Row of column labels (part of a Buttons onject)
         @param tbl: Tbl
         @param toshow: list[str]
         """
-        self.labels = {}
+        self.toggle = {}
         Gtk.Box.__init__(self)
         clmns_to_show = [ c for c in tbl.columns if c.name in toshow ]
         for c in clmns_to_show :
-            self.labels[c] = Gtk.Label()
-            self.labels[c].set_markup(xml.sax.saxutils.escape(c.name))
-            self.pack_start(self.labels[c], True, True, 3)
+            self.toggle[c.name] = Gtk.ToggleButton(label = c.name)
+            self.pack_start(self.toggle[c.name], True, True, 3)
 
 class Row(Gtk.Box):
     def __init__(self, specs, tbl, row_of_items):
@@ -222,11 +222,15 @@ class Row(Gtk.Box):
         self.labels = {}
         Gtk.Box.__init__(self)
         self.pack_start(self.item_button, True, True, 3)
-        for item in row_of_items :
-            self.labels[item] = Gtk.Label()
-            self.labels[item].set_markup(xml.sax.saxutils.escape(truncate(item,7)))
-            self.labels[item].set_tooltip_markup(xml.sax.saxutils.escape(truncate(item, Parameters.tooltip_truncate)))
-            self.pack_start(self.labels[item], True, True, 3)
+        j = 0
+        for k in row_of_items.keys() :
+            item = row_of_items[k]
+            self.labels[k] = Gtk.Label()
+            self.labels[k].set_name("ItemLabel" + str(j % 7))
+            self.labels[k].set_markup(xml.sax.saxutils.escape(truncate(item,7)))
+            self.labels[k].set_tooltip_markup(xml.sax.saxutils.escape(truncate(item, Parameters.tooltip_truncate)))
+            self.pack_start(self.labels[k], True, True, 3)
+            j = j + 1
     def update_fn(self, button):
         p = Prefill(dict(zip(list(self.row_of_items.keys()), self.row_of_items)), ['UPDATE'])
         collector = CollectorGUI(self.specs, self.tbl, p)
@@ -404,9 +408,32 @@ class Buttons(Gtk.VBox):
         Gtk.VBox.__init__(self)
         self.add(self.tophbox)
         self.add(self.buttonbox)
-        self.buttonbox.add(ColumnLabels(self.table, self.columns_to_show))
+        self.column_highlight_toggles = ColumnHighlightToggles(self.table, self.columns_to_show)
+        self.buttonbox.add(self.column_highlight_toggles)
+        self.displayed_rows = []
+        def highlight_pre_fn(k: str):
+            def highlight_fn(b):
+                for r in self.displayed_rows:
+                    if not(b.get_active()):
+                        r.labels[k].set_name(
+                            "ItemLabel" + str(self.columns_to_show.index(k) % 7)
+                        )
+                    else:
+                        r.labels[k].set_name("HighlightedLabel")
+                    print(r.labels[k].get_text())
+            return highlight_fn
         for row in rows:
-            self.buttonbox.add(Row(self.specs, self.table, row))
+            r = Row(self.specs, self.table, row)
+            self.displayed_rows.append(r)
+            self.buttonbox.add(r)
+        i = 0
+        for clmn in self.columns_to_show:
+            t = self.column_highlight_toggles.toggle[clmn]
+            t.connect(
+                "toggled",
+                highlight_pre_fn(clmn)
+            )
+            i = i + 1
 
 class Context():
     """

@@ -1,0 +1,29 @@
+tables:
+  - tablename: students
+    style: ~/usr/share/linii2/linii2.css
+    columns:
+      - columntitle: studentname
+        nlines: 1
+        hide: False
+        balloon: This is the name of the student
+      - columntitle: email
+        nlines: 3
+        hide: False
+        balloon: The email
+      - columntitle: midterm
+        nlines: 8
+        hide: False
+        balloon: midterm exam results
+      - columntitle: final
+        nlines: 5
+        hide: False
+        balloon: final exam results
+  - tablename: streets
+    style: ~/usr/share/linii2/linii2.css
+    columns:
+      - columntitle: street
+        nlines: 1
+      - columntitle: length
+        nlines: 1
+        balloon: enter length in kilometers
+dbfile: ~/usr/share/linii2/examples/example.db
