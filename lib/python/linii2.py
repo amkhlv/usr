@@ -15,6 +15,8 @@ import xml.sax.saxutils
 class Parameters:
     results_batch_size = 12
     tooltip_truncate = 100
+    alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+                'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
 def read_yaml(yaml_filename):
     """
@@ -75,6 +77,7 @@ class Specs:
         y = read_yaml(yamlfile)
         self.dbfile = os.path.expanduser(y['dbfile'])
         self.tables = [Tbl(t) for t in y['tables']]
+        self.css = os.path.expanduser(y['css'])
 
 def get_sqlite_connection(specs):
     """
@@ -610,6 +613,39 @@ class Commander(Gtk.VBox):
         self.bottom.add(r)
         self.results.append(r)
 
+def table_chooser(specs):
+    """
+    Choose a table from the list
+    @type specs: Specs
+    @return: Tbl
+    """
+    win = Gtk.Window(name = "TableChooserMainwin")
+    win.connect("delete-event", Gtk.main_quit) # this is to abort the execution of the program
+    register_css(specs.css)
+    vbox = Gtk.VBox(name = "TableChooserVBox")
+    win.add(vbox)
+    l = {}
+    hinted_tables = dict(zip(Parameters.alphabet, specs.tables))
+    choosen_table = "a"
+    for p in zip(Parameters.alphabet, specs.tables):
+        k = p[0]
+        l[k] = Gtk.Label()
+        l[k].set_markup("<b>" + k + "</b>: " + hinted_tables[k].name )
+        vbox.add(l[k])
+    def on_key_press_event(widget, event):
+        keyname = Gdk.keyval_name(event.keyval)
+        state = event.state
+        nonlocal choosen_table
+        for k in hinted_tables.keys():
+            if keyname == k:
+                choosen_table = hinted_tables[k]
+        win.destroy()
+        Gtk.main_quit()
+    win.connect("key_press_event", on_key_press_event)
+    win.show_all()
+    Gtk.main()
+    return choosen_table
+
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -618,7 +654,10 @@ if __name__ == '__main__':
     parser.add_option("-t", "--table", dest="table", metavar="TABLE", help = """specify which table""")
     (options, args) = parser.parse_args()
     myspecs = Specs(options.yaml_file)
-    mytable = [t for t in myspecs.tables if t.name == options.table][0]
+    if options.table:
+        mytable = [t for t in myspecs.tables if t.name == options.table][0]
+    else:
+        mytable = table_chooser(myspecs)
     win = Gtk.Window(name = "MainWindow")
     win.connect("delete-event", Gtk.main_quit)
     register_css(mytable.css)

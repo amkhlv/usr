@@ -27,3 +27,4 @@ tables:
         nlines: 1
         balloon: enter length in kilometers
 dbfile: ~/usr/share/linii2/examples/example.db
+css: ~/usr/share/linii2/linii2.css

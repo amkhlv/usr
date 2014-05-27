@@ -1768,7 +1768,7 @@ if __name__ == '__main__':
         yamfl = open(options.yaml_file, 'r')
         y = yaml.safe_load(yamfl)
         yamfl.close()
-        ny = {'tables': [], 'dbfile': y['dbfile']}
+        ny = {'tables': [], 'dbfile': y['dbfile'], 'css': "~/usr/share/linii2/linii2.css"}
         ydata = y['data']
         for tbl in y['data'].keys():
             ntbl = {
