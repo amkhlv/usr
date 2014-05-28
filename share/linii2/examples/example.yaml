@@ -4,18 +4,22 @@ tables:
     columns:
       - columntitle: studentname
         nlines: 1
+        width:  4
         hide: False
         balloon: This is the name of the student
       - columntitle: email
         nlines: 3
+        width:  10
         hide: False
         balloon: The email
       - columntitle: midterm
         nlines: 8
+        width:  10
         hide: False
         balloon: midterm exam results
       - columntitle: final
         nlines: 5
+        width:  10
         hide: False
         balloon: final exam results
   - tablename: streets
@@ -23,8 +27,10 @@ tables:
     columns:
       - columntitle: street
         nlines: 1
+        width:  10
       - columntitle: length
         nlines: 1
+        width: 10
         balloon: enter length in kilometers
 dbfile: ~/usr/share/linii2/examples/example.db
 css: ~/usr/share/linii2/linii2.css

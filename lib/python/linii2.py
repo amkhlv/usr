@@ -17,6 +17,7 @@ class Parameters:
     tooltip_truncate = 100
     alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    width = 8
 
 def read_yaml(yaml_filename):
     """
@@ -47,8 +48,6 @@ def register_css(css_filename):
         Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
 
-
-
 class Clmn:
     def __init__(self, c):
         """
@@ -57,6 +56,10 @@ class Clmn:
         """
         self.name = c['columntitle']
         self.nlines = c['nlines']
+        if 'width' in c.keys():
+            self.width = c['width']
+        else:
+            self.width = Parameters.width
         self.hide = c['hide'] if 'hide' in c.keys() else False
         self.do_show = not(self.hide)
         self.balloon = c['balloon'] if 'balloon' in c.keys() else False
@@ -195,44 +198,61 @@ def truncate(s, length, encoding='utf-8'):
     else:
         return s
 
-class ColumnHighlightToggles(Gtk.Box):
-    def __init__(self, tbl, toshow):
+class ColumnHighlightToggles:
+    def __init__(self, tbl, state, grid):
         """
         Row of column labels (part of a Buttons onject)
         @param tbl: Tbl
-        @param toshow: list[str]
+        @param state: ButtonsState
+        @param grid: Gtk.Grid
         """
         self.toggle = {}
-        Gtk.Box.__init__(self)
-        clmns_to_show = [ c for c in tbl.columns if c.name in toshow ]
+        clmns_to_show = [ c for c in tbl.columns if c.name in state.columns_to_show ]
+        self.topleft_label = Gtk.Label()
+        grid.add(self.topleft_label)
+        prev_toggle  = None
         for c in clmns_to_show :
             self.toggle[c.name] = Gtk.ToggleButton(label = c.name)
-            self.pack_start(self.toggle[c.name], True, True, 3)
+            if c.name in state.highlighted: self.toggle[c.name].set_active(True)
+            if prev_toggle:
+                grid.attach_next_to(self.toggle[c.name], prev_toggle, Gtk.PositionType.RIGHT, 1, 1)
+            else:
+                grid.attach_next_to(self.toggle[c.name], self.topleft_label, Gtk.PositionType.RIGHT, 1, 1)
+            prev_toggle = self.toggle[c.name]
 
-class Row(Gtk.Box):
-    def __init__(self, specs, tbl, row_of_items):
+class Row:
+    def __init__(self, specs, tbl, row_of_items, grid, prev, n):
         """
         Row of item labels (part of a Buttons object)
-        @param specs: Specs
-        @param tbl: Tbl
-        @param row_of_items: sqlite3.Row
+        @type specs: Specs
+        @type tbl: Tbl
+        @type row_of_items: sqlite3.Row
+        @type grid: Gtk.Grid
+        @type prev: Gtk.Widget
+        @type n: int
         """
         self.specs = specs
         self.tbl = tbl
         self.row_of_items = row_of_items
-        self.item_button = Gtk.Button(row_of_items[0])
+        self.item_button = Gtk.Button("[F" + str(n) + "] " + row_of_items[0])
         self.item_button.connect("clicked", self.update_fn)
         self.labels = {}
-        Gtk.Box.__init__(self)
-        self.pack_start(self.item_button, True, True, 3)
-        j = 0
+        grid.attach_next_to(self.item_button, prev, Gtk.PositionType.BOTTOM, 1, 1)
+        j = 0; prev_label = None
         for k in row_of_items.keys() :
             item = row_of_items[k]
             self.labels[k] = Gtk.Label()
             self.labels[k].set_name("ItemLabel" + str(j % 7))
-            self.labels[k].set_markup(xml.sax.saxutils.escape(truncate(item,7)))
+            truncate_to_length = [clmn for clmn in tbl.columns if clmn.name == k][0].width
+            self.labels[k].set_markup(
+                xml.sax.saxutils.escape(truncate(item, truncate_to_length))
+            )
             self.labels[k].set_tooltip_markup(xml.sax.saxutils.escape(truncate(item, Parameters.tooltip_truncate)))
-            self.pack_start(self.labels[k], True, True, 3)
+            if prev_label:
+                grid.attach_next_to(self.labels[k], prev_label, Gtk.PositionType.RIGHT, 1, 1)
+            else:
+                grid.attach_next_to(self.labels[k], self.item_button, Gtk.PositionType.RIGHT, 1, 1)
+            prev_label = self.labels[k]
             j = j + 1
     def update_fn(self, button):
         p = Prefill(dict(zip(list(self.row_of_items.keys()), self.row_of_items)), ['UPDATE'])
@@ -308,7 +328,7 @@ class CollectorGUI(Gtk.Window):
             self.label[column] = Gtk.Label()
             escaped_column_name = xml.sax.saxutils.escape(column.name)
             decorated_column_name = "<b>" + escaped_column_name +"</b>" if column.balloon else escaped_column_name
-            self.label[column].set_markup(" " + str(j % 10) + " " + decorated_column_name + " ")
+            self.label[column].set_markup("F" + str(1 + (j % 12)) + " " + decorated_column_name + " ")
             if column.balloon: self.label[column].set_tooltip_markup(xml.sax.saxutils.escape(column.balloon))
             if prev_label:
                 grid.attach_next_to(self.label[column], prev_label, Gtk.PositionType.BOTTOM, 1, 1)
@@ -393,50 +413,63 @@ class CollectorGUI(Gtk.Window):
             sqlite_insert_values(self.specs, self.table, data_dict)
         self.destroy()
 
+class ButtonsState:
+    """
+    Information about the state of the Buttons widget
+    @type columns_to_show: list[str]
+    @type rows: list[Row]
+    @type highlighted: set[str]
+    """
+    def __init__(self, columns_to_show, rows, highlighted):
+        self.columns_to_show = columns_to_show
+        self.rows = rows
+        self.highlighted = highlighted
+
 class Buttons(Gtk.VBox):
     """
     Buttons
     @type specs: Specs
     @type table: Tbl
-    @type columns_to_show: list[str]
-    @type rows: list[Row]
+    @type state: ButtonsState
     """
-    def __init__(self, specs, table, columns_to_show, rows):
+    def __init__(self, specs, table, state):
         self.specs = specs
         self.table = table
-        self.columns_to_show = columns_to_show
-        self.rows = rows
+        self.state = state
         self.tophbox = Gtk.HBox()
-        self.buttonbox = Gtk.VBox()
+        self.grid = Gtk.Grid()
         Gtk.VBox.__init__(self)
+        self.set_name("ButtonsVBox")
         self.add(self.tophbox)
-        self.add(self.buttonbox)
-        self.column_highlight_toggles = ColumnHighlightToggles(self.table, self.columns_to_show)
-        self.buttonbox.add(self.column_highlight_toggles)
+        self.add(self.grid)
+        self.column_highlight_toggles = ColumnHighlightToggles(self.table, self.state, self.grid)
         self.displayed_rows = []
-        def highlight_pre_fn(k: str):
+        def highlight_pre_fn(clmn: str):
             def highlight_fn(b):
-                for r in self.displayed_rows:
-                    if not(b.get_active()):
-                        r.labels[k].set_name(
-                            "ItemLabel" + str(self.columns_to_show.index(k) % 7)
+                if not(b.get_active()):
+                    self.state.highlighted.remove(clmn)
+                    for r in self.displayed_rows:
+                        r.labels[clmn].set_name(
+                            "ItemLabel" + str(self.state.columns_to_show.index(clmn) % 7)
                         )
-                    else:
-                        r.labels[k].set_name("HighlightedLabel")
-                    print(r.labels[k].get_text())
+                else:
+                    self.state.highlighted.add(clmn)
+                    for r in self.displayed_rows:
+                        r.labels[clmn].set_name("HighlightedLabel")
             return highlight_fn
-        for row in rows:
-            r = Row(self.specs, self.table, row)
+        prev = self.column_highlight_toggles.topleft_label
+        for row in self.state.rows:
+            r = Row(self.specs, self.table, row, self.grid, prev, 1 + len(self.displayed_rows))
+            for k in r.labels.keys():
+                if k in self.state.highlighted:
+                    r.labels[k].set_name("HighlightedLabel")
             self.displayed_rows.append(r)
-            self.buttonbox.add(r)
+            prev = r.item_button
         i = 0
-        for clmn in self.columns_to_show:
-            t = self.column_highlight_toggles.toggle[clmn]
-            t.connect(
-                "toggled",
-                highlight_pre_fn(clmn)
-            )
+        for clmn in self.state.columns_to_show:
+            self.column_highlight_toggles.toggle[clmn].connect("toggled", highlight_pre_fn(clmn))
             i = i + 1
+
 
 class Context():
     """
@@ -466,8 +499,10 @@ class Results(Gtk.VBox):
         self.columns_to_show = columns_to_show
         self.query = query
         self.data = data
+        self.buttons = None
         self.batch_no = 0
         Gtk.VBox.__init__(self)
+        self.connect("key_press_event", self.on_key_press_event)
         self.set_name("Results")
         self.set_can_focus(True)
         self.initWidget()
@@ -492,11 +527,15 @@ class Results(Gtk.VBox):
         self.destroy_btn = Gtk.Button("destroy")
         self.destroy_btn.connect("clicked", self.destroy_fn)
         self.tophbox.add(self.destroy_btn)
+        batch_size = Parameters.results_batch_size
         self.buttons = Buttons(
             self.specs,
             self.table,
-            self.columns_to_show,
-            rows[self.batch_no * Parameters.results_batch_size: (self.batch_no + 1) * Parameters.results_batch_size]
+            ButtonsState(
+                self.columns_to_show,
+                rows[ self.batch_no * batch_size: (self.batch_no + 1) * batch_size ],
+                self.buttons.state.highlighted if self.buttons else set()
+            )
         )
         self.bottomhbox = Gtk.HBox()
         self.add(self.tophbox)
@@ -504,6 +543,14 @@ class Results(Gtk.VBox):
         self.add(self.bottomhbox)
         self.show_all()
         self.context.mainwin.resize(1,1)
+    def on_key_press_event(self, widget, event):
+        keyname = Gdk.keyval_name(event.keyval)
+        state = event.state
+        print("Key %s (%d) was pressed in %s" , (keyname, event.keyval, widget.get_name()))
+        for j in range(1,13):
+            if keyname == "F" + str(j):
+                r = self.buttons.displayed_rows[j-1]
+                r.update_fn(r.item_button)
     def new_fn(self,b):
         prefill = Prefill.empty([c.name for c in self.table.columns if c.do_show], [])
         collector = CollectorGUI(self.specs, self.table, prefill)
@@ -536,24 +583,25 @@ class Commander(Gtk.VBox):
         self.table = table
         self.mainwin = mainwin
         Gtk.VBox.__init__(self)
+        self.set_name("CommanderTopVBox")
         self.results = []
     def on_key_press_event(self, widget, event):
         keyname = Gdk.keyval_name(event.keyval)
         state = event.state
-        #print("Key %s (%d) was pressed" , (keyname, event.keyval))
-        for j in range(1,13):
-            if keyname == "F" + str(j):
-                self.toggle[j-1].set_active(not(self.toggle[j-1].get_active()))
+        print("Key %s (%d) was pressed in %s" , (keyname, event.keyval, widget.get_name()))
+        if keyname == "colon":
+            self.cmdline.grab_focus()
+        if widget.get_name() == "CommanderTop":
+            for j in range(1,13):
+                if keyname == "F" + str(j):
+                    self.toggle[j-1].set_active(not(self.toggle[j-1].get_active()))
+            else:
+                for j in range(1, len(self.results) + 1):
+                    if keyname == str(j): self.results[j-1].grab_focus()
         if keyname == "Escape":
             self.top.grab_focus()
         if state &  Gdk.ModifierType.CONTROL_MASK:
             if keyname == "Return" : self.rows_fn(self)
-        if widget.get_name() == "CommanderTop":
-            if keyname == "colon":
-                self.cmdline.grab_focus()
-            else:
-                for j in range(1, len(self.results) + 1):
-                    if keyname == str(j): self.results[j-1].grab_focus()
     def on_key_release_event(self, widget, event):
         keyname = Gdk.keyval_name(event.keyval)
     def wrap(self, widget, name):
@@ -635,6 +683,7 @@ def table_chooser(specs):
     def on_key_press_event(widget, event):
         keyname = Gdk.keyval_name(event.keyval)
         state = event.state
+        print("Key %s (%d) was pressed in %s" , (keyname, event.keyval, widget))
         nonlocal choosen_table
         for k in hinted_tables.keys():
             if keyname == k:

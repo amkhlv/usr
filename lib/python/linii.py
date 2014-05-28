@@ -1776,7 +1776,7 @@ if __name__ == '__main__':
                     'style': "~/usr/share/linii2/linii2.css",
                     'columns': [
                         dict(
-                            [('columntitle', c[0]), ('nlines', c[2]), ('hide', not(bool(c[3])))]
+                            [('columntitle', c[0]), ('nlines', c[2]), ('hide', not(bool(c[3]))), ('width', 8)]
                         ) for c in y['data'][tbl]['columns']
                     ]
                 }
