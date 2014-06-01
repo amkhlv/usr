@@ -23,7 +23,10 @@ class Parameters:
 def read_yaml(yaml_filename):
     """
     To read data from a yaml file
-    @type yaml_filename: str
+
+    :param str yaml_filename:
+    :return: dict
+    :rtype: dict
     """
     yamfl = open(yaml_filename, 'r')
     y = yaml.safe_load(yamfl)
@@ -33,7 +36,8 @@ def read_yaml(yaml_filename):
 def register_css(css_filename):
     """
     To register a CSS style file
-    @type css_filename: str
+
+    :param str css_filename:
     """
     style_provider = Gtk.CssProvider()
 
@@ -50,11 +54,13 @@ def register_css(css_filename):
     )
 
 class Clmn:
+    """
+    Information about an sqlite column
+
+    :param dict c: specification of a column
+    """
     def __init__(self, c):
-        """
-        Information about an sqlite column
-        @type c: dict
-        """
+
         self.name = c['columntitle']
         self.nlines = c['nlines']
         if 'width' in c.keys():
@@ -65,18 +71,26 @@ class Clmn:
         self.do_show = not(self.hide)
         self.balloon = c['balloon'] if 'balloon' in c.keys() else False
 
+
+
 class Tbl:
+    """
+    Information about an sqlite table
+
+    :param dict y: YAML
+    """
     def __init__(self, y):
-        """
-        Information about an sqlite table
-        @type y: dict
-        """
         self.name = y['tablename']
         self.css  = y['style']
         self.columns = [Clmn(c) for c in y['columns']]
         self.primary_key = self.columns[0].name
 
 class Specs:
+    """
+    Specifications of the database
+
+    :param str yamlfile: YAML file
+    """
     def __init__(self, yamlfile):
         y = read_yaml(yamlfile)
         self.dbfile = os.path.expanduser(y['dbfile'])
@@ -86,14 +100,20 @@ class Specs:
 def get_sqlite_connection(specs):
     """
     Get sqlite connection
-    @type specs: Specs
-    @rtype: sqlite3.Connection
+
+    :param Specs specs: see :class:`Specs`
+    :return: sqlite3.Connection
+    :rtype: sqlite3.Connection
     """
     conn = sqlite3.connect(specs.dbfile)
     conn.row_factory = sqlite3.Row
     def hastags(self, x, y):
-        """Checks if y matches the tag pattern x,
-            an example of a tag pattern is 'aaa,bbb|^ccc' """
+        """
+        Checks if y matches the tag pattern x,
+
+        :param str x: tag pattern, an example of a tag pattern is 'aaa,bbb|^ccc'
+        :param str y: string to match
+        """
         xs = x.split("|")
         xss = map(lambda u: u.split(","), xs)
         ys = y.split(",")
@@ -130,10 +150,12 @@ def get_sqlite_connection(specs):
 def sqlite_execute(specs, query, data):
     """
     Execute an sqlite statement and return the resulting list of results
-    @type specs: Specs
-    @type query: str
-    @type data: tuple
-    @rtype: list
+
+    :param Specs specs: see :class:`Specs`
+    :param str query:
+    :param tuple data:
+    :return: list
+    :rtype: list
     """
     if data: assert isinstance(data, tuple)
     conn = get_sqlite_connection(specs)
@@ -151,9 +173,10 @@ def sqlite_execute(specs, query, data):
 def sqlite_insert_values(specs, tbl, data):
     """
     Insert values into the table
-    @type specs: Specs
-    @type tbl: Tbl
-    @type data: dict
+
+    :param Specs specs: see :class:`Specs`
+    :param Tbl tbl: see :class:`Tbl`
+    :param dict[str,str] data:
     """
     qmarks = " (" + ",".join(list("?" * len(data.keys()))) + ") "
     query = "INSERT INTO " + tbl.name + " (" + ",".join(data.keys()) + ") " + " VALUES " + qmarks
@@ -162,21 +185,25 @@ def sqlite_insert_values(specs, tbl, data):
 def sqlite_delete_values(specs, tbl, data):
     """
     Delete values from the table
-    @type specs: Specs
-    @type tbl: Tbl
-    @type data: dict
+
+    :param Specs specs: see :class:`Specs`
+    :param Tbl tbl: see :class:`Tbl`
+    :param dict[str,str] data: this is a dictionary str -> str
     """
     query = "DELETE FROM " + tbl.name + " WHERE " + " AND ".join(["eqli(" + k + ",?)" for k in data.keys()])
     print(query)
     print(" ; ".join([data[k] for k in data.keys()]))
     sqlite_execute(specs, query, tuple([data[k] for k in data.keys()]))
 
-def sqlite_update_values(
-        specs: Specs,
-        tbl: Tbl,
-        old_data: dict,
-        new_data: dict
-):
+def sqlite_update_values(specs, tbl, old_data, new_data):
+    """
+    Update values in Sqlite table
+
+    :param Specs specs: see :class:`Specs`
+    :param Tbl tbl: see :class:`Tbl`
+    :param dict[str,str] old_data:
+    :param dict[str,str] new_data:
+    """
     assignments = ", ".join([name + " = ? " for name in new_data.keys()])
     conditions = " AND ".join(["eqli(" + k + ",?)" for k in old_data.keys()])
     query = "UPDATE " + tbl.name + " SET " + assignments + " WHERE " + conditions
@@ -200,13 +227,14 @@ def truncate(s, length, encoding='utf-8'):
         return s
 
 class ColumnHighlightToggles:
+    """
+    Row of column labels (part of a Buttons onject)
+
+    :param Tbl tbl: see :class:`Tbl`
+    :param ButtonsState state: see :class:`ButtonsState`
+    :param Gtk.Grid grid:
+    """
     def __init__(self, tbl, state, grid):
-        """
-        Row of column labels (part of a Buttons onject)
-        @param tbl: Tbl
-        @param state: ButtonsState
-        @param grid: Gtk.Grid
-        """
         self.toggle = {}
         clmns_to_show = [ c for c in tbl.columns if c.name in state.columns_to_show ]
         self.topleft_label = Gtk.Label()
@@ -221,18 +249,27 @@ class ColumnHighlightToggles:
             else:
                 grid.attach_next_to(self.toggle[c.name], self.topleft_label, Gtk.PositionType.RIGHT, 1, 1)
             prev_toggle = self.toggle[c.name]
+    def get_toggles(self):
+        """
+        gets the dictionary of toggle buttons, of the type: `str` -> `Gtk.ToggleButton`
+
+        :returns: dict[str, Gtk.ToggleButton]
+        :rtype: dict[str, Gtk.ToggleButton]
+        """
+        return self.toggle
 
 class Row:
+    """
+    Row of item labels (part of a Buttons object)
+
+    :param Specs specs: see :class:`Specs`
+    :param Tbl tbl: see :class:`Tbl`
+    :param sqlite3.Row row_of_items:
+    :param Gtk.Grid grid:
+    :param Gtk.Widget prev: previous
+    :param int n:
+    """
     def __init__(self, specs, tbl, row_of_items, grid, prev, n):
-        """
-        Row of item labels (part of a Buttons object)
-        @type specs: Specs
-        @type tbl: Tbl
-        @type row_of_items: sqlite3.Row
-        @type grid: Gtk.Grid
-        @type prev: Gtk.Widget
-        @type n: int
-        """
         self.specs = specs
         self.tbl = tbl
         self.row_of_items = row_of_items
@@ -241,7 +278,7 @@ class Row:
         self.labels = {}
         grid.attach_next_to(self.item_button, prev, Gtk.PositionType.BOTTOM, 1, 1)
         j = 0; prev_label = None
-        for k in row_of_items.keys() :
+        for k in row_of_items.keys()[1:] :
             item = row_of_items[k]
             self.labels[k] = Gtk.Label()
             self.labels[k].set_name("ItemLabel" + str(j % 7))
@@ -262,12 +299,13 @@ class Row:
         collector.initUI()
 
 class Prefill:
+    """
+    Prefill object
+
+    :param dict data:
+    :param list flags:
+    """
     def __init__(self, data, flags):
-        """
-        Prefill object
-        @param data: dict[str, str]
-        @param flags: list
-        """
         self.data = data
         self.flags = flags
         self.columns = data.keys()
@@ -278,14 +316,14 @@ class Prefill:
         return Prefill(empty_data, flags)
 
 class CollectorGUI(Gtk.Window):
-    """
-    Collector window
-    @type specs: Specs
-    @type table: Tbl
-    @type prefill: Prefill
-    @type text_entry: dict[Clmn, Gtk.TextView]
-    """
     def __init__(self, specs, table, prefill):
+        """
+        Collector window
+
+        :param Specs specs: see :class:`Specs`
+        :param Tbl table: see :class:`Tbl`
+        :param Prefill prefill: see :class:`Prefill`
+        """
         self.specs = specs
         self.table = table
         self.prefill = prefill
@@ -318,6 +356,7 @@ class CollectorGUI(Gtk.Window):
             else:
                 grid.add(self.label[column])
             self.text_entry[column] = Gtk.TextView(name = "TextViewPrimaryKey" if j == 0 else "TextViewColumn")
+            self.text_entry[column].set_editable(not('READONLY' in self.prefill.flags))
             text_style = self.text_entry[column].get_style_context()
             text_font  = text_style.get_font(Gtk.StateFlags.NORMAL)
             self.text_buffer[column] = self.text_entry[column].get_buffer()
@@ -356,7 +395,21 @@ class CollectorGUI(Gtk.Window):
             bottomhbox.add(delete_button)
             bottomhbox.add(collect_button)
         self.show_all()
+    def get_text_entries(self):
+        """
+        get dictionary of text entries, of the type :class:`Clmn` -> :class:`Gtk.TextView`
+
+        :return: dict from :class:`Clmn` to :class:`Gtk.TextView`
+        :rtype: dict[Clmn,Gtk.TextView]
+        """
+        return self.text_entry
     def get_data_dict(self):
+        """
+        get dictionary of data, of the type `str` -> `str`
+
+        :return: dict[str,str]
+        :rtype: dict[str,str]
+        """
         data_dict = {}
         for column in self.table.columns:
             if column in self.text_buffer.keys():
@@ -364,29 +417,59 @@ class CollectorGUI(Gtk.Window):
                 data_dict[column.name] = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter(), True)
         return data_dict
     def unlock_fn(self, button):
+        """
+        to unlock
+
+        :param Gtk.Button button: put in anything, it is not used but the argument has to be present
+        """
         self.prefill.flags = ['UPDATE']
         new_collector = CollectorGUI(self.specs, self.table, self.prefill)
         self.destroy()
         new_collector.initUI()
     def confirm_delete_fn(self, button):
+        """
+        to intitiate the confirmation procedure for DELETE
+
+        :param Gtk.Button button: put in anything, it is not used but the argument has to be present
+        """
         self.prefill.flags = ['DELETE']
         new_collector = CollectorGUI(self.specs, self.table, self.prefill)
         self.destroy()
         new_collector.initUI()
     def yes_dodelete_fn(self, button):
+        """
+        to confirm: YES, do delete!
+
+        :param Gtk.Button button: put in anything, it is not used but the argument has to be present
+        """
         data_dict = self.get_data_dict()
         sqlite_delete_values(self.specs, self.table, data_dict)
         self.destroy()
     def no_dontdelete_fn(self, button):
+        """
+        to say: NO, dont delete!
+
+        :param Gtk.Button button: put in anything, it is not used but the argument has to be present
+        """
         self.prefill.flags = ['UPDATE', 'READONLY']
         new_collector = CollectorGUI(self.specs, self.table, self.prefill)
         self.destroy()
         new_collector.initUI()
     def collect_fn(self, button):
+        """
+        to collect new data
+
+        :param Gtk.Button button: put in anything, it is not used but the argument has to be present
+        """
         data_dict = self.get_data_dict()
         sqlite_insert_values(self.specs, self.table, data_dict)
         self.destroy()
     def update_fn(self, button):
+        """
+        to update data
+
+        :param Gtk.Button button: put in anything, it is not used but the argument has to be present
+        """
         data_dict = self.get_data_dict()
         print(self.prefill.data[self.table.primary_key])
         print(data_dict[self.table.primary_key])
@@ -399,10 +482,11 @@ class CollectorGUI(Gtk.Window):
 class ButtonsState:
     """
     Information about the state of the Buttons widget
-    @type columns_to_show: list[str]
-    @type rows: list[Row]
-    @type highlighted: set[str]
-    @type index: int
+
+    :param list[str] columns_to_show: columns to show
+    :param list[Row] rows: listof :class:`Row`
+    :param set[str] highlighted: setof `str`
+    :param int index:
     """
     def __init__(self, columns_to_show, rows, highlighted, index):
         self.columns_to_show = columns_to_show
@@ -411,13 +495,14 @@ class ButtonsState:
         self.index = index
 
 class Buttons(Gtk.VBox):
-    """
-    Buttons
-    @type specs: Specs
-    @type table: Tbl
-    @type state: ButtonsState
-    """
     def __init__(self, specs, table, state):
+        """
+        Buttons
+
+        :param Specs specs: see :class:`Specs`
+        :param Tbl table: see :class:`Tbl`
+        :param ButtonsState state: see :class:`ButtonsState`
+        """
         self.specs = specs
         self.table = table
         self.state = state
@@ -452,17 +537,26 @@ class Buttons(Gtk.VBox):
             prev = r.item_button
         i = 0
         for clmn in self.state.columns_to_show:
-            self.column_highlight_toggles.toggle[clmn].connect("toggled", highlight_pre_fn(clmn))
+            self.column_highlight_toggles.get_toggles()[clmn].connect("toggled", highlight_pre_fn(clmn))
             i = i + 1
+    def get_column_highlight_toggles(self):
+        """
+        gets column highlight toggle buttons, see :class:`ColumnHighlightToggles`
 
+        :returns: :class:`ColumnHighlightToggles`
+        :rtype: ColumnHighlightToggles
+        """
+        return self.column_highlight_toggles
 
-class Context():
+class Context:
     """
     For the widget to know about it parents etc
-    @type commander: Commander
-    @type escape_to: Gtk.Widget
-    @type mainwin: Gtk.Window
+
+    :param Commander commander: see :class:`Commander`
+    :param Gtk.Widget escape_to:
+    :param Gtk.Window mainwin:
     """
+
     def __init__(self, commander, escape_to, mainwin, index):
         self.commander = commander
         self.escape_to = escape_to
@@ -470,17 +564,17 @@ class Context():
         self.index = index
 
 class Results(Gtk.VBox):
-    """
-    Show results
-    @type specs: Specs
-    @type table: Tbl
-    @type context: Context
-    @type columns_to_show: list[str]
-    @type query: str
-    @type data: tuple
-    @type buttons: Buttons
-    """
     def __init__(self, specs, table, context, columns_to_show, query, data):
+        """
+        Show results
+
+        :param Specs specs: see :class:`Specs`
+        :param Tbl table: see :class:`Tbl`
+        :param Context context: see :class:`Context`
+        :param list columns_to_show: `list` of `str`
+        :param str query:
+        :param tuple data:
+        """
         self.specs = specs
         self.table = table
         self.context = context
@@ -495,23 +589,23 @@ class Results(Gtk.VBox):
         self.initWidget()
     def initWidget(self):
         rows = sqlite_execute(self.specs, self.query, self.data)
-        self.tophbox = wrap(Gtk.HBox(), "ResultsTopHBox", results = self, mainwin = self)
+        self.tophbox = wrap(Gtk.HBox(), "ResultsTopHBox", results = self)
         self.go_prev_batch_button = Gtk.Button("<-" if self.batch_no > 0 else "--")
+        self.go_prev_batch_button.set_name("GotoPrevBatchButton")
         exist_more_batches = self.batch_no < int((len(rows) - 1)/Parameters.results_batch_size)
-        self.go_next_batch_button = Gtk.Button(
-            "->" if exist_more_batches else "--"
-        )
+        self.go_next_batch_button = Gtk.Button("->" if exist_more_batches else "--")
+        self.go_next_batch_button.set_name("GotoNextBatchButton")
         if self.batch_no > 0: self.go_prev_batch_button.connect("clicked", self.go_prev_batch_fn)
         if exist_more_batches: self.go_next_batch_button.connect("clicked", self.go_next_batch_fn)
         self.tophbox.add(self.go_prev_batch_button)
         self.tophbox.add(self.go_next_batch_button)
-        self.refresh_btn = Gtk.Button("refresh")
-        self.refresh_btn.connect("clicked", self.refresh_fn)
+        self.refresh_btn = Gtk.Button("refresh<r>")
+        self.refresh_btn.connect("clicked", self.refresh)
         self.tophbox.add(self.refresh_btn)
-        self.new_btn = Gtk.Button("new")
-        self.new_btn.connect("clicked", self.new_fn)
+        self.new_btn = Gtk.Button("new<n>")
+        self.new_btn.connect("clicked", self.collect_new)
         self.tophbox.add(self.new_btn)
-        self.destroy_btn = Gtk.Button("destroy")
+        self.destroy_btn = Gtk.Button("destroy<q>")
         self.destroy_btn.connect("clicked", self.destroy_fn)
         self.tophbox.add(self.destroy_btn)
         batch_size = Parameters.results_batch_size
@@ -525,46 +619,77 @@ class Results(Gtk.VBox):
                 self.context.index
             )
         )
-        self.bottomhbox = Gtk.HBox()
         self.add(self.tophbox)
         self.add(self.buttons)
-        self.add(self.bottomhbox)
         self.show_all()
         self.context.mainwin.resize(1,1)
-    def new_fn(self,b):
+    def get_buttons(self) -> Buttons:
+        """
+        get buttons, see :class:`Buttons`
+
+        :returns: :class:`Buttons`
+        :rtype: Buttons
+        """
+        return self.buttons
+    def collect_new(self,b):
+        """
+        Collect new record
+
+        :param Gtk.Button b:
+        """
         prefill = Prefill.empty([c.name for c in self.table.columns if c.do_show], [])
         collector = CollectorGUI(self.specs, self.table, prefill)
         collector.initUI()
-    def refresh_fn(self, b):
+    def refresh(self, b):
+        """
+        Refresh
+
+        :param Gtk.Button b:
+        """
         self.tophbox.destroy()
         self.buttons.destroy()
-        self.bottomhbox.destroy()
         self.initWidget()
     def go_prev_batch_fn(self, b):
+        """
+        Goto previous 12
+
+        :param Gtk.Button b:
+        """
         self.batch_no = self.batch_no - 1
-        self.refresh_fn(b)
+        self.refresh(b)
     def go_next_batch_fn(self, b):
+        """
+        Goto next 12
+
+        :param Gtk.Button b:
+        """
         self.batch_no = self.batch_no + 1
-        self.refresh_fn(b)
+        self.refresh(b)
     def destroy_fn(self, b):
+        """
+        Destroy itself
+
+        :param Gtk.Button b:
+        """
         self.destroy()
         self.context.commander.results.remove(self)
         j = 1
         for r in self.context.commander.results:
             assert isinstance(r, Results)
-            r.buttons.column_highlight_toggles.topleft_label.set_markup("<big>" + str(j) + "</big>")
+            r.get_buttons().get_column_highlight_toggles().topleft_label.set_markup("<big>" + str(j) + "</big>")
             j=j+1
         self.context.commander.top.grab_focus()
         self.context.mainwin.resize(1,1)
 
 class Commander(Gtk.VBox):
-    """
-    Topmost widget: the commandline
-    @type specs: Specs
-    @type table: Tbl
-    @type mainwin: Gtk.Window
-    """
     def __init__(self, specs, table, mainwin):
+        """
+        Topmost widget: the commandline
+
+        :param Specs specs: see :class:`Specs`
+        :param Tbl table: see :class:`Tbl`
+        :param Gtk.Window mainwin:
+        """
         self.specs = specs
         self.table = table
         self.mainwin = mainwin
@@ -597,17 +722,27 @@ class Commander(Gtk.VBox):
         self.cmdline = wrap(Gtk.TextView(), "CommandLine", commander=self)
         self.cmd_buffer = self.cmdline.get_buffer()
         self.rows_button = wrap(Gtk.Button("rows"), "RowsButton", commander=self)
-        self.rows_button.connect("clicked", self.rows_fn)
+        self.rows_button.connect("clicked", self.show_results)
         self.cmdline_box.add(self.cmdline)
         self.cmdline_box.add(self.rows_button)
         self.show_all()
-    def rows_fn(self,b = None):
+    def get_toggles(self):
+        """
+        get list of `Gtk.ToggleButton`, which determines which columns are shown in results
+
+        :return: list
+        :rtype: list
+        """
+    def show_results(self,b = None):
+        """
+        show in the bottom panel the results of the query typed in the text area
+        """
         columns_selected = [
             self.table.columns[j].name
             for j in range(1,len(self.table.columns)) if self.toggle[j-1].get_active()
         ]
         what_to_select = ",".join([self.table.primary_key] + columns_selected) if columns_selected else "*"
-        columns_to_show = ([self.table.primary_key] + columns_selected) if columns_selected else [c.name for c in self.table.columns]
+        columns_to_show = ([self.table.primary_key] + columns_selected) if columns_selected else [c.name for c in self.table.columns][1:]
         text_in_cmd_buffer = self.cmd_buffer.get_text(
             self.cmd_buffer.get_start_iter(),
             self.cmd_buffer.get_end_iter(),
@@ -625,14 +760,29 @@ class Commander(Gtk.VBox):
                     None)
         self.bottom.add(r)
         self.results.append(r)
+    def get_results(self,b = None):
+        """
+        get the list of all the results shown in the bottom panel, return type is `list` of :class:`Results`
+
+        :param b:
+        :return: list of :class:`Results`
+        :rtype: list[Results]
+        """
+        return self.results
 
 class TableChooser(Gtk.Window):
     def __init__(self, specs, choosen_tables):
+        """
+        Window to choose the table
+
+        :param Specs specs: see :class:`Specs`
+        :param list choosen_tables:
+        """
         self.specs = specs
         self.choosen_tables = choosen_tables
         Gtk.Window.__init__(self)
         register_css(specs.css)
-        vbox = wrap(Gtk.VBox(), "TableChooserVBox", chooser=self, mainwin=self)
+        vbox = wrap(Gtk.VBox(), "TableChooserVBox", chooser=self)
         self.add(vbox)
         l = {}
         self.hinted_tables = dict(zip(Parameters.alphabet, specs.tables))
@@ -645,10 +795,11 @@ class TableChooser(Gtk.Window):
 
 def table_chooser(specs):
     """
-    Choose a table from the list
-    @type specs: Specs
-    @type choosen_tables: list
-    @return: Tbl
+    Choose a table (of the class :class:`Tbl`) from the list
+
+    :param Specs specs: see :class:`Specs`
+    :returns: :class:`Tbl`
+    :rtype: Tbl
     """
     choosen_tables = []
     win = TableChooser(specs, choosen_tables)
@@ -656,17 +807,18 @@ def table_chooser(specs):
     Gtk.main()
     return choosen_tables[0]
 
-def wrap(widget, name, commander = None, collector = None, results = None, chooser = None, mainwin = None):
+def wrap(widget, name, commander = None, collector = None, results = None, chooser = None):
     """
     This is mostly to set up keyboard shortcuts, and also the name of the widget
-    @param widget: Gtk.Widget
-    @param name: str
-    @param commander: Commander
-    @param collector: CollectorGUI
-    @param results: Results
-    @param chooser: Gtk.Window
-    @param mainwin: Gtk.Window
-    @return: Gtk.Widget
+
+    :param Gtk.Widget widget:
+    :param str name:
+    :param Commander commander: see :class:`Commander`
+    :param CollectorGUI collector: see :class:`CollectorGUI`
+    :param Results results: see :class:`Results`
+    :param Gtk.Window chooser:
+    :return: Gtk.Widget
+    :rtype: Gtk.Widget
     """
     widget.set_name(name)
     def on_key_press_event(widget, event):
@@ -679,38 +831,54 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
                     chooser.choosen_tables.append(chooser.hinted_tables[k])
                     widget.destroy()
                     Gtk.main_quit()
-        if commander and keyname == "colon":
+        elif commander and keyname == "colon":
             commander.cmdline.grab_focus()
-        if commander and widget.get_name() == "CommanderTop":
+        elif commander and keyname == "Escape":
+            commander.top.grab_focus()
+        elif commander and widget.get_name() == "CommanderTop":
             for j in range(1,13):
                 if keyname == "F" + str(j):
-                    commander.toggle[j-1].set_active(not(commander.toggle[j-1].get_active()))
+                    commander.get_toggles()[j-1].set_active(not(commander.get_toggles()[j-1].get_active()))
             else:
                 for j in range(1, len(commander.results) + 1):
                     if keyname == str(j): commander.results[j-1].grab_focus()
-        if commander and ( widget.get_name() == "CommanderTop" or widget.get_name() == "CommandLine" ) :
             if state &  Gdk.ModifierType.CONTROL_MASK:
-                if keyname == "Return" : commander.rows_fn(widget)
-        if commander and keyname == "Escape":
-            commander.top.grab_focus()
-        if results and mainwin:
-            for j in range(1,13):
-                if keyname == "F" + str(j):
-                    r = mainwin.buttons.displayed_rows[j-1]
-                    r.update_fn(r.item_button)
-        if collector:
+                if keyname == "Return" : commander.show_results(widget)
+        elif commander and widget.get_name() == "CommandLine":
+            if state &  Gdk.ModifierType.CONTROL_MASK:
+                if keyname == "Return" : commander.show_results(widget)
+        elif results:
+            cmdr_of_results = results.context.commander
+            if keyname == "q":
+                results.destroy_fn(None)
+                cmdr_of_results.top.grab_focus()
+            elif keyname == "n" or keyname == "r":
+                if keyname == "n":
+                    results.collect_new(None)
+                rslts = cmdr_of_results.get_results()
+                for rslt in rslts:
+                    rslt.refresh(None)
+                cmdr_of_results.top.grab_focus()
+            else:
+                for j in range(1,13):
+                    if keyname == str(j):
+                        rslts = results.context.commander.results
+                        if (j - 1) < len(rslts): rslts[j-1].grab_focus()
+                    elif keyname == "F" + str(j):
+                        r = results.get_buttons().displayed_rows[j-1]
+                        r.update_fn(r.item_button)
+        elif collector:
             for j in range(1,13):
                 if keyname == "F" + str(j):
                     ctrl = 12 if ( state &  Gdk.ModifierType.CONTROL_MASK ) else 0
-                    collector.text_entry[collector.table.columns[j-1 + ctrl]].grab_focus()
+                    collector.get_text_entries()[collector.table.columns[j-1 + ctrl]].grab_focus()
     def on_key_release_event(widget, event):
         keyname = Gdk.keyval_name(event.keyval)
-    if mainwin:
-        mainwin.connect("key_press_event", on_key_press_event)
-        mainwin.connect("key_release_event", on_key_release_event)
-    else:
-        widget.connect("key_press_event", on_key_press_event)
-        widget.connect("key_release_event", on_key_release_event)
+    if results: mainwin = results
+    elif chooser: mainwin = chooser
+    else : mainwin = widget
+    mainwin.connect("key_press_event", on_key_press_event)
+    mainwin.connect("key_release_event", on_key_release_event)
     return widget
 
 
@@ -730,6 +898,7 @@ if __name__ == '__main__':
     register_css(mytable.css)
     cmdr1 = Commander(myspecs, mytable, win)
     cmdr = wrap(cmdr1, "CommanderWindow", commander=cmdr1)
+    cmdr.grab_focus()
     win.add(cmdr)
     cmdr.initWidget()
     win.show_all()
