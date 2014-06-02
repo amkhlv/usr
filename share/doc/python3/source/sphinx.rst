@@ -1,6 +1,22 @@
 General comments about Sphinx
 *****************************
 
+Configuring Sphinx
+==================
+
+In `conf.py`, must have:
+
+.. code-block:: python
+
+   add_module_names = False
+
+and also:
+
+.. code-block:: python
+
+   autoclass_content = 'both'
+
+
 Docstring for classes
 =====================
 

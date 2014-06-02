@@ -81,12 +81,8 @@
 #ItemLabel5 { background-color: #bbaaff; }
 #ItemLabel6 { background-color: #ddaaff; }
 
-@binding-set goto-next-batch-button {
-    bind "l" {"clicked" ()};
-}
-
 
 #GotoNextBatchButton {
-    gtk-key-bindings: goto-next-batch-button; 
+
     background-color: #eeffee;
 }

@@ -13,12 +13,24 @@ import functools
 import xml.sax.saxutils
 
 class Parameters:
+    """
+    This class determines some basic settings; those which would be hard to change
+    """
     results_batch_size = 12
     tooltip_truncate = 100
     alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     width = 8
     collector_grid_row_spacing = 3
+    added_css_style = """
+    @binding-set unbind-ctrl-enter {
+    unbind "<Control>Return" ;
+    bind "<Control>Return" { "insert-at-cursor" ("") };
+    }
+    #CommandLine {
+    gtk-key-bindings: unbind-ctrl-enter;
+    }
+    """
 
 def read_yaml(yaml_filename):
     """
@@ -44,6 +56,8 @@ def register_css(css_filename):
     css = open(os.path.expanduser(css_filename), 'rb') # rb needed for python 3 support
     css_data = css.read()
     css.close()
+    css_data = css_data + Parameters.added_css_style.encode(encoding='UTF-8')
+
 
     style_provider.load_from_data(css_data)
 
@@ -588,15 +602,14 @@ class Results(Gtk.VBox):
         self.set_can_focus(True)
         self.initWidget()
     def initWidget(self):
-        rows = sqlite_execute(self.specs, self.query, self.data)
+        self.rows = sqlite_execute(self.specs, self.query, self.data)
         self.tophbox = wrap(Gtk.HBox(), "ResultsTopHBox", results = self)
-        self.go_prev_batch_button = Gtk.Button("<-" if self.batch_no > 0 else "--")
+        self.go_prev_batch_button = Gtk.Button("\N{LEFTWARDS WHITE ARROW}<h>" if self.batch_no > 0 else "-------")
         self.go_prev_batch_button.set_name("GotoPrevBatchButton")
-        exist_more_batches = self.batch_no < int((len(rows) - 1)/Parameters.results_batch_size)
-        self.go_next_batch_button = Gtk.Button("->" if exist_more_batches else "--")
+        self.go_next_batch_button = Gtk.Button("<l>\N{RIGHTWARDS WHITE ARROW}" if self.exist_more_batches() else "-------")
         self.go_next_batch_button.set_name("GotoNextBatchButton")
         if self.batch_no > 0: self.go_prev_batch_button.connect("clicked", self.go_prev_batch_fn)
-        if exist_more_batches: self.go_next_batch_button.connect("clicked", self.go_next_batch_fn)
+        if self.exist_more_batches(): self.go_next_batch_button.connect("clicked", self.go_next_batch_fn)
         self.tophbox.add(self.go_prev_batch_button)
         self.tophbox.add(self.go_next_batch_button)
         self.refresh_btn = Gtk.Button("refresh<r>")
@@ -614,7 +627,7 @@ class Results(Gtk.VBox):
             self.table,
             ButtonsState(
                 self.columns_to_show,
-                rows[ self.batch_no * batch_size: (self.batch_no + 1) * batch_size ],
+                self.rows[ self.batch_no * batch_size: (self.batch_no + 1) * batch_size ],
                 self.buttons.state.highlighted if self.buttons else set(),
                 self.context.index
             )
@@ -623,6 +636,21 @@ class Results(Gtk.VBox):
         self.add(self.buttons)
         self.show_all()
         self.context.mainwin.resize(1,1)
+    def get_batch_no(self):
+        """
+        get batch number
+
+        :return: int
+        :rtype: int
+        """
+    def exist_more_batches(self):
+        """
+        check if there are more batches
+
+        :return: bool
+        :rtype: bool
+        """
+        return self.batch_no < int((len(self.rows) - 1)/Parameters.results_batch_size)
     def get_buttons(self) -> Buttons:
         """
         get buttons, see :class:`Buttons`
@@ -831,22 +859,26 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
                     chooser.choosen_tables.append(chooser.hinted_tables[k])
                     widget.destroy()
                     Gtk.main_quit()
-        elif commander and keyname == "colon":
-            commander.cmdline.grab_focus()
-        elif commander and keyname == "Escape":
-            commander.top.grab_focus()
-        elif commander and widget.get_name() == "CommanderTop":
-            for j in range(1,13):
-                if keyname == "F" + str(j):
-                    commander.get_toggles()[j-1].set_active(not(commander.get_toggles()[j-1].get_active()))
-            else:
-                for j in range(1, len(commander.results) + 1):
-                    if keyname == str(j): commander.results[j-1].grab_focus()
+        elif commander:
+            if keyname == "colon":
+                commander.cmdline.grab_focus()
+            if keyname == "Escape":
+                commander.top.grab_focus()
+            if widget.get_name() == "CommanderTop":
+                for j in range(1,13):
+                    if keyname == "F" + str(j):
+                        commander.get_toggles()[j-1].set_active(not(commander.get_toggles()[j-1].get_active()))
+                    else:
+                        if keyname == str(j): commander.results[j-1].grab_focus()
             if state &  Gdk.ModifierType.CONTROL_MASK:
                 if keyname == "Return" : commander.show_results(widget)
-        elif commander and widget.get_name() == "CommandLine":
-            if state &  Gdk.ModifierType.CONTROL_MASK:
-                if keyname == "Return" : commander.show_results(widget)
+            if widget.get_name() == "CommandLine":
+                if state &  Gdk.ModifierType.CONTROL_MASK:
+                    if keyname == "Return" :
+                        buffer=widget.get_buffer()
+                        #widget.emit("insert-at-cursor",'xy')
+                        #widget.emit("move-cursor", Gtk.MovementStep.VISUAL_POSITIONS, -1, False)
+                        #widget.emit("delete-from-cursor", Gtk.DeleteType.PARAGRAPHS, 1)
         elif results:
             cmdr_of_results = results.context.commander
             if keyname == "q":
@@ -859,6 +891,10 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
                 for rslt in rslts:
                     rslt.refresh(None)
                 cmdr_of_results.top.grab_focus()
+            elif keyname == "h":
+                if results.batch_no > 0 : results.go_prev_batch_fn(None)
+            elif keyname == "l":
+                if results.exist_more_batches() : results.go_next_batch_fn(None)
             else:
                 for j in range(1,13):
                     if keyname == str(j):
