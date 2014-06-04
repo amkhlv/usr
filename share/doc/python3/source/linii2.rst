@@ -10,8 +10,7 @@ linii2
 
 The GTK3 style settings are in `~/usr/share/linii2/linii2.css`
 
-Some additional settings are in the :class:`Parameters` class (in particular, there are some additional style settings there).
-
+Some additional settings are in the :class:`Parameters` class.
 
 .. index:: Python
 

@@ -4,7 +4,7 @@ __author__ = "Andrei Mikhailov"
 __copyright__ = "Copyright 2014, Andrei Mikhailov"
 __license__ = "GPL"
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GObject
 import sqlite3
 import sys
 import os
@@ -22,15 +22,9 @@ class Parameters:
                 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     width = 8
     collector_grid_row_spacing = 3
-    added_css_style = """
-    @binding-set unbind-ctrl-enter {
-    unbind "<Control>Return" ;
-    bind "<Control>Return" { "insert-at-cursor" ("") };
-    }
-    #CommandLine {
-    gtk-key-bindings: unbind-ctrl-enter;
-    }
-    """
+    buttons_grid_row_spacing = 2
+    buttons_grid_column_spacing = 2
+
 
 def read_yaml(yaml_filename):
     """
@@ -56,7 +50,7 @@ def register_css(css_filename):
     css = open(os.path.expanduser(css_filename), 'rb') # rb needed for python 3 support
     css_data = css.read()
     css.close()
-    css_data = css_data + Parameters.added_css_style.encode(encoding='UTF-8')
+    css_data = css_data
 
 
     style_provider.load_from_data(css_data)
@@ -287,10 +281,16 @@ class Row:
         self.specs = specs
         self.tbl = tbl
         self.row_of_items = row_of_items
-        self.item_button = Gtk.Button("[F" + str(n) + "] " + row_of_items[0])
+        self.aux_hbox = Gtk.HBox()
+        self.aux_hbox.pack_start(Gtk.VBox(),False,False,2)
+        self.item_button = Gtk.Button(
+            "[F" + str(n) + "] " + row_of_items[0],
+            name="RowItemButton"
+            )
         self.item_button.connect("clicked", self.update_fn)
+        self.aux_hbox.add(self.item_button)
         self.labels = {}
-        grid.attach_next_to(self.item_button, prev, Gtk.PositionType.BOTTOM, 1, 1)
+        grid.attach_next_to(self.aux_hbox, prev, Gtk.PositionType.BOTTOM, 1, 1)
         j = 0; prev_label = None
         for k in row_of_items.keys()[1:] :
             item = row_of_items[k]
@@ -304,9 +304,10 @@ class Row:
             if prev_label:
                 grid.attach_next_to(self.labels[k], prev_label, Gtk.PositionType.RIGHT, 1, 1)
             else:
-                grid.attach_next_to(self.labels[k], self.item_button, Gtk.PositionType.RIGHT, 1, 1)
+                grid.attach_next_to(self.labels[k], self.aux_hbox, Gtk.PositionType.RIGHT, 1, 1)
             prev_label = self.labels[k]
             j = j + 1
+        grid.attach_next_to(Gtk.VBox(), prev_label, Gtk.PositionType.RIGHT, 1, 1)
     def update_fn(self, button):
         p = Prefill(dict(zip(list(self.row_of_items.keys()), self.row_of_items)), ['UPDATE', 'READONLY'])
         collector = CollectorGUI(self.specs, self.tbl, p)
@@ -347,7 +348,9 @@ class CollectorGUI(Gtk.Window):
         self.scrollwin = {}
         Gtk.Window.__init__(self)
     def initUI(self):
-        vbox = wrap(Gtk.VBox(), name = "CollectorBox", collector=self)
+        vbox = wrap(Gtk.VBox(),
+                    name = "CollectorBoxUpdate" if 'UPDATE' in self.prefill.flags else "CollectorBoxCollect",
+                    collector=self)
         self.add(vbox)
         tophbox = Gtk.HBox()
         bottomhbox = Gtk.HBox()
@@ -522,10 +525,13 @@ class Buttons(Gtk.VBox):
         self.state = state
         self.tophbox = Gtk.HBox()
         self.grid = Gtk.Grid()
+        self.grid.set_row_spacing(Parameters.buttons_grid_row_spacing)
+        self.grid.set_column_spacing(Parameters.buttons_grid_column_spacing)
         Gtk.VBox.__init__(self)
         self.set_name("ButtonsVBox")
         self.add(self.tophbox)
         self.add(self.grid)
+        self.pack_end(Gtk.VBox(),False,False,2)
         self.column_highlight_toggles = ColumnHighlightToggles(self.table, self.state, self.grid)
         self.displayed_rows = []
         def highlight_pre_fn(clmn: str):
@@ -548,7 +554,7 @@ class Buttons(Gtk.VBox):
                 if k in self.state.highlighted:
                     r.labels[k].set_name("HighlightedLabel")
             self.displayed_rows.append(r)
-            prev = r.item_button
+            prev = r.aux_hbox
         i = 0
         for clmn in self.state.columns_to_show:
             self.column_highlight_toggles.get_toggles()[clmn].connect("toggled", highlight_pre_fn(clmn))
@@ -600,6 +606,7 @@ class Results(Gtk.VBox):
         Gtk.VBox.__init__(self)
         self.set_name("Results")
         self.set_can_focus(True)
+        self.connect("focus-to-commander", self.context.commander.focus_to_top)
         self.initWidget()
     def initWidget(self):
         self.rows = sqlite_execute(self.specs, self.query, self.data)
@@ -610,6 +617,7 @@ class Results(Gtk.VBox):
         self.go_next_batch_button.set_name("GotoNextBatchButton")
         if self.batch_no > 0: self.go_prev_batch_button.connect("clicked", self.go_prev_batch_fn)
         if self.exist_more_batches(): self.go_next_batch_button.connect("clicked", self.go_next_batch_fn)
+        self.tophbox.pack_start(Gtk.VBox(),False,False,2)
         self.tophbox.add(self.go_prev_batch_button)
         self.tophbox.add(self.go_next_batch_button)
         self.refresh_btn = Gtk.Button("refresh<r>")
@@ -621,6 +629,7 @@ class Results(Gtk.VBox):
         self.destroy_btn = Gtk.Button("destroy<q>")
         self.destroy_btn.connect("clicked", self.destroy_fn)
         self.tophbox.add(self.destroy_btn)
+        self.tophbox.pack_end(Gtk.VBox(),False,False,2)
         batch_size = Parameters.results_batch_size
         self.buttons = Buttons(
             self.specs,
@@ -632,6 +641,7 @@ class Results(Gtk.VBox):
                 self.context.index
             )
         )
+        self.pack_start(Gtk.VBox(),False,False,3)
         self.add(self.tophbox)
         self.add(self.buttons)
         self.show_all()
@@ -721,22 +731,30 @@ class Commander(Gtk.VBox):
         self.specs = specs
         self.table = table
         self.mainwin = mainwin
-        Gtk.VBox.__init__(self)
-        self.set_name("CommanderTopVBox")
+        Gtk.VBox.__init__(self, spacing=1)
+        self.set_name("CommanderMain")
+        self.cmdline = wrap(Gtk.TextView(), "CommandLine", commander=self)
         self.results = []
     def initWidget(self):
         self.top = wrap(Gtk.VBox(), "CommanderTop", commander=self)
         self.top.set_can_focus(True)
         self.cmdline_box = wrap(Gtk.VBox(), "CommanderCmdlineBox", commander=self)
-        self.toggles_box = wrap(Gtk.HBox(), "CommanderTogglesBox", commander=self)
-        self.bottom = wrap(Gtk.VBox(), "CommanderBottom", commander=self)
+        self.aux_hbox = Gtk.HBox()
+        self.aux_hbox.pack_start(Gtk.VBox(),False,False,2)
+        self.aux_hbox.add(self.cmdline_box)
+        self.aux_hbox.pack_end(Gtk.VBox(),False,False,2)
+        self.toggles_box = wrap(Gtk.HBox(spacing=1), "CommanderTogglesBox", commander=self)
+        self.bottom = wrap(Gtk.VBox(spacing=1), "CommanderBottom", commander=self)
         self.add(self.top)
         self.add(self.bottom)
-        self.top.add(self.cmdline_box)
+        self.top.pack_start(Gtk.VBox(),False,False,2)
+        self.top.add(self.aux_hbox)
         self.top.add(self.toggles_box)
+        self.top.pack_end(Gtk.VBox(),False, False, 3)
         self.toggle = []
         self.primary_key_label = wrap(Gtk.Label(), "PrimaryKeyLabel", commander=self)
         self.primary_key_label.set_markup(xml.sax.saxutils.escape(self.table.primary_key))
+        self.toggles_box.pack_start(Gtk.VBox(),False,False,2)
         self.toggles_box.add(self.primary_key_label)
         for j in range(1,len(self.table.columns)):
             self.toggle.append(
@@ -747,12 +765,13 @@ class Commander(Gtk.VBox):
                 )
             )
             self.toggles_box.add(self.toggle[j-1])
-        self.cmdline = wrap(Gtk.TextView(), "CommandLine", commander=self)
+        self.toggles_box.pack_end(Gtk.VBox(),False,False,2)
         self.cmd_buffer = self.cmdline.get_buffer()
         self.rows_button = wrap(Gtk.Button("rows"), "RowsButton", commander=self)
         self.rows_button.connect("clicked", self.show_results)
         self.cmdline_box.add(self.cmdline)
         self.cmdline_box.add(self.rows_button)
+
         self.show_all()
     def get_toggles(self):
         """
@@ -761,6 +780,23 @@ class Commander(Gtk.VBox):
         :return: list
         :rtype: list
         """
+        return self.toggle
+    def focus_to_commandline(self, b=None):
+        """
+        Focus the commandline
+
+        :param b:
+        :return:
+        """
+        self.cmdline.grab_focus()
+    def focus_to_top(self, b=None):
+        """
+        Focus the top of the commander
+
+        :param b:
+        :return:
+        """
+        self.top.grab_focus()
     def show_results(self,b = None):
         """
         show in the bottom panel the results of the query typed in the text area
@@ -849,6 +885,14 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
     :rtype: Gtk.Widget
     """
     widget.set_name(name)
+    if name == "CommanderWindow" or name == "CommanderTogglesBox":
+        widget.connect("data-entered", commander.show_results)
+        widget.connect("request-for-commandline", commander.focus_to_commandline)
+    if name == "CommandLine" or name == "CommanderTogglesBox":
+        widget.connect("data-entered", commander.show_results)
+        widget.connect("focus-to-commander", commander.focus_to_top)
+    if name == "ResultsTopHBox":
+        widget.connect("focus-to-commander", results.context.commander.focus_to_top)
     def on_key_press_event(widget, event):
         keyname = Gdk.keyval_name(event.keyval)
         state = event.state
@@ -860,25 +904,12 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
                     widget.destroy()
                     Gtk.main_quit()
         elif commander:
-            if keyname == "colon":
-                commander.cmdline.grab_focus()
-            if keyname == "Escape":
-                commander.top.grab_focus()
             if widget.get_name() == "CommanderTop":
                 for j in range(1,13):
                     if keyname == "F" + str(j):
                         commander.get_toggles()[j-1].set_active(not(commander.get_toggles()[j-1].get_active()))
                     else:
                         if keyname == str(j): commander.results[j-1].grab_focus()
-            if state &  Gdk.ModifierType.CONTROL_MASK:
-                if keyname == "Return" : commander.show_results(widget)
-            if widget.get_name() == "CommandLine":
-                if state &  Gdk.ModifierType.CONTROL_MASK:
-                    if keyname == "Return" :
-                        buffer=widget.get_buffer()
-                        #widget.emit("insert-at-cursor",'xy')
-                        #widget.emit("move-cursor", Gtk.MovementStep.VISUAL_POSITIONS, -1, False)
-                        #widget.emit("delete-from-cursor", Gtk.DeleteType.PARAGRAPHS, 1)
         elif results:
             cmdr_of_results = results.context.commander
             if keyname == "q":
@@ -917,6 +948,21 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
     mainwin.connect("key_release_event", on_key_release_event)
     return widget
 
+def configure_signals():
+    """
+    Configure GTK signals
+
+    :return:
+    """
+    GObject.type_register(Commander)
+    GObject.signal_new("data-entered", Gtk.TextView, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("data-entered", Commander, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("data-entered", Gtk.HBox, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("request-for-commandline", Commander, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("request-for-commandline", Gtk.HBox, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("focus-to-commander", Gtk.TextView, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("focus-to-commander", Gtk.HBox, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
+    GObject.signal_new("focus-to-commander", Gtk.VBox, GObject.SIGNAL_ACTION, GObject.TYPE_NONE, ())
 
 if __name__ == '__main__':
     from optparse import OptionParser
@@ -929,6 +975,7 @@ if __name__ == '__main__':
         mytable = [t for t in myspecs.tables if t.name == options.table][0]
     else:
         mytable = table_chooser(myspecs)
+    configure_signals()
     win = Gtk.Window(name = "MainWindow")
     win.connect("delete-event", Gtk.main_quit)
     register_css(mytable.css)

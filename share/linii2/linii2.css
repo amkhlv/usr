@@ -1,20 +1,12 @@
 
 #MainWindow {
     background-color: #F00;
-
 }
 
-#CommanderBottom {
-    background-color: #0F0;
-}
+/* Bindings */
 
-#RowsButton {
-    border-radius: 10px;
-    border-color: #000;
-    box-shadow: 0 0 5px #333 inset;
-    margin: 10px;
 
-}
+/* Commander: */
 
 #CommanderTop {
     padding: 7px;
@@ -30,18 +22,119 @@
     border-color: #F0F;
 }
 
+#CommanderMain {
+
+}
+
+#CommanderCmdlineBox {
+
+}
+
+@binding-set command-line {
+    unbind "<Control>Return" ;
+    bind "<Control>Return" { "data-entered" () };
+    unbind "Escape" ;
+    bind "Escape" { "focus-to-commander" () };
+}
+#CommandLine {
+    gtk-key-bindings: command-line;
+}
+
+@binding-set commander-window {
+    unbind "<Control>Return" ;
+    bind "<Control>Return" { "data-entered" () };
+    unbind "colon" ;
+    bind "colon" { "request-for-commandline" () };
+}
+#CommanderWindow {
+    gtk-key-bindings: commander-window;
+}
+
+#CommanderTogglesBox {
+
+}
+
+#CommanderToggleButton {
+    border-width:0px;
+    background-color:#0F0;
+}
+
+#CommanderToggleButton:active {
+    border-width:0px;
+    background-color:#00F;
+}
+
+#CommanderBottom {
+    background-color: #0F0;
+}
+
+#RowsButton {
+
+}
+
+#RowItemButton {
+    border-width: 0px;
+}
+
+/* Results: */
+
+@binding-set results {
+    unbind "Escape" ;
+    bind "Escape" { "focus-to-commander" () };
+}
 #Results {
     padding: 7px;
     margin: 7px;
     border-style: solid;
     border-width: 4px;
     border-color: #0FF;
+    gtk-key-bindings: results;
 }
-
 #Results:focused {
     border-style: solid;
     border-width: 4px;
     border-color: #F0F;
+}
+
+#ResultsTopHBox {
+    gtk-key-bindings: results;
+}
+
+
+#ButtonsVBox {
+
+}
+
+#HighlightedLabel {
+    border-width: 2px;
+    border-style: solid;
+    border-color: #00F;
+}
+
+#ItemLabel0 { background-color: #FFAAAA; }
+#ItemLabel1 { background-color: #ffccaa; }
+#ItemLabel2 { background-color: #ffffaa; }
+#ItemLabel3 { background-color: #aaffaa; }
+#ItemLabel4 { background-color: #aaccff; }
+#ItemLabel5 { background-color: #bbaaff; }
+#ItemLabel6 { background-color: #ddaaff; }
+
+#GotoPrevBatchButton {
+    background-color: #eeffee;
+}
+
+#GotoNextBatchButton {
+    background-color: #eeffee;
+}
+
+/* Collector: */
+
+#CollectorBoxCollect {
+
+}
+
+#CollectorBoxUpdate {
+
 }
 
 #TextViewPrimaryKey {
@@ -61,28 +154,22 @@
 }
 
 #TextViewColumnScrollWin {
-        border-width: 2px;
+    border-width: 2px;
     border-style: solid;
     border-color: #00F;
 }
 
-#HighlightedLabel {
-            border-width: 2px;
-    border-style: solid;
-    border-color: #00F;
+
+#NoDontDeleteButton {
 
 }
 
-#ItemLabel0 { background-color: #FFAAAA; }
-#ItemLabel1 { background-color: #ffccaa; }
-#ItemLabel2 { background-color: #ffffaa; }
-#ItemLabel3 { background-color: #aaffaa; }
-#ItemLabel4 { background-color: #aaccff; }
-#ItemLabel5 { background-color: #bbaaff; }
-#ItemLabel6 { background-color: #ddaaff; }
+#YesDoDeleteButton {
 
+}
 
-#GotoNextBatchButton {
+/* Table chooser: */
 
-    background-color: #eeffee;
+#TableChooserVBox {
+
 }
