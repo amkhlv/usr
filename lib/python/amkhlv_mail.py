@@ -466,13 +466,22 @@ def main():
         exec_query(options.criterium)
     elif options.convert_to_this_mbox:
         idlist = list(sys.stdin)
+        strange_efs = []
         for message_id in idlist:
             print "\n Processing " + message_id.rstrip()
             efs = emailfiles(message_id.rstrip())
             if not(efs): efs = []
             for ef in efs:
                 print("adding to MBOX " + options.convert_to_this_mbox + " the email file: " + ef)
-                os.system("formail < " + glob(ef + "*")[0] + " >> " + options.convert_to_this_mbox)
+                fullnames = glob(ef + "*")
+                if fullnames:
+                    os.system("formail < " + fullnames[0] + " >> " + options.convert_to_this_mbox)
+                else:
+                    strange_efs.append(ef)
+        if strange_efs:
+            print("*** STRANGE: could not find the following email files:")
+            for ef in strange_efs:
+                print(ef)
     else:
         places = list_files()
         safety_check(places, options.forced)

@@ -8,6 +8,9 @@
 
 /* Commander: */
 
+#CommanderMain {
+
+}
 #CommanderTop {
     padding: 7px;
     margin: 7px;
@@ -22,9 +25,6 @@
     border-color: #F0F;
 }
 
-#CommanderMain {
-
-}
 
 #CommanderCmdlineBox {
 
@@ -54,6 +54,10 @@
 
 }
 
+#CommanderPrimaryKeyLabel {
+    background-color: #FFF;
+}
+
 #CommanderToggleButton {
     border-width:0px;
     background-color:#0F0;
@@ -65,7 +69,7 @@
 }
 
 #CommanderBottom {
-    background-color: #0F0;
+    background-color: #444;
 }
 
 #RowsButton {
@@ -100,6 +104,9 @@
     gtk-key-bindings: results;
 }
 
+#ResultsNumberLabel {
+    background-color:Turquoise;
+}
 
 #ButtonsVBox {
 
@@ -137,8 +144,14 @@
 
 }
 
+@binding-set collector-textview {
+    unbind "<Control>Return" ;
+    bind "<Control>Return" { "data-entered" () };
+}
+
 #TextViewPrimaryKey {
     font: Monospace 16;
+    gtk-key-bindings: collector-textview;
 }
 
 #TextViewPrimaryKeyScrollWin {
@@ -151,6 +164,7 @@
     border-width: 2px;
     border-style: solid;
     border-color: #00F;
+    gtk-key-bindings: collector-textview;
 }
 
 #TextViewColumnScrollWin {

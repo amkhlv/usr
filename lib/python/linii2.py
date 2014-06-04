@@ -245,9 +245,12 @@ class ColumnHighlightToggles:
     def __init__(self, tbl, state, grid):
         self.toggle = {}
         clmns_to_show = [ c for c in tbl.columns if c.name in state.columns_to_show ]
-        self.topleft_label = Gtk.Label()
+        self.topleft_hbox = Gtk.HBox()
+        self.topleft_hbox.pack_start(Gtk.VBox(),False,False,2)
+        self.topleft_label = Gtk.Label(name = "ResultsNumberLabel")
         self.topleft_label.set_markup("<big>" + str(state.index + 1) + "</big>")
-        grid.add(self.topleft_label)
+        self.topleft_hbox.add(self.topleft_label)
+        grid.add(self.topleft_hbox)
         prev_toggle  = None
         for c in clmns_to_show :
             self.toggle[c.name] = Gtk.ToggleButton(label = c.name)
@@ -255,7 +258,7 @@ class ColumnHighlightToggles:
             if prev_toggle:
                 grid.attach_next_to(self.toggle[c.name], prev_toggle, Gtk.PositionType.RIGHT, 1, 1)
             else:
-                grid.attach_next_to(self.toggle[c.name], self.topleft_label, Gtk.PositionType.RIGHT, 1, 1)
+                grid.attach_next_to(self.toggle[c.name], self.topleft_hbox, Gtk.PositionType.RIGHT, 1, 1)
             prev_toggle = self.toggle[c.name]
     def get_toggles(self):
         """
@@ -374,6 +377,7 @@ class CollectorGUI(Gtk.Window):
                 grid.add(self.label[column])
             self.text_entry[column] = Gtk.TextView(name = "TextViewPrimaryKey" if j == 0 else "TextViewColumn")
             self.text_entry[column].set_editable(not('READONLY' in self.prefill.flags))
+            self.text_entry[column].connect("data-entered", self.collect_or_update_fn)
             text_style = self.text_entry[column].get_style_context()
             text_font  = text_style.get_font(Gtk.StateFlags.NORMAL)
             self.text_buffer[column] = self.text_entry[column].get_buffer()
@@ -495,6 +499,16 @@ class CollectorGUI(Gtk.Window):
         else:
             sqlite_insert_values(self.specs, self.table, data_dict)
         self.destroy()
+    def collect_or_update_fn(self,button):
+        """
+        either collect or update, depending on flags
+
+        :param Gtk.Button button: anything (unused)
+        """
+        if 'UPDATE' in self.prefill.flags :
+            self.update_fn(button)
+        else:
+            self.collect_fn(button)
 
 class ButtonsState:
     """
@@ -547,7 +561,7 @@ class Buttons(Gtk.VBox):
                     for r in self.displayed_rows:
                         r.labels[clmn].set_name("HighlightedLabel")
             return highlight_fn
-        prev = self.column_highlight_toggles.topleft_label
+        prev = self.column_highlight_toggles.topleft_hbox
         for row in self.state.rows:
             r = Row(self.specs, self.table, row, self.grid, prev, 1 + len(self.displayed_rows))
             for k in r.labels.keys():
@@ -604,13 +618,14 @@ class Results(Gtk.VBox):
         self.buttons = None
         self.batch_no = 0
         Gtk.VBox.__init__(self)
-        self.set_name("Results")
         self.set_can_focus(True)
         self.connect("focus-to-commander", self.context.commander.focus_to_top)
+        wrap(self, "Results", results = self)
         self.initWidget()
     def initWidget(self):
         self.rows = sqlite_execute(self.specs, self.query, self.data)
-        self.tophbox = wrap(Gtk.HBox(), "ResultsTopHBox", results = self)
+        self.tophbox = Gtk.HBox()
+        self.tophbox.set_name("ResultsTopHBox")
         self.go_prev_batch_button = Gtk.Button("\N{LEFTWARDS WHITE ARROW}<h>" if self.batch_no > 0 else "-------")
         self.go_prev_batch_button.set_name("GotoPrevBatchButton")
         self.go_next_batch_button = Gtk.Button("<l>\N{RIGHTWARDS WHITE ARROW}" if self.exist_more_batches() else "-------")
@@ -641,11 +656,21 @@ class Results(Gtk.VBox):
                 self.context.index
             )
         )
-        self.pack_start(Gtk.VBox(),False,False,3)
+        self.top_empty_vbox = Gtk.VBox()
+        self.pack_start(self.top_empty_vbox, False, False, 3)
         self.add(self.tophbox)
         self.add(self.buttons)
         self.show_all()
         self.context.mainwin.resize(1,1)
+    def cleanup(self):
+        """
+        cleanup
+
+        :return:
+        """
+        self.top_empty_vbox.destroy()
+        self.tophbox.destroy()
+        self.buttons.destroy()
     def get_batch_no(self):
         """
         get batch number
@@ -684,8 +709,7 @@ class Results(Gtk.VBox):
 
         :param Gtk.Button b:
         """
-        self.tophbox.destroy()
-        self.buttons.destroy()
+        self.cleanup()
         self.initWidget()
     def go_prev_batch_fn(self, b):
         """
@@ -752,7 +776,7 @@ class Commander(Gtk.VBox):
         self.top.add(self.toggles_box)
         self.top.pack_end(Gtk.VBox(),False, False, 3)
         self.toggle = []
-        self.primary_key_label = wrap(Gtk.Label(), "PrimaryKeyLabel", commander=self)
+        self.primary_key_label = wrap(Gtk.Label(), "CommanderPrimaryKeyLabel", commander=self)
         self.primary_key_label.set_markup(xml.sax.saxutils.escape(self.table.primary_key))
         self.toggles_box.pack_start(Gtk.VBox(),False,False,2)
         self.toggles_box.add(self.primary_key_label)
@@ -806,7 +830,7 @@ class Commander(Gtk.VBox):
             for j in range(1,len(self.table.columns)) if self.toggle[j-1].get_active()
         ]
         what_to_select = ",".join([self.table.primary_key] + columns_selected) if columns_selected else "*"
-        columns_to_show = ([self.table.primary_key] + columns_selected) if columns_selected else [c.name for c in self.table.columns][1:]
+        columns_to_show = columns_selected if columns_selected else [c.name for c in self.table.columns][1:]
         text_in_cmd_buffer = self.cmd_buffer.get_text(
             self.cmd_buffer.get_start_iter(),
             self.cmd_buffer.get_end_iter(),
