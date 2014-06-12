@@ -31,8 +31,7 @@
 ### Adding files so that they are available inside the filesystem:
 
 To include files, simply add them to your config/includes.chroot directory. This directory corresponds 
-to the root directory `/` of the live system. For example, to add a file `/var/www/index.html` in the live system, use: 
-
+to the root directory `/` of the live system.
 Example of `config/includes.chroot` :
 
     includes.chroot/lib/live/config/0030-user-setup
@@ -55,7 +54,7 @@ material to `config/includes.binary/`
 
 ### Changing user password
 
-Install on the main system, download the source of the `live-config` package:
+On the main system, install the __source__ of the `live-config` package:
 
     apt-get source live-config
 
