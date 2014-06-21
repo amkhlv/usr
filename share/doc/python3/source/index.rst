@@ -13,7 +13,7 @@ Contents:
 
    sphinx
    linii2
-
+   amkhlv_gstream
 
 
 Indices and tables

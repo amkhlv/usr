@@ -120,14 +120,14 @@ source /etc/bash_completion
 # source ~/.keychain/$(uname -n)-sh > /dev/null
 
 gtd
-find /home/andrei/maildirs/ -regextype posix-basic -regex '.*:.*F.*' | xargs amail.py -i
-clndr.py --tt
-
-TDLIST="$(clndr.py --todo)"
-if [ "$TDLIST" ] ; then
-        echo "---- TODO: -------------"
-        echo "$TDLIST"
-fi
+# find /home/andrei/maildirs/ -regextype posix-basic -regex '.*:.*F.*' | xargs amail.py -i
+# clndr.py --tt
+# 
+# TDLIST="$(clndr.py --todo)"
+# if [ "$TDLIST" ] ; then
+#         echo "---- TODO: -------------"
+#         echo "$TDLIST"
+# fi
 
 address-reminders
 
