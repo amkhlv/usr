@@ -9,6 +9,9 @@ import os
 from threading import Thread
 import subprocess
 
+class Parameters:
+    nlines = 14
+
 def register_css(css_filename):
     """
     To register a CSS style file
@@ -49,17 +52,12 @@ class MainWin(Gtk.Window):
         self.text_buffer = self.text.get_buffer()
         text_style = self.text.get_style_context()
         text_font  = text_style.get_font(Gtk.StateFlags.NORMAL)
-        self.text_buffer.connect("changed",self.scroll_to_end)
-        self.scrollWin = Gtk.ScrolledWindow(name="GuMsgrScrollWin")
-        self.scrollWin.set_min_content_width(50 * (text_font.get_size()/1024))
-        self.scrollWin.set_min_content_height(8 * text_font.get_size()/1024)
         self.set_text_from_file()
         self.line = Gtk.Entry(name="GuMsgrEntry")
         self.line.connect("activate", self.entry_fn)
         self.bottom_label = Gtk.Label(name="GuMsgrBottomLabel")
         self.bottom_label.set_alignment(0,0.5)
-        self.scrollWin.add(self.text)
-        self.mainVBox.add(self.scrollWin)
+        self.mainVBox.add(self.text)
         self.mainVBox.add(self.line)
         self.mainVBox.add(self.bottom_label)
         self.add(self.mainVBox)
@@ -80,8 +78,13 @@ class MainWin(Gtk.Window):
         if a: a.destroy()
         Gtk.main_quit()
     def set_text_from_file(self):
+        #Gdk.threads_enter()
         with open(self.infile, "r") as fh:
-            self.text_buffer.set_text(fh.read())
+            nt = fh.read()
+            self.text_buffer.set_text(
+                "\n".join(("\n" * Parameters.nlines + nt).split("\n")[- Parameters.nlines:])
+            )
+        #Gdk.threads_leave()
     def cli(self):
         while self.happy:
             x = input()
