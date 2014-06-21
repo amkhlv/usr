@@ -49,14 +49,11 @@ class MainWin(Gtk.Window):
         self.text_buffer = self.text.get_buffer()
         text_style = self.text.get_style_context()
         text_font  = text_style.get_font(Gtk.StateFlags.NORMAL)
-        self.textMark = Gtk.TextMark(name="mark", left_gravity=False)
-        self.text_buffer.add_mark(self.textMark, self.text_buffer.get_end_iter())
+        self.text_buffer.connect("changed",self.scroll_to_end)
         self.scrollWin = Gtk.ScrolledWindow(name="GuMsgrScrollWin")
         self.scrollWin.set_min_content_width(50 * (text_font.get_size()/1024))
         self.scrollWin.set_min_content_height(8 * text_font.get_size()/1024)
-        with open(self.infile, "r") as fh:
-            self.text_buffer.set_text(fh.read())
-            self.text.scroll_mark_onscreen(self.textMark)
+        self.set_text_from_file()
         self.line = Gtk.Entry(name="GuMsgrEntry")
         self.line.connect("activate", self.entry_fn)
         self.bottom_label = Gtk.Label(name="GuMsgrBottomLabel")
@@ -68,6 +65,11 @@ class MainWin(Gtk.Window):
         self.add(self.mainVBox)
         self.connect("delete-event", self.exit_fn)
         self.show_all()
+    def scroll_to_end(self,w):
+        textMark = Gtk.TextMark(name="mark", left_gravity=False)
+        self.text_buffer.add_mark(textMark, self.text_buffer.get_end_iter())
+        self.text.scroll_mark_onscreen(textMark)
+        self.text_buffer.delete_mark(textMark)
     def entry_fn(self,a):
         txt = self.line.get_text()
         print(txt)
@@ -77,6 +79,9 @@ class MainWin(Gtk.Window):
         self.happy = False
         if a: a.destroy()
         Gtk.main_quit()
+    def set_text_from_file(self):
+        with open(self.infile, "r") as fh:
+            self.text_buffer.set_text(fh.read())
     def cli(self):
         while self.happy:
             x = input()
@@ -84,17 +89,14 @@ class MainWin(Gtk.Window):
             if x.find("/quit") == 0:
                 self.exit_fn()
             elif x.find("/re") == 0:
-                b.set_text(fh.read())
-                self.text.scroll_mark_onscreen(self.textMark)
+                self.set_text_from_file()
             else:
                 with open(self.infile, "a") as fh:
                     fh.write(x+"\n")
-                with open(self.infile, "r") as fh:
-                    b.set_text(fh.read())
-                    self.text.scroll_mark_onscreen(self.textMark)
-
+                self.set_text_from_file()
 
 if __name__ == "__main__":
+    GObject.threads_init()
     register_css(os.environ['HOME']+"/.config/amkhlv/gu_msgr.css")
     mw = MainWin(os.environ['HOME']+"/eraseme.txt")
     t = Thread(group = None, target = mw.cli, name="CLI")
