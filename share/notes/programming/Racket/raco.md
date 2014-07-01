@@ -27,6 +27,13 @@ To remove:
 
 here the flag C<-e> means: also remove the package's distribution file from the uninstalled-package cache
 
+### Show
+
+    raco planet show
+
+shows the current situation. Notice that in `raco planet remove -e` , the rest arguments after `-e` can
+be simply copy-pasted from the output of `raco planet show`. 
+
 ### Development links for Planet
 
 First, remove the package if it was already installed. Then:

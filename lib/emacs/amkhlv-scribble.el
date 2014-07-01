@@ -21,7 +21,7 @@
               (if (cdr (assoc 'dest h))
                   (progn
                     (message (concat "scribble single html " filename " ⇨ " (cdr (assoc 'dest h)) "/"))
-                    (shell-command (concat "scribble --dest " (cdr (assoc 'dest h)) " " filename)))
+                    (shell-command (concat "scribble ++arg --dest --dest " (cdr (assoc 'dest h)) " " filename)))
                 (progn
                   (message (concat "scribble " filename))
                   (shell-command (concat "scribble " filename))))))
@@ -31,7 +31,7 @@
                          (cdr (assoc 'htmls registry))))
             (when (string= filename (concat h ".scrbl")) 
               (message (concat "scribble  multipage " filename))
-              (shell-command (concat "scribble --htmls " filename)))))
+              (shell-command (concat "scribble ++arg --htmls --htmls " filename)))))
       (progn
         (message "no registry found, proceeding with single html")
         (shell-command (concat "scribble " filename))))))
@@ -41,7 +41,7 @@
   (interactive)
   (save-buffer)
   (let* ((filepath (buffer-file-name)))
-    (shell-command (concat "scribble --htmls " filepath))
+    (shell-command (concat "scribble ++arg --htmls --htmls " filepath))
     )
   )
 

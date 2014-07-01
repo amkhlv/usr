@@ -1,0 +1,7 @@
+htmls:
+  - main 
+html:
+  - name: streets 
+    dest: strdir
+  - name: bairros
+    dest: brdir

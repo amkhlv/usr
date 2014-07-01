@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-stow --target $HOME shell
+stow -vv --target $HOME shell

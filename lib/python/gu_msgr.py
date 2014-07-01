@@ -46,18 +46,14 @@ class MainWin(Gtk.Window):
         self.happy = True
         Gtk.Window.__init__(self, title="*MESSAGE*", name="GuMsgrMainWin")
         self.mainVBox = Gtk.VBox()
-        self.text = Gtk.TextView(name="GuMsgrTextView")
-        self.text.set_editable(False)
-        self.text.set_can_focus(False)
-        self.text_buffer = self.text.get_buffer()
-        text_style = self.text.get_style_context()
-        text_font  = text_style.get_font(Gtk.StateFlags.NORMAL)
+
+
         self.set_text_from_file()
         self.line = Gtk.Entry(name="GuMsgrEntry")
         self.line.connect("activate", self.entry_fn)
         self.bottom_label = Gtk.Label(name="GuMsgrBottomLabel")
         self.bottom_label.set_alignment(0,0.5)
-        self.mainVBox.add(self.text)
+
         self.mainVBox.add(self.line)
         self.mainVBox.add(self.bottom_label)
         self.add(self.mainVBox)
@@ -79,11 +75,19 @@ class MainWin(Gtk.Window):
         Gtk.main_quit()
     def set_text_from_file(self):
         #Gdk.threads_enter()
+        if 'text' in self.__dict__: self.text.destroy()
+        self.text=Gtk.TextView(name="GuMsgrTextView")
+        self.text.set_editable(False)
+        self.text.set_can_focus(False)
+        self.text_buffer = self.text.get_buffer()
+        self.mainVBox.pack_start(self.text,False,False,2)
+        print("POINT2")
         with open(self.infile, "r") as fh:
             nt = fh.read()
             self.text_buffer.set_text(
                 "\n".join(("\n" * Parameters.nlines + nt).split("\n")[- Parameters.nlines:])
             )
+        self.mainVBox.show_all()
         #Gdk.threads_leave()
     def cli(self):
         while self.happy:
