@@ -90,6 +90,11 @@ Running under Apache
 
 <a name="sec:Apache"></a>
 
+Installing Apache
+-----------------
+
+    aptitude install apache2 apache2-utils libapache2-mod-wsgi
+
 MoinMoin configuration and WSGI script
 --------------------------------------
 
