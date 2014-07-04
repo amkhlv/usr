@@ -20,7 +20,7 @@ class MyText(tkinter.Text):
         for ln in range(1, nlines):
             print(str(ln) + ". " + self.get(str(ln)+".0", str(ln)+".end"))
     def say(self, x):
-        self.insert(tkinter.END, x +"\n")
+        self.insert(tkinter.END, "\n" + x)
     def scroll(self):
         self.rm(1)
 
@@ -79,11 +79,14 @@ def start(options):
 if __name__ == "__main__":
 
     from optparse import OptionParser
-    usage = """usage: %prog [options]
-    You've got:
-        w which stands for the Tk root window,
-        m which stands for the text widget
-      Useful functions on m:
+    usage = """
+    
+    %prog -d :0.0 -x .Xauthority -i eraseme.txt --hl 'type something and press Enter'
+
+    You've got objects:
+        w : the Tk root window,
+        m : the text widget
+
         m.say("Opa!") add line of text
         m.scroll() removes the first line
         m.rm(n)    removes the n-th line
@@ -104,7 +107,6 @@ if __name__ == "__main__":
     cfg = IPython.config.loader.Config()
     cfg.InteractiveShellApp.gui = "tk"
     cfg.InteractiveShell.autocall = 2
-    cfg.TerminalIPythonApp.code_to_run = u"""print("hi! --------------------- ")"""
 
     def ipmain():
         IPython.embed(config=cfg)
