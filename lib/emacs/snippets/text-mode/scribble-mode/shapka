@@ -35,11 +35,11 @@
 @title[#:style '(no-toc no-sidebar)]{$3}
 
 @table-of-contents[]
-@bystro-www-ribbon[]
+@bystro-ribbon[]
 
 $0
 
-@bystro-www-ribbon[]
+@bystro-ribbon[]
 
 @; ---------------------------------------------------------------------------------------------------
 

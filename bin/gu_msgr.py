@@ -29,6 +29,7 @@ class MyText(tkinter.Text):
 def start(options):
     """This function constructs GUI with the initial text --- the string argument"""
     root = tkinter.Tk()
+    root.title("Hi !")
     from IPython.lib.inputhook import enable_tk; enable_tk(root)
     grid_frame = tkinter.Frame(root)
     rows = ["", "", "", options.helpline if options.helpline else "type here and press ENTER:"]
