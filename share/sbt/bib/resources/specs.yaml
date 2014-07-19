@@ -1,0 +1,15 @@
+regex: 
+  - Lie.*algebra.*cohomology
+  - Cornering
+  - Finite.*dimensional
+  - Sine-Gordon-like
+  - Giant.*gravitons.*holomorphic
+  - Algebra\sof\stransfer
+  - Bihamiltonian
+  - energy\sshift
+  - Notes.*higher.*spin
+  - Operators\swith\slarge
+autodir: /home/andrei/a/Jobs/Auto/
+autofile: AMbibliography
+bibfile: /home/andrei/a/Work/andrei.bib
+bibstyle: jhep
