@@ -9,7 +9,8 @@ import java.util.List;
  * Created by andrei on 18/07/14.
  */
 public class SpecsBean {
-    private ArrayList<String> regex;
+    private ArrayList<String> regexTitle;
+    private ArrayList<String> regexAuthors;
     private String autodir;
     private String autofile;
     private String bibfile;
@@ -35,13 +36,17 @@ public class SpecsBean {
 
     public void setBibfile(String a) { this.bibfile  = a; }
 
-    public ArrayList<String> getRegex() {
-        return regex;
+    public ArrayList<String> getRegexTitle() {
+        return regexTitle;
     }
 
-    public void setRegex(ArrayList<String> as) {
-        this.regex = as;
+    public void setRegexTitle(ArrayList<String> as) {
+        this.regexTitle = as;
     }
+
+    public ArrayList<String> getRegexAuthors() { return regexAuthors; }
+
+    public void setRegexAuthors(ArrayList<String> as) { this.regexAuthors = as; }
 
     public String getBibstyle() { return bibstyle; }
 

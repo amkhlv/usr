@@ -8,9 +8,13 @@ To use `sendmail` with `exim4`, say
     port: 25
     cryptography: none
 
+Also, goto `Edit` → `Preferenes` → `Mail preferences` and tick on empty trash on exit
+
 # Troubleshooting
 
-If contact modification starts to misbehave, try:
+## If contact modification starts to misbehave
+
+Try:
 
     pkill evolution
     rm -rf ~/.cache/evolution/

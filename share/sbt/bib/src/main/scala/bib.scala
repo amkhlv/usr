@@ -112,9 +112,17 @@ object Bib {
   def main(args: Array[String]) = {
     fr.close()
     var references: String = ""
+    var refCount : Int = 0
+    var dois: scala.collection.mutable.MutableList[String] = MutableList()
     for ( a <- entries.keys.toList.sortWith(comp) ) {
       val ttl : String = entries(a).getField(new Key("title")).toUserString
-      if ( matches_one_of_regex(ttl, specs.getRegex) ) {
+      val au  : String = entries(a).getField(new Key("author")).toUserString
+      if (entries(a).getFields.keySet().contains(new Key("doi"))) {
+        dois += entries(a).getField(new Key("doi")).toUserString
+      }
+      println(au)
+      if ( matches_one_of_regex(ttl, specs.getRegexTitle) && matches_one_of_regex(au, specs.getRegexAuthors)) {
+        refCount = refCount + 1
         println(ttl)
         println("---")
         references = references.concat(
@@ -156,6 +164,8 @@ object Bib {
     println(preBibTeXRun)
     println(firstRun)
     println(secondRun)
+    println(dois)
+    println(refCount)
   }
 
 }
