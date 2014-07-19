@@ -1,8 +1,9 @@
 
 
 import java.io.{FileWriter, File, FileReader}
+import java.util
 import scala.collection.JavaConverters._
-import org.jbibtex.{BibTeXEntry, Key, BibTeXDatabase, BibTeXParser}
+import org.jbibtex.{BibTeXEntry, Key, Value, BibTeXDatabase, BibTeXParser}
 import scala.sys.process._
 import scala.collection.mutable._
 
@@ -73,16 +74,51 @@ object Bib {
     sys.process.Process(command, new java.io.File(specs.getAutodir)).! == 0
   }
 
+  val oldarXiv = new scala.util.matching.Regex("""\D*(\d\d)(\d\d)(\d\d\d)\D*""", "year", "month", "number")
+  val newarXiv = new scala.util.matching.Regex("""\D*(\d\d)(\d\d)\.(\d\d\d\d)\D*""", "year", "month", "number")
+
+  def comp(k1: Key, k2: Key): Boolean = {
+    val e1: BibTeXEntry = entries(k1)
+    val e2: BibTeXEntry = entries(k2)
+//    println(e1.getField(new Key("title")).toUserString)
+//    println(e2.getField(new Key("title")).toUserString)
+    def decimal(mold: Option[scala.util.matching.Regex.Match], mnew: Option[scala.util.matching.Regex.Match]): Long =
+      (mold, mnew) match {
+        case (None, None) => 0 //TODO this happens; why?
+        case (Some(m), None) =>
+          10 * ((100000 * (m group "year").toInt) + (1000 * (m group "month").toInt) + (m group "number").toInt )
+        case (None, Some(m)) =>
+          (1000000 * (m group "year").toInt) + (10000 * (m group "month").toInt) + (m group "number").toInt
+        case (Some(ma), Some(mb)) =>
+          throw new Exception("both old and new style")
+      }
+    val fields1: util.Map[Key, Value] = e1.getFields
+    val fields2: util.Map[Key, Value] = e2.getFields
+    val dec1: Long = if (fields1.keySet().contains(new Key("eprint"))) {
+      val pp1: String = e1.getField(new Key("eprint")).toUserString
+      val m1old  = oldarXiv findFirstMatchIn(pp1)
+      val m1new  = newarXiv findFirstMatchIn(pp1)
+      decimal(m1old,m1new)
+    } else 0
+    val dec2: Long = if (fields2.keySet().contains(new Key("eprint"))) {
+      val pp2: String = e2.getField(new Key("eprint")).toUserString
+      val m2old  = oldarXiv findFirstMatchIn(pp2)
+      val m2new  = newarXiv findFirstMatchIn(pp2)
+      decimal(m2old,m2new)
+    } else 0
+    dec1 < dec2
+  }
+
   def main(args: Array[String]) = {
     fr.close()
     var references: String = ""
-    for ( a <- entries.keys ) {
+    for ( a <- entries.keys.toList.sortWith(comp) ) {
       val ttl : String = entries(a).getField(new Key("title")).toUserString
       if ( matches_one_of_regex(ttl, specs.getRegex) ) {
         println(ttl)
         println("---")
         references = references.concat(
-        """\cite{""" + a + """}"""
+        """ \cite{""" + a + """} """
         )
       }
     }

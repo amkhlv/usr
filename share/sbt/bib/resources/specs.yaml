@@ -1,6 +1,6 @@
 regex: 
+  - Vertex.*operators.*ghost.*three
   - Lie.*algebra.*cohomology
-  - Cornering
   - Finite.*dimensional
   - Sine-Gordon-like
   - Giant.*gravitons.*holomorphic
