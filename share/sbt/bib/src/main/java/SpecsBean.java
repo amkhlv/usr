@@ -10,6 +10,7 @@ import java.util.List;
  */
 public class SpecsBean {
     private ArrayList<String> regexTitle;
+    private ArrayList<String> regexTitleExclude;
     private ArrayList<String> regexAuthors;
     private String autodir;
     private String autofile;
@@ -42,6 +43,14 @@ public class SpecsBean {
 
     public void setRegexTitle(ArrayList<String> as) {
         this.regexTitle = as;
+    }
+
+    public ArrayList<String> getRegexTitleExclude() {
+        return regexTitleExclude;
+    }
+
+    public void setRegexTitleExclude(ArrayList<String> as) {
+        this.regexTitleExclude = as;
     }
 
     public ArrayList<String> getRegexAuthors() { return regexAuthors; }

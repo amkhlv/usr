@@ -14,12 +14,14 @@ import scala.collection.mutable._
  * All the necessary parameters are fixed in `resources/specs.yaml` ; notice that there are several YAML files
  * in `resources/` , so one of them should be symlinked to `specs.yaml` ; the parameters are:
  *
- *  - `regex`    : this is a list of all regexes which should match
- *  - `autodir`  : this is the directory where all the LaTeX and PDF files will appear
+ *  - `regexTitle`    : this is a list of all regexes in the title which should match
+ *  - `regexAuthors`    : this is a list of all regexes on the authors which should match
+ *  - `regexTitleExclude` : this is a list of all regexes on the title which should be excluded
+ *  - autodir`  : this is the directory where all the LaTeX and PDF files will appear
  *  - `autofile` : this should be a reasonably exotic filename (no extension!)
  *  - `bibfile`  : path to the main bibliography file
  *  - `bibstyle` : e.g. `jhep` ; this means that the file `jhep.sty` '''should be present''' in the `autodir`
- *
+
  *  So, ''' be careful when cleaning the autodir '''
  *
  *  For some very strange reason, I have to modify the file `/usr/share/texlive/texmf-dist/web2c/texmf.cnf`
@@ -121,7 +123,14 @@ object Bib {
         dois += entries(a).getField(new Key("doi")).toUserString
       }
       println(au)
-      if ( matches_one_of_regex(ttl, specs.getRegexTitle) && matches_one_of_regex(au, specs.getRegexAuthors)) {
+      if (
+        matches_one_of_regex(ttl, specs.getRegexTitle) &&
+        matches_one_of_regex(au, specs.getRegexAuthors) &&
+          (Option(specs.getRegexTitleExclude) match {
+            case None    => true
+            case Some(x) => !(matches_one_of_regex(ttl, x))
+          })
+      ) {
         refCount = refCount + 1
         println(ttl)
         println("---")
@@ -135,13 +144,9 @@ object Bib {
     print(preHeader + references + preFooter)
     fwPre.close()
     val preLaTeXFirstRun: Boolean  = runInMyDir(Seq("pdflatex", fPreNoExt))
-    println("------------------------------------------------------------")
     println("----------- About to run BibTeX ----------------------------")
-    println("------------------------------------------------------------")
     val preBibTeXRun: Boolean      = runInMyDir(Seq("bibtex", fPreNoExt))
-    println("------------------------------------------------------------")
     println("----------- Finished running BibTeX ------------------------")
-    println("------------------------------------------------------------")
     val preLaTeXSecondRun: Boolean = runInMyDir(Seq("pdflatex", fPreNoExt))
     val preLaTeXThirdRun: Boolean  = runInMyDir(Seq("pdflatex", fPreNoExt))
     val bbl = scala.io.Source.fromFile(fPreNoExt + ".bbl").mkString

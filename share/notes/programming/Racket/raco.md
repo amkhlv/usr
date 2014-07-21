@@ -1,12 +1,37 @@
+
 # Raco planet
 
 To show the current situation:
 
     raco planet show
 
-## Package management
+Development link:
 
-### Installing from github
+    raco planet link amkhlv bystroTeX.plt 6 4 /home/andrei/a/git/amkhlv/bystroTeX/
+
+If we later want to remove the development link (and do the real install), we need to __unlink__ :
+
+    raco planet unlink amkhlv bystroTeX.plt 6 4
+
+# Building packages
+
+It seems that this only can be done after the package has been linked!
+
+To prepare package from the dir, do:
+
+    raco planet create bystroTeX/
+
+In particular, this will generate `bystroTeX/planet-docs/manual/index.html`
+
+To inject in the local `.racket` cache, do this:
+
+    raco planet fileinject amkhlv bystroTeX.plt 1 1
+
+but I __dont know why I would need it__
+
+
+
+# Installing from github
 
 To install from [github](http://github.com) :
 
@@ -19,7 +44,7 @@ Also notice that this installs the package (not planet) so it should then be cal
 
 (but not `(require (planet amkhlv/bystroTeX/common))` !)
 
-### Removing
+# Removing
 
 To remove:
 
@@ -27,38 +52,6 @@ To remove:
 
 here the flag C<-e> means: also remove the package's distribution file from the uninstalled-package cache
 
-### Show
-
-    raco planet show
-
-shows the current situation. Notice that in `raco planet remove -e` , the rest arguments after `-e` can
-be simply copy-pasted from the output of `raco planet show`. 
-
-### Development links for Planet
-
-First, remove the package if it was already installed. Then:
-
-    raco planet link amkhlv bystroTeX.plt 6 4 /home/andrei/a/git/amkhlv/bystroTeX/
-
-If we later want to remove the development link (and do the real install), we need to __unlink__ :
-
-    raco planet unlink amkhlv bystroTeX.plt 6 4
-
-In any case, always use `raco planet show` to see the situation.
-
-## Building packages
-
-To prepare package from the dir, do:
-
-    raco planet create bystroTeX/
-
-To inject in the local `.racket` cache, do this:
-
-    raco planet fileinject amkhlv bystroTeX.plt 1 1
-
-# Planet 2
-
-To install:
 
 
 
