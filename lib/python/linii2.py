@@ -214,6 +214,19 @@ def sqlite_update_values(specs, tbl, old_data, new_data):
     """
     assignments = ", ".join([name + " = ? " for name in new_data.keys()])
     conditions = " AND ".join(["eqli(" + k + ",?)" for k in old_data.keys()])
+    test_query = "SELECT * FROM " + tbl.name + " WHERE " + conditions
+    test = sqlite_execute(
+        specs,
+        test_query,
+        tuple([old_data[k] for k in old_data.keys()])
+    )
+    if test:
+        print("--- About to update the following record: \n")
+        for x in test:
+            for k in x.keys():
+                print(k + ": " + x[k])
+    else:
+        Alert("RECORD NOT FOUND").initUI()
     query = "UPDATE " + tbl.name + " SET " + assignments + " WHERE " + conditions
     sqlite_execute(
         specs,
@@ -233,6 +246,28 @@ def truncate(s, length, encoding='utf-8'):
         return "".join(list(s)[:length]) + "\N{HORIZONTAL ELLIPSIS}"
     else:
         return s
+
+class Alert(Gtk.Window):
+    def __init__(self, message):
+        """
+        Alert message
+
+        :param str message: the alert message
+        """
+        print("====================================")
+        print(message + "\n")
+        print("====================================")
+        self.message=message
+        Gtk.Window.__init__(self)
+
+    def initUI(self):
+        self.box = Gtk.HBox()
+        self.add(self.box)
+        self.lbl = Gtk.Label()
+        self.lbl.set_name("AlertLabel")
+        self.lbl.set_markup("<b>" + self.message + "</b>")
+        self.box.add(self.lbl)
+        self.show_all()
 
 class ColumnHighlightToggles:
     """
@@ -275,14 +310,16 @@ class Row:
 
     :param Specs specs: see :class:`Specs`
     :param Tbl tbl: see :class:`Tbl`
+    :param Results results:
     :param sqlite3.Row row_of_items:
     :param Gtk.Grid grid:
     :param Gtk.Widget prev: previous
     :param int n:
     """
-    def __init__(self, specs, tbl, row_of_items, grid, prev, n):
+    def __init__(self, specs, tbl, results, row_of_items, grid, prev, n):
         self.specs = specs
         self.tbl = tbl
+        self.results = results
         self.row_of_items = row_of_items
         self.aux_hbox = Gtk.HBox()
         self.aux_hbox.pack_start(Gtk.VBox(),False,False,2)
@@ -313,7 +350,7 @@ class Row:
         grid.attach_next_to(Gtk.VBox(), prev_label, Gtk.PositionType.RIGHT, 1, 1)
     def update_fn(self, button):
         p = Prefill(dict(zip(list(self.row_of_items.keys()), self.row_of_items)), ['UPDATE', 'READONLY'])
-        collector = CollectorGUI(self.specs, self.tbl, p)
+        collector = CollectorGUI(self.specs, self.tbl, p, self.results)
         collector.initUI()
 
 class Prefill:
@@ -334,17 +371,19 @@ class Prefill:
         return Prefill(empty_data, flags)
 
 class CollectorGUI(Gtk.Window):
-    def __init__(self, specs, table, prefill):
+    def __init__(self, specs, table, prefill, results = None):
         """
         Collector window
 
         :param Specs specs: see :class:`Specs`
         :param Tbl table: see :class:`Tbl`
         :param Prefill prefill: see :class:`Prefill`
+        :param Results results: see :class:`Results`
         """
         self.specs = specs
         self.table = table
         self.prefill = prefill
+        self.results = results
         self.label = {}
         self.text_entry = {}
         self.text_buffer = {}
@@ -444,7 +483,7 @@ class CollectorGUI(Gtk.Window):
         :param Gtk.Button button: put in anything, it is not used but the argument has to be present
         """
         self.prefill.flags = ['UPDATE']
-        new_collector = CollectorGUI(self.specs, self.table, self.prefill)
+        new_collector = CollectorGUI(self.specs, self.table, self.prefill, self.results)
         self.destroy()
         new_collector.initUI()
     def confirm_delete_fn(self, button):
@@ -454,7 +493,7 @@ class CollectorGUI(Gtk.Window):
         :param Gtk.Button button: put in anything, it is not used but the argument has to be present
         """
         self.prefill.flags = ['DELETE']
-        new_collector = CollectorGUI(self.specs, self.table, self.prefill)
+        new_collector = CollectorGUI(self.specs, self.table, self.prefill, self.results)
         self.destroy()
         new_collector.initUI()
     def yes_dodelete_fn(self, button):
@@ -465,6 +504,7 @@ class CollectorGUI(Gtk.Window):
         """
         data_dict = self.get_data_dict()
         sqlite_delete_values(self.specs, self.table, data_dict)
+        if self.results: self.results.refresh(None)
         self.destroy()
     def no_dontdelete_fn(self, button):
         """
@@ -473,7 +513,7 @@ class CollectorGUI(Gtk.Window):
         :param Gtk.Button button: put in anything, it is not used but the argument has to be present
         """
         self.prefill.flags = ['UPDATE', 'READONLY']
-        new_collector = CollectorGUI(self.specs, self.table, self.prefill)
+        new_collector = CollectorGUI(self.specs, self.table, self.prefill, self.results)
         self.destroy()
         new_collector.initUI()
     def collect_fn(self, button):
@@ -484,6 +524,7 @@ class CollectorGUI(Gtk.Window):
         """
         data_dict = self.get_data_dict()
         sqlite_insert_values(self.specs, self.table, data_dict)
+        if self.results: self.results.refresh(None)
         self.destroy()
     def update_fn(self, button):
         """
@@ -498,6 +539,7 @@ class CollectorGUI(Gtk.Window):
             sqlite_update_values(self.specs, self.table, self.prefill.data, data_dict)
         else:
             sqlite_insert_values(self.specs, self.table, data_dict)
+        if self.results: self.results.refresh(None)
         self.destroy()
     def collect_or_update_fn(self,button):
         """
@@ -509,21 +551,22 @@ class CollectorGUI(Gtk.Window):
             self.update_fn(button)
         else:
             self.collect_fn(button)
+        if self.results: self.results.refresh(None)
 
 class ButtonsState:
     """
     Information about the state of the Buttons widget
 
-    :param list[str] columns_to_show: columns to show
     :param list[Row] rows: listof :class:`Row`
     :param set[str] highlighted: setof `str`
-    :param int index:
+    :param Results results:
     """
-    def __init__(self, columns_to_show, rows, highlighted, index):
-        self.columns_to_show = columns_to_show
+    def __init__(self, rows, highlighted, results):
+        self.columns_to_show = results.columns_to_show
         self.rows = rows
         self.highlighted = highlighted
-        self.index = index
+        self.index = results.context.index
+        self.results = results
 
 class Buttons(Gtk.VBox):
     def __init__(self, specs, table, state):
@@ -563,7 +606,7 @@ class Buttons(Gtk.VBox):
             return highlight_fn
         prev = self.column_highlight_toggles.topleft_hbox
         for row in self.state.rows:
-            r = Row(self.specs, self.table, row, self.grid, prev, 1 + len(self.displayed_rows))
+            r = Row(self.specs, self.table, self.state.results, row, self.grid, prev, 1 + len(self.displayed_rows))
             for k in r.labels.keys():
                 if k in self.state.highlighted:
                     r.labels[k].set_name("HighlightedLabel")
@@ -650,10 +693,9 @@ class Results(Gtk.VBox):
             self.specs,
             self.table,
             ButtonsState(
-                self.columns_to_show,
                 self.rows[ self.batch_no * batch_size: (self.batch_no + 1) * batch_size ],
                 self.buttons.state.highlighted if self.buttons else set(),
-                self.context.index
+                self
             )
         )
         self.top_empty_vbox = Gtk.VBox()
@@ -701,7 +743,7 @@ class Results(Gtk.VBox):
         :param Gtk.Button b:
         """
         prefill = Prefill.empty([c.name for c in self.table.columns if c.do_show], [])
-        collector = CollectorGUI(self.specs, self.table, prefill)
+        collector = CollectorGUI(self.specs, self.table, prefill, self)
         collector.initUI()
     def refresh(self, b):
         """

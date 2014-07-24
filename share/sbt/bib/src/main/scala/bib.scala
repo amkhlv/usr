@@ -17,7 +17,7 @@ import scala.collection.mutable._
  *  - `regexTitle`    : this is a list of all regexes in the title which should match
  *  - `regexAuthors`    : this is a list of all regexes on the authors which should match
  *  - `regexTitleExclude` : this is a list of all regexes on the title which should be excluded
- *  - autodir`  : this is the directory where all the LaTeX and PDF files will appear
+ *  - `autodir`  : this is the directory where all the LaTeX and PDF files will appear
  *  - `autofile` : this should be a reasonably exotic filename (no extension!)
  *  - `bibfile`  : path to the main bibliography file
  *  - `bibstyle` : e.g. `jhep` ; this means that the file `jhep.sty` '''should be present''' in the `autodir`

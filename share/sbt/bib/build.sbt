@@ -1,4 +1,4 @@
-name := "jobs"
+name := "bib"
 
 version := "1.0"
 

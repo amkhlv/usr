@@ -187,3 +187,11 @@
 #TableChooserVBox {
 
 }
+
+/* Alert */
+
+#AlertLabel {
+    font: Monospace 32;
+    background-color: red;
+    color: white;
+}
