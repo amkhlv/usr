@@ -65,6 +65,7 @@ widget "*acroread" style "mypink"
 widget "*gsview" style "mypink"
 widget "*evince" style "mypink"
 widget "*win" style "mypink"
+widget "*pdfviewer" style "mypink"
 
 # note that "gsview" was the name of the window class
 # note the asterisk * in "*gsview"; that asterisk is important !
@@ -172,6 +173,7 @@ widget "*rhythmbox" style "rhythmbox"
 widget "*exaile.py"  style "rhythmbox"
 widget "*vlc" style "rhythmbox"
 widget "*smplayer" style "rhythmbox"
+widget "*audacious" style "rhythmbox"
 
 
 style "mytkremind"
@@ -180,5 +182,6 @@ bg[NORMAL]="#c7c7ff"
 bg[PRELIGHT]="#c7c7ff"
 }
 widget "*tkremind" style "mytkremind"
+widget "*Gestor de tempo" style "mytkremind"
 
 # happy wmjumping!

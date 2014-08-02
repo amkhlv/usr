@@ -106,8 +106,8 @@ We will just continue from the previous installation:
 
     cp /usr/share/moin/server/moin.wsgi /var/lib/amqwiki/
     chown -R www-data:www-data /var/lib/amqwiki/moin.wsgi
-    chmod -R ug+rwx /var/www/amqwiki/moin.wsgi
-    chmod -R o-rwx /var/www/amqwiki/moin.wsgi
+    chmod -R ug+rwx /var/lib/amqwiki/moin.wsgi
+    chmod -R o-rwx /var/lib/amqwiki/moin.wsgi
 
 Apache configurations
 ---------------------
