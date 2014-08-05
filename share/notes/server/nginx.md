@@ -62,21 +62,16 @@ I will need:
 
 ## Preparing the password file
 
-Each location can have its own separate password file, which is obtained by running my script:
+Each location can have its own separate password file.
 
-    amkhlv-hash.sh andrei > htpasswd_for_hidden
+The password file consists of the lines of the form:
 
-The content of the script `amk-hash.sh`:
+    username:hash
 
-    #!/bin/bash
+Where hash is obtained by running the command:
 
-    [ "$1" ] || { echo 'ERROR: $1 should be username'; exit 1 ; }
+    mkpasswd -m sha-512 -R 10000
 
-    printf "$1:$(openssl passwd -1 )\n"
-
-<div>
-    <div style="color:red;"><b> Do not use that Perl module crypt("password", "salt")</b></div> because it is highly insecure, for example it cuts the password to the first 8 characters !
-</div>
 
 # Running
 
