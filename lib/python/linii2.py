@@ -26,6 +26,28 @@ class Parameters:
     buttons_grid_column_spacing = 2
 
 
+def emacs_shortcut(w, ev):
+    """
+    Introduces Emacs keybindings in a widget
+
+    :param Gtk.TextView w: the widget
+    :param Gdk.Event ev: the event
+    """
+
+    keyname = Gdk.keyval_name(ev.keyval)
+    state = ev.state
+    buf = w.get_buffer()
+    if ( state &  Gdk.ModifierType.CONTROL_MASK ):
+        if keyname == "b":
+            w.emit("move-cursor", Gtk.MovementStep.LOGICAL_POSITIONS, -1, False)
+        if keyname == "f":
+            w.emit("move-cursor", Gtk.MovementStep.LOGICAL_POSITIONS, 1, False)
+    if ( state &  Gdk.ModifierType.MOD1_MASK ):
+        if keyname == "b":
+            w.emit("move-cursor", Gtk.MovementStep.WORDS, -1, False)
+        if keyname == "f":
+            w.emit("move-cursor", Gtk.MovementStep.WORDS, 1, False)
+
 def read_yaml(yaml_filename):
     """
     To read data from a yaml file
@@ -122,35 +144,39 @@ def get_sqlite_connection(specs):
         :param str x: tag pattern, an example of a tag pattern is 'aaa,bbb|^ccc'
         :param str y: string to match
         """
+        if not(y): y=""
         xs = x.split("|")
-        xss = map(lambda u: u.split(","), xs)
+        xss = [u.split(",") for u in xs]
         ys = y.split(",")
         def myMatch1S(pat, strs):
             if pat[0] == "^":
                 return functools.reduce(
                     lambda p, q: ( p and q ),
-                    map(lambda str_: pat[1:] != str_, strs),
+                    [ pat[1:] != str_ for str_ in strs],
                     True)
             else:
                 return functools.reduce(
                     lambda p, q: ( p or q ),
-                    map(lambda str_: pat == str_, strs),
+                    [ pat == str_ for str_ in strs],
                     False)
         def myMatchSS(pats, strs):
             return functools.reduce(
                 lambda p, q: (p and q),
-                map(lambda pat: myMatch1S(pat, strs), pats),
+                [ myMatch1S(pat, strs) for pat in pats ],
                 True)
         answer = functools.reduce(
             lambda p, q: (p or q),
-            map(lambda u: myMatchSS(u, ys), xss),
+            [ myMatchSS(u, ys) for u in xss],
             False)
         if (answer):
             return 1
         else:
             return 0
     def eqsql(x, y):
-        return x == y
+        if not(x) and not(y): return True
+        elif not(x) and y == "" : return True
+        elif x == "" and not(y) : return True
+        else: return x == y
     conn.create_function("tags", 2, hastags)
     conn.create_function("eqli", 2, eqsql)
     return conn
@@ -200,7 +226,7 @@ def sqlite_delete_values(specs, tbl, data):
     """
     query = "DELETE FROM " + tbl.name + " WHERE " + " AND ".join(["eqli(" + k + ",?)" for k in data.keys()])
     print(query)
-    print(" ; ".join([data[k] for k in data.keys()]))
+    print(" ; ".join([(data[k] or "") for k in data.keys()]))
     sqlite_execute(specs, query, tuple([data[k] for k in data.keys()]))
 
 def sqlite_update_values(specs, tbl, old_data, new_data):
@@ -224,7 +250,7 @@ def sqlite_update_values(specs, tbl, old_data, new_data):
         print("--- About to update the following record: \n")
         for x in test:
             for k in x.keys():
-                print(k + ": " + x[k])
+                print(k + ": " + (x[k] or ""))
     else:
         Alert("RECORD NOT FOUND").initUI()
     query = "UPDATE " + tbl.name + " SET " + assignments + " WHERE " + conditions
@@ -970,6 +996,7 @@ def wrap(widget, name, commander = None, collector = None, results = None, choos
                     widget.destroy()
                     Gtk.main_quit()
         elif commander:
+            if widget.get_name() == "CommandLine": emacs_shortcut(widget,event)
             if widget.get_name() == "CommanderTop":
                 for j in range(1,13):
                     if keyname == "F" + str(j):

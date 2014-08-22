@@ -65,10 +65,17 @@ This will be used to add an additional HMAC signature to all SSL/TLS handshake p
 
 # Client certificates
 
+First of all, if we have not done it yet, we have to source `vars` :
+
+    source ./vars
+
+Now build the key
+
     ./build-key clientname
 
 In particular it will ask Common Name. This common name will be important later when setting up connection.
-Choose it in a unique way, better without spaces.
+Choose it in a unique way, better without spaces. Notice that the default Common Name will be suggested as `clientnatm`.
+This is the right choice.
 
 # Deploy the certificates
 
