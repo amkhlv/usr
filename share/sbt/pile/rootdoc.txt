@@ -1,0 +1,67 @@
+This is my file server
+
+Pay __ATTENTION__ to the value of `application.secret`
+
+= Building this documentation =
+
+{{{
+sbt clean doc
+}}}
+
+= Files =
+
+List of files:
+
+ - `/etc/pile/application.conf` : the main configuration file, includes :
+    - the secret key
+    - the URL of the site
+    - path to the users directory
+    - path to the logging configurator
+ - `/etc/init.d/amkhlv-pile` : the start/stop file, includes the '''flags''' :
+    - -Dhttp.port=...
+    - -Dhttp.address=127.0.0.1
+    - -Dconfig.file=/etc/pile/application.conf
+    - -Dpidfile.path=/var/www/amkhlv-pile.pid
+ - `/etc/pile/log4j.properties` : logging configurator (an example can be found in the root of this project)
+ - `/var/www/pile-users` : the user directory; contains :
+    - `config.xml`
+    - for every user :
+       1. An entry in `config.xml` under the `<users>` tag, of the form:
+          `<user name="aaa" hash="$2a$10$...."/>` where the hash value is obtained as follows: at the sbt prompt,
+          say `console`, this will start the Scala console. At the Scala prompt: scala> controllers.Utils.mkpasswd
+          (It will ask for the plaintext password, and then print the hash)
+       2. A subdirectory `username/` (which is initially empty; thats where the files will be stored)
+       3. A file `username.md` with some greeting
+ - `/var/www/pile-app` : the directory for binaries and jars
+
+Both `/var/www/pile-users/` and `/var/www/pile-app/` and everything in them should be owned by `www-data:www-data`
+
+= Building and installation =
+
+== Building ==
+
+{{{
+./activator clean stage
+}}}
+
+== Installation ==
+
+As root:
+
+{{{
+rsync -cav --delete target/universal/stage/  /var/www/pile-app/
+chown -R www-data:www-data /var/www/pile-app/
+}}}
+
+= Running in development mode =
+
+When `application.secret="TESTING"` the application will not run. So, change it to something else.
+
+Then:
+
+{{{
+sbt run
+}}}
+
+Then navigate to [[http://localhost:9000/pile/]]
+

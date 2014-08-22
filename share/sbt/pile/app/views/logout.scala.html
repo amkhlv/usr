@@ -1,0 +1,26 @@
+@(user: String)(implicit token: play.filters.csrf.CSRF.Token)
+
+@import helper._
+
+Dear @user , are you sure you want to logout?
+
+<hr>
+
+If you do want to logout, please press this button:
+
+@helper.form(action = helper.CSRF(routes.Application.logout()),
+                         'enctype -> "multipart/form-data") {
+            <input type="submit" value="LOGOUT"/>
+            }
+
+After pressing this button, the site login will popup, press <b>Cancel</b>. Then <b>clean your browser cache</b>
+
+<hr>
+
+If you do not want to logout, please press this botton:
+
+@helper.form(action = helper.CSRF(routes.Application.index()),
+                         'enctype -> "multipart/form-data") {
+            <input type="submit" value="INDEX"/>
+            }
+

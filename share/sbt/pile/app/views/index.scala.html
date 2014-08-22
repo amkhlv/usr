@@ -1,0 +1,59 @@
+@(user: String, message: String, uploadedFiles: List[String])(implicit token: play.filters.csrf.CSRF.Token)
+
+@import helper._
+
+@helper.form(action = helper.CSRF(routes.Application.logoutConfirmation()), 'enctype -> "multipart/form-data") {
+
+<input type="submit" value="logout">
+
+}
+
+@Html(Pile.markdown(user))
+
+<hr>
+
+@main(user) {
+
+    <div class="well">
+        <h1>@message</h1>
+    </div>
+}
+
+
+
+<hr>
+<h2> Select file to upload: </h2>
+@helper.form(action = helper.CSRF(routes.Application.upload()), 'enctype -> "multipart/form-data") {
+
+    <input type="file" name="userdocument">
+
+    <p>
+        <input type="submit" value="upload">
+    </p>
+
+}
+<hr>
+<h2>Uploaded files:</h2>
+<table border="1">
+    @uploadedFiles.map { f =>
+    <tr>
+        <td>
+            @helper.form(action = helper.CSRF(routes.Application.download(f)),
+                         'enctype -> "multipart/form-data") {
+            <input type="submit" value="download"/>
+            }
+        </td>
+        <td>@f</td>
+        <td>
+            @helper.form(action = helper.CSRF(routes.Application.deleteFile(f)),
+                         'enctype -> "multipart/form-data") {
+            &nbsp &nbsp &nbsp (careful)
+            <input type="submit" value="delete"/>
+            }
+        </td>
+    </tr>
+    }
+</table>
+
+</ul>
+
