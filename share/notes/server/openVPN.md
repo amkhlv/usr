@@ -112,7 +112,7 @@ I put them all into `/root/openvpn/servername/`:
 
     mkdir /root/openvpn/servername
     cd /root/openvpn/servername
-    scp server:/root/easy-rsa/{clientname.{crt,key},ca.crt,ta.key} ./
+    scp server:/root/easy-rsa/keys/{clientname.{crt,key},ca.crt,ta.key} ./
 
 ## Configuration file on the server
 

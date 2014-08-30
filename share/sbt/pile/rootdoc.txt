@@ -41,7 +41,7 @@ Both `/var/www/pile-users/` and `/var/www/pile-app/` and everything in them shou
 == Building ==
 
 {{{
-./activator clean stage
+sbt clean stage
 }}}
 
 == Installation ==

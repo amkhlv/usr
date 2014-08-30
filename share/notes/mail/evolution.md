@@ -1,10 +1,12 @@
 # Setup
 
+Notice that `localhost` appears to be invalid, need to use `127.0.0.1` instead (why???)
+
 __Make sure that no thread view__
 
 To use `sendmail` with `exim4`, say 
 
-    server: localhost
+    server: 127.0.0.1
     port: 25
     cryptography: none
 

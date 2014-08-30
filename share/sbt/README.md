@@ -15,6 +15,9 @@ To compile the documentation, say:
 
 The resulting documentation is in `target/scala-2.10/api/`
 
+Also sometimes interesting to run a shell:
+
+    console
 
 More about documentation
 ========================
