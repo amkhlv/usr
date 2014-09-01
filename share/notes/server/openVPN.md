@@ -141,7 +141,7 @@ It is `/etc/openvpn/server.conf` (but it is better to just fill-in the above-men
     client-to-client
     keepalive 10 120
 
-    cipher DES-EDE3-CBC # Triple-DES
+    cipher AES-256-CBC # to see all, run: openvpn --show-ciphers
     comp-lzo
 
     max-clients 10
@@ -187,7 +187,7 @@ file is in `/usr/share/doc/openvpn/examples/sample-config-files/client.conf`
     cert /root/openvpn/servername/clientname.crt
     key /root/openvpn/servername/clientname.key
     ns-cert-type server
-    cipher DES-EDE3-CBC
+    cipher AES-256-CBC # to see all, run: openvpn --show-ciphers
     comp-lzo yes
     dev tun
     proto udp
