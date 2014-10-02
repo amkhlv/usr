@@ -1,0 +1,29 @@
+
+
+li.summary {
+    color: red;
+    font-size: 0.75em;
+}
+
+td.calendarCell {
+   border: 1px solid black;
+   width: 14%;
+   height: 100%;
+}
+
+td.today {
+width: 15%;
+background-color: #ccffcc;
+}
+
+td.otherDay {
+width: 15%;
+}
+
+td.summariesListCell {
+width: 85%;
+}
+
+table.dayTable {
+height: 100%;
+}

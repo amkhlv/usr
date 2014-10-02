@@ -1,0 +1,24 @@
+@(weeks: List[List[MyDay]])
+<link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+@Html(Application.markdown)
+
+<table>
+    @weeks.map { week =>
+      <tr> @week.map { day =>
+          <td class="calendarCell">
+              <table class="dayTable">
+                  <tr>
+                      <td class="@day.style">
+                         @day.dayTitle
+                      </td>
+                      <td class="summariesListCell">
+                         <ul>
+                             @day.summaries.map { s =>
+                             <li class="summary"> @s </li> }
+                         </ul>
+                      </td>
+                  </tr>
+              </table>
+          </td> } </tr>
+    }
+</table>
