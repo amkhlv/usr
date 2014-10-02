@@ -42,10 +42,10 @@
 (define (ex-num label)
   (elemtag label (exercise-next label)))
 (define (ex-ref label)
-  (elemref label (list "Exercise " (exercise-number label))))
+  (elemref label (bold (exercise-number label))))
 (define (th-num label)
-  (elemtag label (theorem-next label)))
+  (elemtag label (bold (theorem-next label))))
 (define (th-ref label)
-  (elemref label (list "Theorem " (theorem-number label))))
+  (elemref label (bold (theorem-number label))))
 
 )
