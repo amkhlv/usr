@@ -15,7 +15,7 @@ object Application extends Controller {
     case None => throw new Exception("conf parameter application.ics is missing from the file application.conf!")
     case Some(s) => s
   }
-  val markdown: String = {
+  def markdown: String = {
     val processor = new Markdown4jProcessor()
     processor.process(new File(
       Play.current.configuration.getString("application.topmd") match {

@@ -14,6 +14,7 @@ td.calendarCell {
 td.today {
 width: 15%;
 background-color: #ccffcc;
+border: 1px solid red;
 }
 
 td.otherDay {
