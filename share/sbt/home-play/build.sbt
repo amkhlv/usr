@@ -11,6 +11,11 @@ libraryDependencies ++= Seq(
   "org.mnode.ical4j" % "ical4j" % "1.0.5.2"
 )
 
+scalacOptions in (Compile, doc) <++= baseDirectory map { d =>
+  Seq("-doc-root-content", d / "rootdoc.txt" getPath)
+}
+
+
 scalacOptions ++= Seq("-feature")
 
 playScalaSettings

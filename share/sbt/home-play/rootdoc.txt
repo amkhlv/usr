@@ -1,0 +1,38 @@
+This is my homepage server
+
+= Building this documentation =
+
+{{{
+sbt clean doc
+}}}
+
+= Building =
+
+{{{
+sbt clean stage
+}}}
+
+= Running in development mode =
+
+{{{
+sbt run
+}}}
+
+Then navigate to [[http://localhost:9000/pile/]]
+
+= systemd =
+
+In `/etc/systemd/system/amkhlv-homeplay.service` :
+
+{{{
+[Unit]
+Description=Serves homepage
+
+[Service]
+ExecStart=/usr/local/bin/amkhlv-start-homeplay.sh
+PIDFile=/tmp/amkhlv-homeplay.pid
+
+[Install]
+WantedBy=multi-user.target
+
+}}}

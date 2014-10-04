@@ -3,6 +3,15 @@
 @Html(Application.markdown)
 
 <table>
+    <tr>
+        <td class="weekDayName">Monday</td>
+        <td class="weekDayName">Tuesday</td>
+        <td class="weekDayName">Wednesday</td>
+        <td class="weekDayName">Thursday</td>
+        <td class="weekDayName">Friday</td>
+        <td class="weekDayName">Saturday</td>
+        <td class="weekDayName">Sunday</td>
+    </tr>
     @weeks.map { week =>
       <tr> @week.map { day =>
           <td class="calendarCell">

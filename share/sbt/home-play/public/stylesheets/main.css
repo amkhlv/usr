@@ -5,6 +5,11 @@ li.summary {
     font-size: 0.75em;
 }
 
+td.weekDayName {
+   border: 1px solid black;
+   background-color: #eeeeee;
+}
+
 td.calendarCell {
    border: 1px solid black;
    width: 14%;
@@ -12,19 +17,24 @@ td.calendarCell {
 }
 
 td.today {
-width: 15%;
+width: 1.4em;
 background-color: #ccffcc;
 border: 1px solid red;
+text-align: center;
 }
 
 td.otherDay {
-width: 15%;
+width: 1.4em;
+background-color: #eeeeee;
+border: 1px solid #eeeeee;
+text-align: center;
 }
 
 td.summariesListCell {
-width: 85%;
+
 }
 
 table.dayTable {
 height: 100%;
+width: 100%;
 }
