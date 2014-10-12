@@ -1,6 +1,12 @@
-
+ul.summaries {
+    margin-left: 0.4em;
+    margin-right: 0px;
+    padding-left: 0.8em;
+    padding-right: 0px;
+}
 
 li.summary {
+
     color: red;
     font-size: 0.75em;
 }

@@ -18,7 +18,7 @@ sbt clean stage
 sbt run
 }}}
 
-Then navigate to [[http://localhost:9000/pile/]]
+Then navigate to [[http://localhost:9000]]
 
 = systemd =
 
