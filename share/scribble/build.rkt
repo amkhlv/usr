@@ -15,7 +15,9 @@
    (for/list ([f (hash-ref conf "html")])
      (when (or (null? fids) (member f fids))
        (if (hash-has-key? f "dest")
-           (system (string-append "scribble ++arg --dest --dest " (hash-ref f "dest") " " (hash-ref f "name") ".scrbl"))
+           (begin
+             (system (string-append "scribble ++arg --dest --dest " (hash-ref f "dest") " " (hash-ref f "name") ".scrbl"))
+             (system (string-append "ln -s " (hash-ref f "dest") "/" (hash-ref f "name") ".html ./")))
            (system (string-append "scribble  " (hash-ref f "name") ".scrbl"))))))
  (when (hash-has-key? conf "htmls")
    (for/list ([f (hash-ref conf "htmls")])

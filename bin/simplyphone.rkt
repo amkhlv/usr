@@ -17,7 +17,7 @@ The configuration file: ~/.config/amkhlv/simplyphone.xml , the conf file should 
     <person name="Barbara">audio/x-raw-int,rate=8000,channels=1 ! mulawenc ! rtppcmupay ! udpsink host=192.168.10.23 port=8888</person>
     <person name="Carol">audio/x-raw-int,rate=8000,channels=1 ! mulawenc ! rtppcmupay ! udpsink host=192.168.10.25 port=8888</person>
   </others>
-  <source>pulsesrc</source>
+  <source>alsasrc</source>
   <sink>pulsesink</sink>
   <in-port>8888</in-port>
   <in-args>caps="application/x-rtp,clock-rate=(int)8000" ! queue ! rtppcmudepay ! mulawdec ! audioconvert</in-args>

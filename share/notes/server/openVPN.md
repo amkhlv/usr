@@ -240,6 +240,14 @@ On the client, go to `/etc/openvpn` and say:
 
     openvpn servername.conf
 
+## Viewing the VPN status
+
+On the server:
+
+    tail -f -n40 /etc/openvpn/openvpn-status.log
+
+--- this shows the number of connected hosts _etc._
+
 # Forwarding through the server to the outside world
 
 This I actually have not tried.
