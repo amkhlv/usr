@@ -774,7 +774,7 @@ def get_all_events(fname):
     return evs
 
 
-def download_ics(uri, login, password, filename):
+def download_ics(uri, login, password, resourcename, localfilename):
     import pexpect
 
     def cadaver_error(x):
@@ -802,18 +802,18 @@ def download_ics(uri, login, password, filename):
         cadaver_error("Error in downloading calendar: did not ask for Password")
     child.sendline(password)
     try:
-        child.expect('dav:/' + login + '/>')
+        child.expect('dav:/.*/>')
     except:
         cadaver_error("Error in downloading calendar: no prompt")
-    child.sendline('get ' + filename)
+    child.sendline('get ' + resourcename)
     try:
-        i = child.expect(['Enter local filename for.*', 'dav:/' + login + '/>'])
+        i = child.expect(['Enter local filename for.*', 'dav:/.*/>'])
     except:
         cadaver_error("Error in downloading calendar: at asking for local filename")
     if i == 0:
-        child.sendline(filename)
+        child.sendline(localfilename)
         try:
-            child.expect('dav:/' + login + '/>')
+            child.expect('dav:/.*/>')
         except:
             cadaver_error("Error in downloading calendar: no prompt after specifying local filename")
         child.sendline('quit')
@@ -870,7 +870,7 @@ def command_line_arguments(parser):
     parser.add_option("--remove-duplicates", dest="remove_dups", default=False, action="store_true", help="remove duplicate events")
     parser.add_option("--get-ics-from-caldav",
                       dest="caldav_yaml",
-                      help="get .ics from CalDAV with login data specified in a YAML file, which is a dictionary with the keys: 'uri', 'login', 'password', 'filename'; the downloaded calendar will be saved in the current directory under the same filename as specified in the YAML file",
+                      help="get .ics from CalDAV with login data specified in a YAML file, which is a dictionary with the keys: 'uri', 'login', 'password', 'resourcename', 'localfilename'; the downloaded calendar will be saved in the current directory as the localfilename",
                       metavar="YAML_FILE")
 
 if __name__ == '__main__':
@@ -881,7 +881,7 @@ if __name__ == '__main__':
         yamfl = open(options.caldav_yaml, 'r')
         y = yaml.safe_load(yamfl)
         yamfl.close()
-        download_ics(y['uri'], y['login'], y['password'], y['filename'])
+        download_ics(y['uri'], y['login'], y['password'], y['resourcename'], y['localfilename'])
     if options.threeweeks: options.elinks = True
     if options.tz == "":
         tz_here = get_timezone()
