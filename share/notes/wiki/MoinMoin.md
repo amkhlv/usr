@@ -81,9 +81,11 @@ So, I __add__ the following lines to `/etc/moin/amqwiki.py` :
     data_underlay_dir = '/var/lib/amqwiki/underlay'
     superuser = [u"andrei", ]
     acl_rights_before = u"andrei:read,write,delete,revert,admin"
-    url_prefix_static = '/amq_/moin_static197' 
+    url_prefix_static = '/amq_/moin_static198' 
 
-Unfortunately, it seems like `moin_static197` is hard-coded into `MoinMoin` (it follows the version number `1.9.7`).
+Unfortunately, it seems like `moin_static198` is hard-coded into `MoinMoin` (it follows the version number `1.9.8`).
+Each time `moinmoin` gets updated I have to return to this configuration file. It seem that there are no other
+configuration files where this should be entered.
 
 Running under Apache
 ====================

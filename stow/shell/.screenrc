@@ -1,4 +1,5 @@
-hardstatus alwayslastline '%{= G}[ %{G}%H %{g}][%= %{= w}%?%-Lw%?%{= R}%n*%f %t%?%{= R}(%u)%?%{= w}%+Lw%?%= %{= g}][ %{y}Load: %l %{g}][%{B}%Y-%m-%d %{W}%c:%s %{g}]'
+hardstatus alwayslastline '%{= KW} %H [%`] %{= Kw}|%{-} %-Lw%{= kW}%n%f %t%{-}%+Lw %=%C%a %Y-%M-%d'
+backtick 0 10 10 echo hi
 term screen-256color
 startup_message off
 
