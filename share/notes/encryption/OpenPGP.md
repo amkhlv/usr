@@ -9,6 +9,13 @@ With salted, hashed password
 Nice discussion: http://nullprogram.com/blog/2012/06/24/
 
 
+Change password
+---------------
+
+    gpg --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-mode 3 --s2k-count 65000000 --edit-key <key id>
+
+and at the prompt say `passwd`
+
 View key parameters
 -------------------
 
