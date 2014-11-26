@@ -2,7 +2,7 @@
 Introduction
 ============
 
-This is a collection of various scripts, which are probably only useful for myself.
+This is a collection of various scripts (which are probably only useful for myself) and [notes on Linux](share/notes)
 
 Legal
 =====
