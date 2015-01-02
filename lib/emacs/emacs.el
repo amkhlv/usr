@@ -191,31 +191,157 @@
  ;; If there is more than one, they won't work right.
  '(LaTeX-indent-level 3)
  '(TeX-PDF-mode t)
- '(TeX-command-list (quote (("TeX" "%(PDF)%(tex) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil (plain-tex-mode texinfo-mode ams-tex-mode) :help "Run plain TeX") ("LaTeX" "%`%l --jobname=%s --synctex=1 %(mode)%' %t" TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX") ("Makeinfo" "makeinfo %t" TeX-run-compile nil (texinfo-mode) :help "Run Makeinfo with Info output") ("Makeinfo HTML" "makeinfo --html %t" TeX-run-compile nil (texinfo-mode) :help "Run Makeinfo with HTML output") ("AmSTeX" "%(PDF)amstex %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil (ams-tex-mode) :help "Run AMSTeX") ("ConTeXt" "texexec --once --texutil %(execopts)%t" TeX-run-TeX nil (context-mode) :help "Run ConTeXt once") ("ConTeXt Full" "texexec %(execopts)%t" TeX-run-TeX nil (context-mode) :help "Run ConTeXt until completion") ("BibTeX" "bibtex %s" TeX-run-BibTeX nil t :help "Run BibTeX") ("View" "xpdf.real -remote %s %s.pdf" TeX-run-discard-or-function t t :help "Run Viewer") ("Print" "%p" TeX-run-command t t :help "Print the file") ("Queue" "%q" TeX-run-background nil t :help "View the printer queue" :visible TeX-queue-command) ("File" "%(o?)dvips %d -o %f " TeX-run-command t t :help "Generate PostScript file") ("Index" "makeindex %s" TeX-run-command nil t :help "Create index file") ("Check" "lacheck %s" TeX-run-compile nil (latex-mode) :help "Check LaTeX file for correctness") ("Spell" "(TeX-ispell-document \"\")" TeX-run-function nil t :help "Spell-check the document") ("Clean" "TeX-clean" TeX-run-function nil t :help "Delete generated intermediate files") ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files") ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
- '(TeX-fold-macro-spec-list (quote (("[f]" ("footnote")) ("[c]" ("cite")) ("[l]" ("label")) ("[r]" ("ref" "pageref")) ("[i]" ("index")) ("*" ("item")) ("..." ("dots")) (1 ("anote" "anth")) ("[F]" ("rem")))))
+ '(TeX-command-list
+   (quote
+    (("TeX" "%(PDF)%(tex) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil
+      (plain-tex-mode texinfo-mode ams-tex-mode)
+      :help "Run plain TeX")
+     ("LaTeX" "%`%l --jobname=%s --synctex=1 %(mode)%' %t" TeX-run-TeX nil
+      (latex-mode doctex-mode)
+      :help "Run LaTeX")
+     ("Makeinfo" "makeinfo %t" TeX-run-compile nil
+      (texinfo-mode)
+      :help "Run Makeinfo with Info output")
+     ("Makeinfo HTML" "makeinfo --html %t" TeX-run-compile nil
+      (texinfo-mode)
+      :help "Run Makeinfo with HTML output")
+     ("AmSTeX" "%(PDF)amstex %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil
+      (ams-tex-mode)
+      :help "Run AMSTeX")
+     ("ConTeXt" "texexec --once --texutil %(execopts)%t" TeX-run-TeX nil
+      (context-mode)
+      :help "Run ConTeXt once")
+     ("ConTeXt Full" "texexec %(execopts)%t" TeX-run-TeX nil
+      (context-mode)
+      :help "Run ConTeXt until completion")
+     ("BibTeX" "bibtex %s" TeX-run-BibTeX nil t :help "Run BibTeX")
+     ("View" "xpdf.real -remote %s %s.pdf" TeX-run-discard-or-function t t :help "Run Viewer")
+     ("Print" "%p" TeX-run-command t t :help "Print the file")
+     ("Queue" "%q" TeX-run-background nil t :help "View the printer queue" :visible TeX-queue-command)
+     ("File" "%(o?)dvips %d -o %f " TeX-run-command t t :help "Generate PostScript file")
+     ("Index" "makeindex %s" TeX-run-command nil t :help "Create index file")
+     ("Check" "lacheck %s" TeX-run-compile nil
+      (latex-mode)
+      :help "Check LaTeX file for correctness")
+     ("Spell" "(TeX-ispell-document \"\")" TeX-run-function nil t :help "Spell-check the document")
+     ("Clean" "TeX-clean" TeX-run-function nil t :help "Delete generated intermediate files")
+     ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files")
+     ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
+ '(TeX-fold-macro-spec-list
+   (quote
+    (("[f]"
+      ("footnote"))
+     ("[c]"
+      ("cite"))
+     ("[l]"
+      ("label"))
+     ("[r]"
+      ("ref" "pageref"))
+     ("[i]"
+      ("index"))
+     ("*"
+      ("item"))
+     ("..."
+      ("dots"))
+     (1
+      ("anote" "anth"))
+     ("[F]"
+      ("rem")))))
  '(TeX-fold-type-list (quote (env macro comment)))
  '(TeX-save-query nil)
  '(browse-url-browser-function (quote browse-url-firefox))
  '(calendar-mark-diary-entries-flag t)
  '(display-mm-dimensions-alist my-original-display-mm-alist)
  '(fill-column 75)
- '(font-latex-user-keyword-classes (quote (("rem" ("rem") (:foreground "green") command) ("andrei-remv" (("remv" "{")) (:underline "lightgreen" :foreground "white") command) ("andrei-theorem-header" (("anth" "{")) (:weight bold :underline t :foreground "green") command) ("andrei-marginal-note" (("anote" "{")) (:box (:line-width 2 :color "red" :style released-button) :foreground "yellow") command) ("andrei-underlined" (("underline" "{")) (:underline t) command) ("andrei-why" (("why" "{")) (:box (:line-width 2 :color "grey75" :style released-button) :foreground "orange") command) ("andrei-mark" ("am") (:weight bold :foreground "firebrick1") declaration) ("andrei-question" ("question") (:foreground "LightGreen") declaration) ("andrei-answer" ("answer") (:foreground "LightSalmon1") declaration) ("andrei-attn" (("attn" "{")) (:box (:line-width 2 :color "red" :style released-button) :background "yellow" :foreground "black") command))))
+ '(font-latex-user-keyword-classes
+   (quote
+    (("rem"
+      ("rem")
+      (:foreground "green")
+      command)
+     ("andrei-remv"
+      (("remv" "{"))
+      (:underline "lightgreen" :foreground "white")
+      command)
+     ("andrei-theorem-header"
+      (("anth" "{"))
+      (:weight bold :underline t :foreground "green")
+      command)
+     ("andrei-marginal-note"
+      (("anote" "{"))
+      (:box
+       (:line-width 2 :color "red" :style released-button)
+       :foreground "yellow")
+      command)
+     ("andrei-underlined"
+      (("underline" "{"))
+      (:underline t)
+      command)
+     ("andrei-why"
+      (("why" "{"))
+      (:box
+       (:line-width 2 :color "grey75" :style released-button)
+       :foreground "orange")
+      command)
+     ("andrei-mark"
+      ("am")
+      (:weight bold :foreground "firebrick1")
+      declaration)
+     ("andrei-question"
+      ("question")
+      (:foreground "LightGreen")
+      declaration)
+     ("andrei-answer"
+      ("answer")
+      (:foreground "LightSalmon1")
+      declaration)
+     ("andrei-attn"
+      (("attn" "{"))
+      (:box
+       (:line-width 2 :color "red" :style released-button)
+       :background "yellow" :foreground "black")
+      command))))
  '(inhibit-startup-screen t)
- '(ispell-local-dictionary-alist (quote (("brasileiro" "[A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[^A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[']" nil nil nil iso-8859-1))))
- '(org-format-latex-options (quote (:foreground default :background default :scale 1.3 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers ("begin" "$1" "$" "$$" "\\(" "\\["))))
- '(package-archives (quote (("gnu" . "http://elpa.gnu.org/packages/") ("MELPA" . "http://melpa.milkbox.net/packages/"))))
- '(preview-LaTeX-command (quote ("%`%l --jobname=%s \"\\nonstopmode\\nofiles\\PassOptionsToPackage{" ("," . preview-required-option-list) "}{preview}\\AtBeginDocument{\\ifx\\ifPreview\\undefined" preview-default-preamble "\\fi}\"%' %t")))
+ '(ispell-local-dictionary-alist
+   (quote
+    (("brasileiro" "[A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[^A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[']" nil nil nil iso-8859-1))))
+ '(nxml-heading-element-name-regexp "description\\|title\\|head")
+ '(nxml-section-element-name-regexp
+   "account\\|article\\|\\(sub\\)*section\\|chapter\\|div\\|appendix\\|part\\|preface\\|reference\\|simplesect\\|bibliography\\|bibliodiv\\|glossary\\|glossdiv")
+ '(org-format-latex-options
+   (quote
+    (:foreground default :background default :scale 1.3 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
+                 ("begin" "$1" "$" "$$" "\\(" "\\["))))
+ '(package-archives
+   (quote
+    (("gnu" . "http://elpa.gnu.org/packages/")
+     ("MELPA" . "http://melpa.milkbox.net/packages/"))))
+ '(preview-LaTeX-command
+   (quote
+    ("%`%l --jobname=%s \"\\nonstopmode\\nofiles\\PassOptionsToPackage{"
+     ("," . preview-required-option-list)
+     "}{preview}\\AtBeginDocument{\\ifx\\ifPreview\\undefined" preview-default-preamble "\\fi}\"%' %t")))
  '(preview-auto-cache-preamble t)
  '(preview-default-document-pt 12)
- '(preview-default-option-list (quote ("displaymath" "floats" "graphics" "textmath" "footnotes")))
- '(preview-gs-options (quote ("-q" "-dNOSAFER" "-dNOPAUSE" "-DNOPLATFONTS" "-dPrinted" "-dTextAlphaBits=4" "-dGraphicsAlphaBits=4" "-dAlignToPixels=1")))
+ '(preview-default-option-list
+   (quote
+    ("displaymath" "floats" "graphics" "textmath" "footnotes")))
+ '(preview-gs-options
+   (quote
+    ("-q" "-dNOSAFER" "-dNOPAUSE" "-DNOPLATFONTS" "-dPrinted" "-dTextAlphaBits=4" "-dGraphicsAlphaBits=4" "-dAlignToPixels=1")))
  '(preview-image-type (quote png))
  '(preview-scale-function 1.6)
  '(ps-font-size (quote (12 . 12)))
  '(quack-fontify-style (quote plt))
  '(quack-pretty-lambda-p t)
- '(quack-programs (quote ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
- '(safe-local-variable-values (quote ((andrei . XeLaTeX) (andrei . LaTeX) (andrei . LuaLaTeX))))
+ '(quack-programs
+   (quote
+    ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
+ '(safe-local-variable-values
+   (quote
+    ((andrei . XeLaTeX)
+     (andrei . LaTeX)
+     (andrei . LuaLaTeX))))
  '(tab-stop-list (quote (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))))
 
 (custom-set-faces

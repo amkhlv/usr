@@ -192,7 +192,7 @@ file is in `/usr/share/doc/openvpn/examples/sample-config-files/client.conf`
     dev tun
     proto udp
     tls-auth /root/openvpn/servername/ta.key 1
-    nobind
+    ;nobind
     auth-nocache
     script-security 2
     persist-key
@@ -200,9 +200,11 @@ file is in `/usr/share/doc/openvpn/examples/sample-config-files/client.conf`
     user nobody
     group nogroup
 
+Comments:
 
+1. The files `ca.crt clientname.crt clientname.key ta.key` are those which I downloaded from the server.)
 
-(The files `ca.crt clientname.crt clientname.key ta.key` are those which I downloaded from the server.)
+2. Notice that the `nobind` option is commented; otherwize the client will bind to a __random local port__ (which I find ugly)
 
 Additional lines possible. After `script-security 2` :
 

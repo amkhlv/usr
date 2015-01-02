@@ -154,51 +154,55 @@ it defaults to "passwords.gpg". The contents are of the form:
    )
  (define (show-matches rgx)
    (charterm-clear-screen)
-   (let ([pwhash ; int -> pwdata
-          (make-hash
-           (let prehash ; this is a list of pairs
-               ([j 0]
-                [remaining
-                 (filter (lambda (pattern)
-                           (and
-                            (cons? pattern)
-                            (or
-                             (regexp-match rgx (se-path* '(account) pattern))
-                             (regexp-match rgx (se-path* '(site #:nick) pattern)))))
-                         (se-path*/list '(sites) xpr))]
-                [accumulated '()])
-             (if (cons? remaining)
-                 (let ([xn (pwdata
-                            (se-path* '(site #:nick) (car remaining))
-                            (se-path* '(site #:url) (car remaining))
-                            (se-path* '(account #:login) (car remaining))
-                            (se-path* '(account password) (car remaining))
-                            (se-path* '(account description) (car remaining))
-                            (se-path* '(account notes) (car remaining))
-                            (se-path* '(account login_challenge) (car remaining))
-                            (se-path* '(account forgot_password_challenge) ( car remaining))
-                            (se-path* '(account secret_notes) (car remaining)))])
+   (define pwhash ; int -> pwdata
+     (let prehash ; this is a list of pairs
+         ([j 0]
+          [remaining
+           (filter (lambda (a-site)
+                     (and
+                      (cons? a-site) ; to avoid a whitespace
+                      (regexp-match rgx (se-path* '(site #:nick) a-site))
+                      ))
+                   (se-path*/list '(sites) xpr))]
+          [accumulated (make-hash)])
+       (if (and (cons? remaining) (j . < . 10))
+           (begin 
+             (for ([a (se-path*/list '(site) (car remaining))])
+               (let ([xn (pwdata
+                          (se-path* '(site #:nick) (car remaining))
+                          (se-path* '(site #:url) (car remaining))
+                          (se-path* '(account #:login) a)
+                          (se-path* '(account password) a)
+                          (se-path* '(account description) a)
+                          (se-path* '(account notes) a)
+                          (se-path* '(account login_challenge) a)
+                          (se-path* '(account forgot_password_challenge) a)
+                          (se-path* '(account secret_notes) a))])
+                 (when (or (pwdata-login xn) (pwdata-password xn) (pwdata-description xn) (pwdata-notes xn))
                    (when (< j 10)
                      (charterm-bold)
                      (charterm-display (string (integer->char (+ 97 j))))
                      (charterm-normal)
                      (charterm-display (string-append ": [" (pwdata-nick xn) "](" (pwdata-url xn) ")"))
                      (charterm-newline)
-                     (charterm-display (string-append "   " (pwdata-login xn)))
+                     (when (pwdata-login xn) (charterm-display (string-append "   " (pwdata-login xn))))
                      (charterm-underline)
                      (charterm-display "   ")
                      (charterm-normal)
-                     (charterm-display (pwdata-description xn))
+                     (when (pwdata-description xn) (charterm-display (pwdata-description xn)))
                      (charterm-newline)
                      (charterm-display "----------------------------")
                      (charterm-newline))
-                   (prehash (+ j 1) (cdr remaining) (cons (cons j xn) accumulated)))
-                 accumulated)))])
-     (let ([kk (charterm-read-key)])
-       (when (char? kk)
-         (let ([k (- (char->integer kk) 97)])
-           (when (hash-has-key? pwhash k)
-             (display-account-info (hash-ref pwhash k))))))))
+                   (hash-set! accumulated j xn)
+                   (set! j (+ j 1))
+                   )))
+             (prehash j (cdr remaining) accumulated))
+           accumulated)))
+   (let ([kk (charterm-read-key)])
+     (when (char? kk)
+       (let ([k (- (char->integer kk) 97)])
+         (when (hash-has-key? pwhash k)
+           (display-account-info (hash-ref pwhash k)))))))
  (define (mainloop)
    (charterm-newline)
    (charterm-newline)
