@@ -45,27 +45,27 @@ it defaults to "passwords.gpg". The contents are of the form:
    (lambda ()
      'escaped)))
 
-(define (myreadline #:hide [h #f])
+(define (myreadline #:hide [hide #f])
   (let nextchar ([key (charterm-read-key)]
                  [acc ""])
     (if (char? key)
         (begin
-          (if h (charterm-display "*") (charterm-display key))
+          (if hide (charterm-display "*") (charterm-display key))
           (nextchar (charterm-read-key)
                     (string-append acc (string key))))
-        (begin
-          (when (eq? 'escape key)
-            (escape))
-          (if (eq? 'backspace key)
-              (if (> (string-length acc) 0)
-                  (begin
-                    (charterm-display (integer->char 8)) ; this is the backspace
-                    (nextchar (charterm-read-key)
-                              (substring acc 0 (- (string-length acc) 1))))
-                  (nextchar (charterm-read-key) ""))
-              (begin
-                (charterm-display (symbol->string key))
-                acc))
+        (case key
+          [(escape) (escape)]
+          [(f5) (begin (read-xpr-from-file) 'reload)]
+          [(backspace)
+           (if (> (string-length acc) 0)
+               (begin
+                 (charterm-display (integer->char 8)) ; this is the backspace
+                 (nextchar (charterm-read-key)
+                           (substring acc 0 (- (string-length acc) 1))))
+               (nextchar (charterm-read-key) ""))]
+          [else (begin
+                  (charterm-display (symbol->string key))
+                  acc)]
           ))))
 
 (define (insert-into-xsel s)
@@ -78,29 +78,37 @@ it defaults to "passwords.gpg". The contents are of the form:
     (close-output-port outp)
     (close-input-port errp)))
 
+(define passphrase "")
+(define xpr '())
+
+(define (read-xpr-from-file)
+  (charterm-newline)
+  (charterm-display "WAIT...")
+  (charterm-newline)
+  (define-values (proc inp outp errp)
+    (subprocess #f #f #f
+                (find-executable-path "gpg")
+                "--batch"
+                "--passphrase-fd"
+                "0"
+                "--decrypt"
+                filename))
+  (display passphrase outp)
+  (close-output-port outp)
+  (set! xpr (the:xml->xexpr (the:read-xml/element inp)))
+  (for/list ([ln (string-split (port->string errp) #rx"\n")])
+    (charterm-newline)
+    (charterm-display ln))
+  (sleep 1)
+  (close-input-port inp)
+  (close-input-port errp))
+
 (with-charterm
  (charterm-clear-screen)
  (charterm-cursor 10 5)
  (charterm-display "Enter passphrase: ")
- (define passphrase
-   (myreadline #:hide #t))
- (define-values (proc inp outp errp)
-   (subprocess #f #f #f
-               (find-executable-path "gpg")
-               "--batch"
-               "--passphrase-fd"
-               "0"
-               "--decrypt"
-               filename))
- (display passphrase outp)
- (close-output-port outp)
- (define xpr (the:xml->xexpr (the:read-xml/element inp)))
- (for/list ([ln (string-split (port->string errp) #rx"\n")])
-   (charterm-newline)
-   (charterm-display ln))
- (sleep 1)
- (close-input-port inp)
- (close-input-port errp)
+ (set! passphrase  (myreadline #:hide #t))
+ (read-xpr-from-file)
  (define (display-account-info a)
    (insert-into-xsel (pwdata-password a))
    (charterm-clear-screen)
@@ -205,12 +213,21 @@ it defaults to "passwords.gpg". The contents are of the form:
            (display-account-info (hash-ref pwhash k)))))))
  (define (mainloop)
    (charterm-newline)
-   (charterm-newline)
-   (charterm-clear-line-left)
-   (charterm-underline)
-   (charterm-display "Enter regex:")
-   (charterm-normal)
-   (let ([r (myreadline)]) (show-matches (regexp r)))
+   (define (ask-for-regexp)
+     (charterm-newline)
+     (charterm-clear-line-left)
+     (charterm-underline)
+     (charterm-display "Enter regex, or F5 for reload, or ESC to quit:")
+     (charterm-normal)
+     (let ([r (myreadline)])
+       (case r
+         ((reload)
+          (charterm-newline)
+          (charterm-display "RELOADED")
+          (ask-for-regexp))
+         (else (show-matches (regexp r)))
+         )))
+   (ask-for-regexp)
    (mainloop)
    )
  (call-with-continuation-prompt mainloop)
