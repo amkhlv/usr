@@ -482,10 +482,10 @@ def show_items(inrange, serObj, do_order=True, blank_days=[]):
             if x[1][1] == None:
                 adb = x[1][0]['DTSTART'].strftime("%a %d %b")
                 if adb != adbPrev:
-                    prnt(prefix + x[1][0]['DTSTART'].strftime("%a %d %b at %H:%M : ") +
+                    prnt(prefix + x[1][0]['DTSTART'].strftime("%a %d %b %Y at %H:%M : ") +
                          x[1][0]['SUMMARY'] + location_str(x[1][0]))
                 else:
-                    prnt(prefix + x[1][0]['DTSTART'].strftime("           at %H:%M : ") +
+                    prnt(prefix + x[1][0]['DTSTART'].strftime("                at %H:%M : ") +
                          x[1][0]['SUMMARY'] + location_str(x[1][0]))
                 adbPrev = adb
                 week_day = x[1][0]['DTSTART'].strftime("%a");
@@ -493,10 +493,10 @@ def show_items(inrange, serObj, do_order=True, blank_days=[]):
             else: #for repeating events:
                 adb = x[1][1].strftime("%a %d %b")
                 if adb != adbPrev:
-                    prnt(prefix + x[1][1].strftime("%a %d %b at %H:%M : ") +
+                    prnt(prefix + x[1][1].strftime("%a %d %b %Y at %H:%M : ") +
                          x[1][0]['SUMMARY'] + " [repeating] " + location_str(x[1][0]))
                 else:
-                    prnt(prefix + x[1][1].strftime("           at %H:%M : ") +
+                    prnt(prefix + x[1][1].strftime("                at %H:%M : ") +
                          x[1][0]['SUMMARY'] + " [repeating] " + location_str(x[1][0]))
                 adbPrev = adb
                 week_day = x[1][1].strftime("%a");
@@ -516,10 +516,10 @@ def list_items(inrange, serObj):
         serObj.append(x[0]['UID'])
         prefix = "[" + str(serObj.length()) + "] "
         if x[1] == None:
-            prnt(prefix + x[0]['DTSTART'].strftime("%a %d %b at %H:%M : ") +
+            prnt(prefix + x[0]['DTSTART'].strftime("%a %d %b %Y at %H:%M : ") +
                  x[0]['SUMMARY'] + location_str(x[0]))
         else: #for repeating events:
-            prnt(prefix + x[1].strftime("%a %d %b at %H:%M : ") +
+            prnt(prefix + x[1].strftime("%a %d %b %Y at %H:%M : ") +
                  x[0]['SUMMARY'] + " [repeating] " + location_str(x[1][0]))
 
 

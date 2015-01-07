@@ -1,0 +1,63 @@
+#!/bin/sh
+
+keydevice="/dev/disk/by-uuid/$1"
+keyfile=`cat /etc/hostname`
+
+fatal_error() {
+    echo "Boot Error: $1" > /dev/console
+    exit 1
+}
+
+# wait for udev to be ready, see https://launchpad.net/bugs/85640
+if [ -x /sbin/udevsettle ]; then
+    echo "AMKHLV: starting udevsettle" > /dev/console
+    /sbin/udevsettle --timeout=30
+    echo "AMKHLV: udevsettle exited" > /dev/console
+fi
+
+# wait max 8 seconds for the keydevice to appear
+if [ ! -b "${keydevice}" ] || ! /lib/udev/vol_id "${keydevice}" >/dev/null 2>&1; then
+    slumber=8
+    echo "AMKHLV: waiting for ${keydevice}" > /dev/console
+    slumber=$(( ${slumber} * 5 ))
+    while [ ! -b "${keydevice}" ] ; do
+       echo -n "${slumber}," > /dev/console
+       /bin/sleep 0.2
+       slumber=$(( ${slumber} - 1 ))
+       [ ${slumber} -gt 0 ] || break
+    done
+    echo "AMKHLV: finished waiting for ${keydevice}" > /dev/console
+fi
+
+# device must exist at this point
+if [ ! -b "${keydevice}" ]; then
+    fatal_error "Device not found"
+fi
+
+# create mount point and mount the opened device
+if [ ! -d /mnt/bootkey ]; then
+	mkdir -p -m 0700 /mnt/bootkey > /dev/null 2>&1
+fi
+mount -r -t ext2 "${keydevice}" /mnt/bootkey > /dev/null 2>&1
+
+# check status
+if [ $? -ne 0 ]; then
+	fatal_error "Failed to mount device"
+elif [ -r "/mnt/bootkey/${keyfile}" -a -s "/mnt/bootkey/${keyfile}" ]; then
+    echo "AMKHLV: **********************************" > /dev/console
+    echo "AMKHLV: *** FOUND UNENCRYPTED KEY FILE ***" > /dev/console
+    echo "AMKHLV: **********************************" > /dev/console
+    cat /mnt/bootkey/${keyfile}
+elif [ -r "/mnt/bootkey/${keyfile}.gpg" -a -s "/mnt/bootkey/${keyfile}.gpg" ]; then
+    echo "AMKHLV: You will be asked to enter the passphrase..." > /dev/console
+    mount -obind /dev/console /dev/tty > /dev/null
+    /lib/cryptsetup/askpass "AMKHLV PASSPHRASE -----------> " | gpg --homedir /mnt/bootkey/.gnupg --passphrase-fd 0 --decrypt /mnt/bootkey/${keyfile}.gpg 
+    umount /dev/tty
+else
+	fatal_error "Could not find ${keyfile} on ${keydevice}"
+fi
+
+# unmount and close the USB Keys
+umount /mnt/bootkey > /dev/null 2>&1
+rmdir /mnt/bootkey > /dev/null 2>&1
+

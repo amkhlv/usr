@@ -1,0 +1,20 @@
+# List of modules that you want to include in your initramfs.
+# They will be loaded at boot time in the order below.
+#
+# Syntax:  module_name [args ...]
+#
+# You must run update-initramfs(8) to effect this change.
+#
+# Examples:
+#
+# raid1
+# sd_mod
+
+sha256_generic
+sha512_generic
+dm_mod
+dm_crypt
+cbc
+xts
+gf128mul
+

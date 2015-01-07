@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+<meta charset="utf-8">
+
+<div class="toc">
+<ul>
+<li><a href="#preparation">Preparation</a><ul>
+<li><a href="#preparing-inintramfs-tools">Preparing inintramfs-tools</a></li>
+<li><a href="#preparing-grub">Preparing grub</a></li>
+<li><a href="#copying-files">Copying files</a></li>
+</ul>
+</li>
+<li><a href="#encrypting-the-key">Encrypting the key</a><ul>
+<li><a href="#preparing-the-gnupg-on-the-usb-key">Preparing the GnuPG on the USB key</a></li>
+</ul>
+</li>
+<li><a href="#adding-the-key-to-the-encrypted-partition">Adding the key to the encrypted partition</a></li>
+<li><a href="#finally">Finally</a></li>
+</ul>
+</div>
+
+<h1 id="preparation">Preparation</h1>
+<h2 id="preparing-inintramfs-tools">Preparing <code>inintramfs-tools</code></h2>
+<pre><code>cp files/gpg_cryptroot /etc/initramfs-tools/hooks/
+cp files/modules /etc/initramfs-tools/
+</code></pre>
+<p>Note: if the list of modules in <code>/etc/initramfs-tools/modules</code> is incomplete, then the boot will fail, most likely <code>cryptsetup</code> wil
+fail. How to obtain the list of all possible modules. Look at those modules already in <code>/etc/initramfs-tools/modules</code>. For example
+there is a module called <code>cbc</code>. The command <code>/sbin/modinfo cbc</code> print information, in particular on where the corresponding <code>.ko</code> file
+is located. You may go in that folder and see what other <code>.ko</code> files are there. (Notice tha the name of the <code>.ko</code> file is not
+necessarily the name of the module, and certainly the name of the module does not contain the extension <code>.ko</code>.)</p>
+<h2 id="preparing-grub">Preparing <code>grub</code></h2>
+<pre><code>gvim -p files/grub /etc/default/grub
+</code></pre>
+<h2 id="copying-files">Copying files</h2>
+<pre><code>cp files/sbin/amkhlv-* /usr/local/sbin/
+</code></pre>
+<h1 id="encrypting-the-key">Encrypting the key</h1>
+<h2 id="preparing-the-gnupg-on-the-usb-key">Preparing the <code>GnuPG</code> on the USB key</h2>
+<p>See my writeup in <code>notes/encryption/OpenPGP.md</code>. I usually name the recipient as follows: <code>boot-hostname</code>. Although this should
+not matter for anything.</p>
+<p><strong>Always call the encrypted key as follows:</strong> <code>hostname.gpg</code>;</p>
+<p>Then the keyscript parameter is just <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code> --- the UUID of the key partition; the scripts assume that
+the name of the encrypted key is <code>hostname.gpg</code>.</p>
+<p>If the key partition contains the file <code>hostname</code> (without the extension <code>.gpg</code>) then the scripts assume that this is the unencrypted
+key file.</p>
+<h1 id="adding-the-key-to-the-encrypted-partition">Adding the key to the encrypted partition</h1>
+<pre><code>cryptsetup luksAddKey /dev/sda1 /dev/shm/belavista
+</code></pre>
+<h1 id="finally">Finally</h1>
+<ol>
+<li>
+<p>Dont forget to <strong>remove</strong> the keyfile from <code>/dev/shm</code>.</p>
+</li>
+<li>
+<p><code>update-initramfs -kall -u</code></p>
+</li>
+<li>
+<p><code>grub-update</code></p>
+</li>
+</ol>
+
+</html>
+</body>
+
