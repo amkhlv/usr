@@ -46,5 +46,15 @@ In the `Outgoing Server (SMTP)` enter:
     Authentication Method: No authentication
     Connection Security: None
 
+# Command line tricks
+
+To open an email file, first of all:
+
+1. Make sure that the file has extension `.eml`
+
+The command is:
+
+    icedove -file filename.eml &
+
 
 

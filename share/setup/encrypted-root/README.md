@@ -6,6 +6,8 @@ Preparing `inintramfs-tools`
 
     cp files/gpg_cryptroot /etc/initramfs-tools/hooks/
     cp files/modules /etc/initramfs-tools/
+    cp files/conf_cryptroot /etc/initramfs-tools/conf.d/
+    gvim /etc/initramfs-tools/conf.d/conf_cryptroot
 
 Note: if the list of modules in `/etc/initramfs-tools/modules` is incomplete, then the boot will fail, most likely `cryptsetup` wil
 fail. How to obtain the list of all possible modules. Look at those modules already in `/etc/initramfs-tools/modules`. For example

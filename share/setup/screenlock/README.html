@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+<meta charset="utf-8">
+
+<div class="toc">
+<ul>
+<li><a href="#compile">Compile</a></li>
+<li><a href="#install">Install</a></li>
+<li><a href="#if-racket-is-not-available-on-the-target-machine">If Racket is not available on the target machine</a></li>
+</ul>
+</div>
+
+<h1 id="compile">Compile</h1>
+<pre><code>raco exe amkhlv-screensaver.rkt
+</code></pre>
+<h1 id="install">Install</h1>
+<pre><code>sudo mv amkhlv-screensaver /usr/local/bin/
+</code></pre>
+<h1 id="if-racket-is-not-available-on-the-target-machine">If Racket is not available on the target machine</h1>
+<pre><code>raco distribute usr amkhlv-screensaver
+</code></pre>
+<p>then the folder <code>usr</code> will contain all the dependencies.</p>
+
+</html>
+</body>
+

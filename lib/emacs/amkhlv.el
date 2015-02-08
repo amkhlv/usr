@@ -244,3 +244,25 @@ To choose size, use ps-print-customize"
      "x = yaml.safe_load(fl); "
      "print(json.dumps(x)); fl.close()"
      "'")))
+
+
+(defun amkhlv/msgid-in-icedove: (message-id)
+  "open email with that message-id in a Icedove"
+  (let* (
+         (sqlite-out (shell-command-to-string 
+                      (concat 
+                       "sqlite3 ~/a/maildirs/mymail.db \"select file "
+                       "from mail where messageid like '%" 
+                       message-id "%'\"")))
+         (glob-out (shell-command-to-string
+                    (concat "ls " (substring sqlite-out 0 (search "\n" sqlite-out)) "*")))
+         (filename (substring glob-out 0 (search "\n" glob-out)))
+         (basename (substring (shell-command-to-string (concat "basename " filename ))
+                              0
+                              (search "\n" (shell-command-to-string (concat "basename " filename )))))
+         )
+    (message basename)
+    (shell-command (concat "cp " filename " ~/.amkhlv-emails/" basename ".eml"))
+    (shell-command (concat "icedove -file ~/.amkhlv-emails/" basename ".eml  &" ))
+    )
+  )

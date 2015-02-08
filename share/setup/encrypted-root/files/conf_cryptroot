@@ -1,0 +1,2 @@
+CRYPTOPTS=source=/dev/disk/by-uuid/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,target=sdb4_crypt,keyscript=/sbin/amkhlv-keyscript,key=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx,lvm=belavista-root
+

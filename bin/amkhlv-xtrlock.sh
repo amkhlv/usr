@@ -16,8 +16,10 @@ if [ $1 == "feh" ] ; then
     DISPLAY=":0" feh --fullscreen `get_wallpaper` &
 fi
 if [ $1 == "lock"  -a ! -f "$LOCKPID" ] ; then
+    # feh block:
     DISPLAY=":0" feh --fullscreen `get_wallpaper` &
     echo $! >> "$FEHPID"
+    # end of feh block
     DISPLAY=":0" xtrlock  &
     echo $! >> "$LOCKPID"
     echo "-----------------------------" >> "$LOCKLOG"

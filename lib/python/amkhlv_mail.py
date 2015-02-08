@@ -31,7 +31,7 @@ import fileinput
 
 dbfile = "/home/andrei/a/maildirs/mymail.db"
 mailpath = "/home/andrei/a/maildirs/"
-myroot = os.readlink("/home/andrei/a")
+myroot = "/home/andrei/a"
 
 rex_from = re.compile(r"^From: (.*)")
 rex_messageid = re.compile(r"^Message-ID: <(.*)>", flags=re.IGNORECASE)
