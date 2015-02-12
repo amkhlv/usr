@@ -11,6 +11,7 @@ import os
 import yaml
 import functools
 import xml.sax.saxutils
+import subprocess
 
 class Parameters:
     """
@@ -355,11 +356,19 @@ class Row:
             )
         self.item_button.connect("clicked", self.update_fn)
         self.aux_hbox.add(self.item_button)
-        self.labels = {}
+        self.labels = {}; self.bttns = {};
         grid.attach_next_to(self.aux_hbox, prev, Gtk.PositionType.BOTTOM, 1, 1)
-        j = 0; prev_label = None
+        j = 0; prev_bttn = None
         for k in row_of_items.keys()[1:] :
             item = row_of_items[k]
+            self.bttns[k] = Gtk.Button()
+            self.bttns[k].set_name("ItemButton")
+            def mk_copy_fn(txt):
+                def copy_fn(self):
+                    xsel = subprocess.Popen(["xsel", "-i"], stdin=subprocess.PIPE)
+                    xsel.communicate(txt.encode())
+                return copy_fn
+            self.bttns[k].connect("clicked", mk_copy_fn(item))
             self.labels[k] = Gtk.Label()
             self.labels[k].set_name("ItemLabel" + str(j % 7))
             truncate_to_length = [clmn for clmn in tbl.columns if clmn.name == k][0].width
@@ -367,13 +376,17 @@ class Row:
                 xml.sax.saxutils.escape(truncate(item, truncate_to_length))
             )
             self.labels[k].set_tooltip_markup(xml.sax.saxutils.escape(truncate(item, Parameters.tooltip_truncate)))
-            if prev_label:
-                grid.attach_next_to(self.labels[k], prev_label, Gtk.PositionType.RIGHT, 1, 1)
+            self.labels[k].set_markup(
+                xml.sax.saxutils.escape(truncate(item, truncate_to_length))
+            )
+            self.bttns[k].add(self.labels[k])
+            if prev_bttn:
+                grid.attach_next_to(self.bttns[k], prev_bttn, Gtk.PositionType.RIGHT, 1, 1)
             else:
-                grid.attach_next_to(self.labels[k], self.aux_hbox, Gtk.PositionType.RIGHT, 1, 1)
-            prev_label = self.labels[k]
+                grid.attach_next_to(self.bttns[k], self.aux_hbox, Gtk.PositionType.RIGHT, 1, 1)
+            prev_bttn = self.bttns[k]
             j = j + 1
-        grid.attach_next_to(Gtk.VBox(), prev_label, Gtk.PositionType.RIGHT, 1, 1)
+        grid.attach_next_to(Gtk.VBox(), prev_bttn, Gtk.PositionType.RIGHT, 1, 1)
     def update_fn(self, button):
         p = Prefill(dict(zip(list(self.row_of_items.keys()), self.row_of_items)), ['UPDATE', 'READONLY'])
         collector = CollectorGUI(self.specs, self.tbl, p, self.results)

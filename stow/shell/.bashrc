@@ -119,7 +119,7 @@ source /etc/bash_completion
 # keychain ~/.ssh/id_rsa 2>&-
 # source ~/.keychain/$(uname -n)-sh > /dev/null
 
-gtd
+# gtd
 # find /home/andrei/maildirs/ -regextype posix-basic -regex '.*:.*F.*' | xargs amail.py -i
 # clndr.py --tt
 # 

@@ -118,13 +118,17 @@
     border-color: #00F;
 }
 
-#ItemLabel0 { background-color: #FFAAAA; }
-#ItemLabel1 { background-color: #ffccaa; }
-#ItemLabel2 { background-color: #ffffaa; }
-#ItemLabel3 { background-color: #aaffaa; }
-#ItemLabel4 { background-color: #aaccff; }
-#ItemLabel5 { background-color: #bbaaff; }
-#ItemLabel6 { background-color: #ddaaff; }
+#ItemButton {
+    padding: 1px;
+}
+
+#ItemLabel0 { background-color: #FFAAAA; font: Monospace 12; }
+#ItemLabel1 { background-color: #ffccaa; font: Monospace 12; }
+#ItemLabel2 { background-color: #ffffaa; font: Monospace 12; }
+#ItemLabel3 { background-color: #aaffaa; font: Monospace 12; }
+#ItemLabel4 { background-color: #aaccff; font: Monospace 12; }
+#ItemLabel5 { background-color: #bbaaff; font: Monospace 12; }
+#ItemLabel6 { background-color: #ddaaff; font: Monospace 12; }
 
 #GotoPrevBatchButton {
     background-color: #eeffee;

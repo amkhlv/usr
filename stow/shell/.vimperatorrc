@@ -23,8 +23,6 @@ command emacs javascript(io.system("FILETOEDIT=\""+(document.getElementById("url
 
 command pod javascript(io.system("FILETOEDIT=\""+(document.getElementById("urlbar").value.replace(/^file:\/\//,"").replace(/#.*/,""))+"\" ;  FTE=\"$( readlink -f \"$FILETOEDIT\" | sed -e\'s/\\/html-doc\\//\\/doc\\//\' | sed -e\'s/\\.html$/.pod/\' )\" ; if [ -e \"$FTE\" ] ; then emacsclient \"$FTE\" ; else zenity --error --text=\"file $FTE not found\" ; fi &"))
 
-command scribble javascript(io.system("FILETOEDIT=\""+(document.getElementById("urlbar").value.replace(/^file:\/\//,"").replace(/#.*/,""))+"\" ;  [[ \"$FILETOEDIT\" =~ .*/index\\.html$ ]] && { FTE=\"$( readlink -f \"$FILETOEDIT\" | sed -e\'s|/index\\.html$|.scrbl|\' )\" ; } || { FTE=\"$( readlink -f \"$FILETOEDIT\" | sed -e\'s/\\.html$/.scrbl/\' )\" ; } ; if [ -e \"$FTE\" ] ; then emacsclient \"$FTE\" ; else zenity --error --text=\"file $FTE not found\" ; fi &"))
-
 command shell javascript(io.system("FILETOEDIT=\""+(document.getElementById("urlbar").value.replace(/^file:\/\//,""))+"\" ; uxterm -e \"cd $FILETOEDIT ; bash\" &"))
 
 map <C-m> <cr>
