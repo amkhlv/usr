@@ -1,13 +1,11 @@
 package controllers
 
-import java.io.{FileInputStream, File}
-import java.util
-import play.api.Play
-import play.api.mvc.{Action, Controller}
+import java.io.File
+
 import org.markdown4j.Markdown4jProcessor
-import net.fortuna.ical4j.data.CalendarBuilder
-import net.fortuna.ical4j.model.{Calendar, Period, DateTime, Dur, Component, ComponentList}
-import net.fortuna.ical4j.filter.{PeriodRule, Filter}
+import play.api.{Configuration, Play}
+import play.api.mvc.{Action, Controller}
+import scala.sys.process._
 import scala.language.postfixOps
 
 object Application extends Controller {
@@ -15,6 +13,15 @@ object Application extends Controller {
     case None => throw new Exception("conf parameter application.ics is missing from the file application.conf!")
     case Some(s) => s
   }
+  val sqliConf: Configuration = Play.current.configuration.getConfig("application.sqlis") match {
+    case None => throw new Exception("conf parameter application.sqlis is missing from the file application.conf!")
+    case Some(c) => c
+  }
+  val sqliMap : Map[String,String] = (for ( k <- sqliConf.keys.toList ) yield (
+    k -> (sqliConf.getString(k) match {
+      case None => throw new Exception("error in sqli configuration")
+      case Some(f) => f
+    })     ) ) toMap
   def markdown: String = {
     val processor = new Markdown4jProcessor()
     processor.process(new File(
@@ -41,5 +48,16 @@ object Application extends Controller {
   def index = Action {
     Ok(views.html.index(weeks(1,2)))
   }
+
+  def sqli(s:String) = Action {
+    sqliMap.get(s) match {
+      case None => Ok(views.html.index(weeks(1, 2)))
+      case Some(x) => {
+        Seq("/home/andrei/bin/amkhlv-x-launcher.sh", "/home/andrei/bin/linii2 -y " + x).run
+        Ok(views.html.index(weeks(1, 2)))
+      }
+    }
+  }
+
 }
 

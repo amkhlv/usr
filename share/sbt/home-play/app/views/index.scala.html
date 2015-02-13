@@ -31,3 +31,17 @@
           </td> } </tr>
     }
 </table>
+
+<table>
+    <tr>
+        @controllers.Application.sqliMap.keys.map { k =>
+        <td>
+            <form method="POST" action="/sqli/?db=@k">
+                <div class="button">
+                    <button type="submit">@k</button>
+                </div>
+            </form>
+        </td>
+}
+    </tr>
+    </table>
