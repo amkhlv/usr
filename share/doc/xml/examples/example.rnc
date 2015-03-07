@@ -1,0 +1,11 @@
+element catalog {
+  element book {
+    attribute id { text },
+    element author { text },
+    element title { text },
+    element genre { text },
+    element price { xsd:float },
+    element publish_date { xsd:date },
+    element description { text }
+  }*
+}

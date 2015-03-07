@@ -25,6 +25,7 @@
 (require 'amkhlv-pod)
 (require 'amkhlv-md)
 (require 'amkhlv-scribble)
+(require 'amkhlv-nxml)
 ;(require 'amkhlv-org)
 ;(require 'amkhlv-mail)
 ;(require 'amkhlv-html)
@@ -156,6 +157,24 @@
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+
+(add-hook 'nxml-mode-hook
+          (lambda()
+            (hs-minor-mode 1)
+            (define-key nxml-mode-map "\C-c\C-r" 'rng-reload-schema)
+            ))
+
+
+
+(add-to-list 'hs-special-modes-alist
+             '(nxml-mode
+               "<!--\\|<[^/>]*[^/]>" ;; regexp for start block
+               "-->\\|</[^/>]*[^/]>" ;; regexp for end block
+               "<!--"
+               nxml-forward-element
+               nil))
+
+
 
 
 (setq TeX-outline-extra
