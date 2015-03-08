@@ -19,7 +19,13 @@
     </div>
 }
 
+<hr>
 
+@helper.form(action = helper.CSRF(routes.Application.index()), 'enctype -> "multipart/form-data") {
+
+  Please <b>do not reload this page</b>, instead press this button:  <input type="submit" value="refresh">
+
+}
 
 <hr>
 <h2> Select file to upload: </h2>
