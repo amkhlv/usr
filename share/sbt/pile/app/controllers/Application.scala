@@ -1,15 +1,13 @@
 package controllers
 
+import java.io.File
+
+import org.apache.log4j.{Logger, PropertyConfigurator}
 import play.api.Play
 import play.api.data.Form
-import play.api.mvc.{AnyContent, Action, Controller, Result}
 import play.api.data.Forms._
+import play.api.mvc.{Action, Controller}
 import play.filters.csrf._
-import java.nio.file.Paths
-import java.io.File
-import views.html.defaultpages.badRequest
-import org.apache.log4j.Logger
-import org.apache.log4j.PropertyConfigurator
 
 object Application extends Controller {
   val logger = Logger.getLogger("Application")

@@ -1,11 +1,13 @@
 package controllers
 
+/**
+ * Created by andrei on 11/03/15.
+ */
+
 import org.mindrot.jbcrypt.BCrypt
 import scala.language.postfixOps
 
-/**
- * Created by andrei on 21/08/14.
- */
+
 object Utils {
   def sha256(s: String) = {
     val m = java.security.MessageDigest.getInstance("SHA-256")
@@ -23,13 +25,5 @@ object Utils {
     val r = new java.security.SecureRandom
     println((1 to 64).map(_=>(r.nextInt(74)+48).toChar).mkString.replaceAll("\\\\+", "/"))
   }
-  def stringToHexString(s: String) : String = {
-    val cs = s.toCharArray toList
-    val is = cs map ( c => c.toInt )
-    (cs map ((ch : Char) => ch.toInt.toHexString )) mkString("_")
-  }
-  def hexStringToString(h: String) : String = {
-    val hs = h.split("_")
-    (hs map ((x: String) => Integer.parseInt(x,16).toChar)) mkString
-  }
 }
+
