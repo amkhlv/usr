@@ -498,3 +498,5 @@
 (setq org-log-done t)
 (setq org-agenda-files (list "~/a/org/"))
 
+(autoload 'rnc-mode "rnc-mode")
+(add-to-list 'auto-mode-alist '("\\.rnc\\'" . rnc-mode))

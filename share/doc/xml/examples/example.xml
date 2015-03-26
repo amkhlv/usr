@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-stylesheet href="example.xsl" type="text/xsl" ?>
 <catalog>
   <book id="bk101">
     <author>Gambardella, Matthew</author>
