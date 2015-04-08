@@ -5,6 +5,8 @@
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
+(when (fboundp 'electric-indent-mode) (electric-indent-mode -1))
+
 (setq line-number-mode t) 
 (setq column-number-mode t)
 
@@ -18,6 +20,7 @@
 ;;(menu-bar-mode -1)
 (tool-bar-mode 0)
 (add-to-list 'load-path "~/usr/lib/emacs/")
+(add-to-list 'load-path "~/a/git/yasnippet")
 
 (require 'amkhlv)
 (require 'amkhlv-dired)
@@ -448,12 +451,13 @@
   )
 
 
-;; (require 'yasnippet) ;; not yasnippet-bundle
-;; (yas/initialize)
-;; (setq yas/root-directory "~/usr/lib/emacs/snippets")
-;; (yas/load-directory yas/root-directory)
+(require 'yasnippet) ;; not yasnippet-bundle
+(setq yas-snippet-dirs
+     '("~/usr/lib/emacs/snippets"))
+(yas-global-mode 1)
 
-(require 'ys-bundle)
+
+
 
 (defun mycompile-yasnippet-bundle ()
   "This is to recompile the yasnippet tree; use after modify the snippets directory tree"
