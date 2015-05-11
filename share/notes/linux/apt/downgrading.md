@@ -8,6 +8,12 @@ Also, create the file `/etc/apt/preferences` and put the following lines in it:
     Pin: release a=testing
     Pin-Priority: 1001
 
+Then do:
+
+    apt-get update
+    apt-get upgrade
+    apt-get dist-upgrade
+
 
 
 # Downgrade from `unstable` to `stable`

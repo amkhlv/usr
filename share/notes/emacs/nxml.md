@@ -72,3 +72,5 @@ then start type `<smth attr="good"` and press `C-c C-b`
 
 Similarly, if you need inline: `<smth>...</smth>` then type `<smth` and press `C-c C-i`
 
+For __completion__ press `C-M-i`
+

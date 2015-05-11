@@ -85,14 +85,7 @@
 }
 
 
-/* For standard table: */
-table, th, td
-{
-  font-family: "DejaVu Sans";
-  font-size: 16pt;
-}
-
-/* and for my table: */
+/* for my table: */
 .amktablecell {
     border-right: 1px solid green;
     border-bottom: 1px solid green;

@@ -56,6 +56,7 @@ it defaults to "passwords.gpg". The contents are of the form:
         (case key
           [(escape) (escape)]
           [(f5) (begin (read-xpr-from-file) 'reload)]
+          [(f6) (begin (decrypt-file) 'decrypt-file)]
           [(backspace)
            (if (> (string-length acc) 0)
                (begin
@@ -82,7 +83,7 @@ it defaults to "passwords.gpg". The contents are of the form:
 (define xpr '())
 
 (define (read-xpr-from-file)
-  (charterm-newline)
+  (charterm-clear-screen)
   (charterm-display "WAIT...")
   (charterm-newline)
   (define-values (proc inp outp errp)
@@ -98,10 +99,42 @@ it defaults to "passwords.gpg". The contents are of the form:
   (set! xpr (the:xml->xexpr (the:read-xml/element inp)))
   (for/list ([ln (string-split (port->string errp) #rx"\n")])
     (charterm-newline)
+    (charterm-clear-line)
     (charterm-display ln))
   (sleep 1)
   (close-input-port inp)
   (close-input-port errp))
+
+(define (decrypt-file)
+  (charterm-newline)
+  (charterm-display "ENTER NAME OF FILE TO DECRYPT:")
+  (charterm-newline)
+  (define fn (expand-user-path (myreadline #:hide #f)))
+  (charterm-newline)
+  (charterm-display fn)
+  (charterm-newline)
+  (define-values (proc inp outp errp)
+    (subprocess #f #f #f
+                (find-executable-path "gpg")
+                "--batch"
+                "--passphrase-fd"
+                "0"
+                "--decrypt"
+                fn))
+  (display passphrase outp)
+  (close-output-port outp)
+  (for/list ([ln (string-split (port->string errp) #rx"\n")])
+    (charterm-newline)
+    (charterm-clear-line)
+    (charterm-display ln))
+  (charterm-newline)
+  (for/list ([ln (string-split (port->string inp) #rx"\n")])
+    (charterm-newline)
+    (charterm-clear-line)
+    (charterm-display ln))
+  (close-input-port inp)
+  (close-input-port errp)
+  )
 
 (with-charterm
  (charterm-clear-screen)
@@ -216,13 +249,15 @@ it defaults to "passwords.gpg". The contents are of the form:
      (charterm-newline)
      (charterm-clear-line-left)
      (charterm-underline)
-     (charterm-display "Enter regex, or F5 for reload, or ESC to quit:")
+     (charterm-display "Enter regex, or F5 for reload, or F6 to decrypt file, or ESC to quit:")
      (charterm-normal)
      (let ([r (myreadline)])
        (case r
          ((reload)
           (charterm-newline)
           (charterm-display "RELOADED")
+          (ask-for-regexp))
+         ((decrypt-file)
           (ask-for-regexp))
          (else (show-matches (regexp r)))
          )))

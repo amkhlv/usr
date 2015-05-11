@@ -4,6 +4,8 @@ Create new secret key
 With salted, hashed password
 ----------------------------
 
+First of all, __we should create the folder__ `.gnupg` (because GnuPG for some reason cannot create this folder for us)
+
 Go to the directory wich contains the homedir of `GnuPG` and say:
 
     gpg --homedir=.gnupg --gen-key --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-mode 3 --s2k-count 65000000    

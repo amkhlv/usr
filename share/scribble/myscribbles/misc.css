@@ -107,6 +107,10 @@ font-size:x-small;
     background-color: yellow;
 }
 
+.amkhighlight {
+    background-color: rgb(255,255,200);
+}
+
 .red {
     color: red;
 }

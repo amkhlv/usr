@@ -32,7 +32,8 @@ Encrypting the key
 Preparing the `GnuPG` on the USB key
 ------------------------------------
 
-See my writeup in `notes/encryption/OpenPGP.md`. I usually name the recipient as follows: `boot-hostname`. Although this should
+See my writeup in [notes/encryption/OpenPGP.md](../notes/encryption/OpenPGP.md).
+I usually name the recipient as follows: `boot-hostname`. Although this should
 not matter for anything.
 
 __Always call the encrypted key as follows:__ `hostname.gpg`;
