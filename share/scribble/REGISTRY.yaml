@@ -1,5 +1,5 @@
 htmls:
-  - main 
+  - main
 html:
   - name: streets 
     dest: strdir

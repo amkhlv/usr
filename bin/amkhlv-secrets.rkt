@@ -34,7 +34,10 @@ it defaults to "passwords.gpg". The contents are of the form:
 (define (loginbutton x) (ansi-bold (ansi-bg256  0 (ansi-fg256 82 x)))) 
 (define (urlbutton x) (ansi-bold (ansi-bg256 33 (ansi-fg256 88 x))))
 (define (exitbutton x) (ansi-bold (ansi-bg256 218 (ansi-fg256 18 x))))
+(define (warningbutton x) (ansi-bold (ansi-bg256 218 (ansi-fg256 18 x))))
 (define (high-yellow x) (ansi-bg256 228 (ansi-fg256 0 x)))
+(define (strong-warning x) (ansi-bold (ansi-bg256 1 (ansi-fg256 15 x))))
+(define spacebutton (ansi-bold (ansi-reverse "SPACE")))
 
 (struct pwdata (nick
                 url
@@ -152,49 +155,62 @@ it defaults to "passwords.gpg". The contents are of the form:
 (define (show-data p)
   (ansi-clear-screen)
   (printf
-   "~a -> ~a\n\n"
-   (pwdata-url p) 
-   (pwdata-login p))
+   "\n~a -> ~a\n\n"
+   (urlbutton (pwdata-url p))
+   (loginbutton (pwdata-login p)))
   (unless (equal? "" (pwdata-description p))
     (printf 
-     "Description:     ~a\n"
+     (string-append (ansi-underline "\nDescription:") "  ~a\n")
      (pwdata-description p)))
   (unless (equal? "" (pwdata-login-challenge p))
     (printf
-     "Login challenge: ~a\n"
+     (string-append (ansi-underline "\nLogin challenge:") "  ~a\n")
      (pwdata-login-challenge p)))
   (unless (equal? "" (pwdata-notes p))
     (printf
-     "Notes:           ~a\n"
+     (string-append (ansi-underline "\nNotes:") "  ~a\n")
      (pwdata-notes p)))
   (unless (equal? "" (pwdata-forgot-password-challenge p)) (display "\n\n+forgot password challenge\n"))
   (unless (equal? "" (pwdata-secret-notes p)) (display "\n\n+secret notes\n"))
   (insert-into-xsel (pwdata-password p))
-  (request-keypress "\nPress SPACE to copy login\n" #\space)
+  (display (strong-warning "password copied"))
+  (request-keypress 
+   (format "\nPress ~a to copy login and return to mainloop\n" spacebutton) 
+   #\space)
   (insert-into-xsel (pwdata-login p))
-  (request-keypress "\nPress SPACE again to return to mainloop\n" #\space)
-  (ansi-clear-screen)
-  (mainloop))
+  (ansi-clear-screen))
 
-(define (decrypt-file)
-  (define fn (expand-user-path (read-line-from-xsel)))
-  (printf "\nDo you want to decrypt this file: -->~a<--\n" fn)
-  (when (request-keypress "\nPress SPACE to confirm or n to cancel\n" #\space)
-    (let ([lines-of-plaintext
-           (with-external-command-as
-            gpg "gpg" ("--batch" "--passphrase-fd" "0" "--decrypt" fn)
-            (display (current-passphrase) gpg-stdin)
-            (close-output-port gpg-stdin)
-            (display (port->string gpg-stderr))
-            (port->string gpg-stdout))])
-      (display (high-yellow lines-of-plaintext))
-      (request-keypress "\n\nPress SPACE to return to mainloop\n" #\space)))
-  )
+(define decrypt-file
+  (let ([f (λ (x)
+             (define fn (expand-user-path x))
+             (printf "\nDo you want to decrypt this file: -->~a<--\n" fn)
+             (when (request-keypress 
+                    (format "\nPress ~a to confirm or n to cancel\n" spacebutton) 
+                    #\space)
+               (let ([lines-of-plaintext
+                      (with-external-command-as
+                       gpg "gpg" ("--batch" "--passphrase-fd" "0" "--decrypt" fn)
+                       (display (current-passphrase) gpg-stdin)
+                       (close-output-port gpg-stdin)
+                       (display (port->string gpg-stderr))
+                       (port->string gpg-stdout))])
+                 (display (high-yellow lines-of-plaintext))
+                 (request-keypress 
+                  (format "\n\nPress ~a to return to mainloop\n" spacebutton) 
+                  #\space)))
+             (ansi-clear-screen))])
+    (case-lambda 
+      [() (f (read-line-from-xsel))]
+      [(x) (f x)])))
 
 (define (reload)
   (load-xexpr-from-file)
   (load-list-of-pwdata (current-root-xexpr))
   (display "\ndata seems OK\n"))
+
+(define (nothing-found-info r)
+  (ansi-clear-screen)
+  (display (warningbutton (string-append "Nothing found for -->" r "<--\n\n\n"))))
 
 (ansi-clear-screen)
 (display "Enter passphrase:")
@@ -202,15 +218,21 @@ it defaults to "passwords.gpg". The contents are of the form:
 (display "\nthank you\n")
 (reload)
 
-(define (mainloop)
-  (printf "Enter regexp, or:\n")
+(let mainloop ()
+  (printf "Enter ~a, or ~a to decrypt a file, or:\n" (ansi-underline "regexp") (ansi-underline "!path/to/file.gpg"))
   (printf "~a to decrypt\n" (charbutton "d"))
   (printf "~a or ~a to exit\n" (charbutton "q") (charbutton "e"))
   (printf "~a to reload\n" (charbutton "r"))
   (let ([r (read-line)])
     (cond
+     [(string=? r "") (ansi-clear-screen) (mainloop)]
      [(string=? r "d") (decrypt-file) (mainloop)]
+     [(char=? (string-ref r 0) #\!) (decrypt-file (substring r 1)) (mainloop)]
      [((string=? r "e") . or . (string=? r "q")) (display (exitbutton "Exiting\n"))]
-     [(string=? r "r") (reload) (mainloop)]
-     [else (suggest-matches (get-matches r))])))
-(mainloop)
+     [(string=? r "r") (ansi-clear-screen) (reload) (mainloop)]
+     [else ;treat as regular expression
+      (let [(ms (get-matches r))]
+        (if (cons? (hash-keys ms))
+            (begin (suggest-matches ms)   (mainloop))
+            (begin (nothing-found-info r) (mainloop))))])))
+
