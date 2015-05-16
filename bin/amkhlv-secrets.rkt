@@ -74,19 +74,19 @@ it defaults to "passwords.gpg". The contents are of the form:
 
 (define (insert-into-xsel s)
   (with-external-command-as 
-   xsel "xsel" ("-i")
+   xsel ("xsel" "-i")
    (display s xsel-stdin)))
 
 (define (read-line-from-xsel)
   (with-external-command-as 
-   xsel "xsel" ()
+   xsel ("xsel")
    (read-line xsel-stdout)))
 
 (define (load-xexpr-from-file)
   (display "\nWAIT...\n")
   (current-root-xexpr
    (with-external-command-as 
-    gpg "gpg" ("--batch" "--passphrase-fd" "0" "--decrypt" filename)
+    gpg ("gpg" "--batch" "--passphrase-fd" "0" "--decrypt" filename)
     (display (current-passphrase) gpg-stdin)
     (close-output-port gpg-stdin)
     (for ([e (port->lines gpg-stderr)]) (display e))
@@ -114,7 +114,9 @@ it defaults to "passwords.gpg". The contents are of the form:
 (define (get-matches rgx)
   (let* ([ms 
           (filter 
-           (lambda (x) (regexp-match rgx (pwdata-nick x)))
+           (lambda (x) (or
+                        (regexp-match rgx (pwdata-nick x))
+                        (regexp-match rgx (pwdata-url x))))
            (current-pwds))]
          [nicks
           (list->set (for/list ([x ms]) (pwdata-nick x)))])
@@ -128,7 +130,7 @@ it defaults to "passwords.gpg". The contents are of the form:
 (define (suggest-matches h)
   (define (p_enumerated xs acc)
     (let ([l (length acc)])
-      (if (and (cons? xs) (l . < . 9))
+      (if (and (cons? xs) (l . < . 12))
           (p_enumerated (cdr xs) (cons (cons l (car xs)) acc))
         acc)))
   (define accts 
@@ -144,12 +146,14 @@ it defaults to "passwords.gpg". The contents are of the form:
             (urlbutton (pwdata-url  (hash-ref accts_e k)))
             (loginbutton (pwdata-login (hash-ref accts_e k))))
     (printf "~a\n\n" (pwdata-description (hash-ref accts_e k))))
-  (let askhint ([msg "\n--------------\nEnter letter: "])
+  (let askhint ([msg "\n--------------\nEnter letter or ESC: "])
     (printf msg)
     (define ch (- (char->integer (get-one-char)) 97))
     (if (member ch (hash-keys accts_e)) 
         (show-data (hash-ref accts_e ch))
-        (askhint "\n ERROR: Letter out of range !\n"))))
+        (if (eqv? 27 (+ ch 97))
+            (ansi-clear-screen)
+            (askhint "\n ERROR: Letter out of range !\n")))))
 
 
 (define (show-data p)
@@ -185,11 +189,11 @@ it defaults to "passwords.gpg". The contents are of the form:
              (define fn (expand-user-path x))
              (printf "\nDo you want to decrypt this file: -->~a<--\n" fn)
              (when (request-keypress 
-                    (format "\nPress ~a to confirm or n to cancel\n" spacebutton) 
+                    (format "\nPress ~a to confirm or any other key to cancel\n" spacebutton) 
                     #\space)
                (let ([lines-of-plaintext
                       (with-external-command-as
-                       gpg "gpg" ("--batch" "--passphrase-fd" "0" "--decrypt" fn)
+                       gpg ("gpg" "--batch" "--passphrase-fd" "0" "--decrypt" fn)
                        (display (current-passphrase) gpg-stdin)
                        (close-output-port gpg-stdin)
                        (display (port->string gpg-stderr))
