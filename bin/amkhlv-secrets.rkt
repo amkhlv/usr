@@ -15,11 +15,35 @@ it defaults to "passwords.gpg". The contents are of the form:
         <login_challenge>additional challenge questions needed to login, if any</login_challenge>
         <forgot_password_challenge>what to do if forgot password</forgot_password_challenge>
         <secret_notes>maybe some secret notes</secret_notes>
+        <tags><tag>friends</tag><tag>fun</tag>...</tags>
       </account>
     </site>
     ...
   </sites>
 </xml>
+
+More precisely, using the Relax NG compact notations:
+
+element xml {
+   element sites {
+      element site {
+         attribute nick { text },
+         attribute url  { text },
+         element account {
+            attribute login { text },
+            element password { text },
+            element description { text },
+            element notes { text }?,
+            element login_challenge { text }?,
+            element forgot_password_challenge { text }?,
+            element secret_notes { text }?,
+            element tags { 
+               element tag {text}*
+            }?
+         }*
+      }+
+   }}
+
 |#
 
 (require racket/cmdline 
@@ -48,6 +72,7 @@ it defaults to "passwords.gpg". The contents are of the form:
                 login-challenge
                 forgot-password-challenge
                 secret-notes
+                tags
                 ))
 
 (define current-passphrase (make-parameter ""))
@@ -103,7 +128,10 @@ it defaults to "passwords.gpg". The contents are of the form:
    (apply string-append (se-path*/list '(account notes) a))
    (apply string-append (se-path*/list '(account login_challenge) a))
    (apply string-append (se-path*/list '(account forgot_password_challenge) a))
-   (apply string-append (se-path*/list '(account secret_notes) a))))
+   (apply string-append (se-path*/list '(account secret_notes) a))
+   (for/list ([x (se-path*/list '(account tags) a)] #:when (cons? x)) 
+     (apply string-append (se-path*/list '(tag) x)))
+   ))
 
 (define (load-list-of-pwdata some-xexpr)
   ((λ (x) (current-pwds (apply append x)))
@@ -111,28 +139,43 @@ it defaults to "passwords.gpg". The contents are of the form:
      (for/list ([a (se-path*/list '(site) s)] #:when (cons? a))
        (xexpr->pwdata a (se-path* '(site #:nick) s) (se-path* '(site #:url) s))))))
 
-(define (get-matches rgx)
+(define (collect-tags ps)
+  (list->set (apply append (for/list ([p ps]) (pwdata-tags p)))))
+
+(define (hint-tags)
+  (define hh (make-hash))
+  (for ([t (collect-tags (current-pwds))])
+    (let ([n (length (hash-keys hh))])
+      (printf "~a:  ~a\n" 
+              (charbutton (string #\space (integer->char (+ 97 n)) #\space)) t)
+      (hash-set! hh n t)))
+  hh)
+
+(define (get-matches rgx (tags #f))
   (let* ([ms 
           (filter 
-           (lambda (x) (or
-                        (regexp-match rgx (pwdata-nick x))
-                        (regexp-match rgx (pwdata-url x))))
+           (lambda (x) (and
+                        (or
+                         (not rgx)
+                         (regexp-match (regexp rgx) (pwdata-nick x))
+                         (regexp-match (regexp rgx) (pwdata-url x)))
+                        (or (not tags)
+                            (for/and ([tag tags]) (member tag (pwdata-tags x))))))
            (current-pwds))]
-         [nicks
-          (list->set (for/list ([x ms]) (pwdata-nick x)))])
+         [nicks (list->set (for/list ([x ms]) (pwdata-nick x)))])
     (make-hash
      (for/list ([nick nicks])
        (cons nick 
              (let ([accts 
                     (filter (lambda (x) (string=? (pwdata-nick x) nick)) ms)])
                accts))))))
-    
+
 (define (suggest-matches h)
   (define (p_enumerated xs acc)
     (let ([l (length acc)])
-      (if (and (cons? xs) (l . < . 12))
+      (if (and (cons? xs) (l . < . 16))
           (p_enumerated (cdr xs) (cons (cons l (car xs)) acc))
-        acc)))
+          acc)))
   (define accts 
     (apply 
      append
@@ -140,12 +183,12 @@ it defaults to "passwords.gpg". The contents are of the form:
   (define accts_e (make-hash (reverse (p_enumerated accts '()))))
   (display "\n--------------\n")
   (for ([k (hash-keys accts_e)])
-    (printf "~a:  ~a   ~a   ~a\n" 
+    (printf "~a── ~a   ~a   ~a\n" 
             (charbutton (string #\space (integer->char (+ 97 k)) #\space))
             (pwdata-nick (hash-ref accts_e k)) 
             (urlbutton (pwdata-url  (hash-ref accts_e k)))
             (loginbutton (pwdata-login (hash-ref accts_e k))))
-    (printf "~a\n\n" (pwdata-description (hash-ref accts_e k))))
+    (printf " ╰─── ~a\n" (pwdata-description (hash-ref accts_e k))))
   (let askhint ([msg "\n--------------\nEnter letter or ESC: "])
     (printf msg)
     (define ch (- (char->integer (get-one-char)) 97))
@@ -154,7 +197,6 @@ it defaults to "passwords.gpg". The contents are of the form:
         (if (eqv? 27 (+ ch 97))
             (ansi-clear-screen)
             (askhint "\n ERROR: Letter out of range !\n")))))
-
 
 (define (show-data p)
   (ansi-clear-screen)
@@ -216,27 +258,49 @@ it defaults to "passwords.gpg". The contents are of the form:
   (ansi-clear-screen)
   (display (warningbutton (string-append "Nothing found for -->" r "<--\n\n\n"))))
 
+(define (split-on-first-comma s)
+  (let a ([comma-pos 0])
+    (cond
+     [(not (comma-pos . < . (string-length s)))
+      (cons s #f)]
+     [(char=? #\, (string-ref s comma-pos))
+      (cons (substring s 0 comma-pos) (substring s (+ 1 comma-pos)))]
+     [else (a (+ 1 comma-pos))])))
+(define (hints->tags ht s)
+  (for/list ([c (string->list s)] #:when (member (- (char->integer c) 97) (hash-keys ht)))
+    (hash-ref ht (- (char->integer c) 97))))
+
 (ansi-clear-screen)
 (display "Enter passphrase:")
 (current-passphrase (askpass))
 (display "\nthank you\n")
 (reload)
 
-(let mainloop ()
-  (printf "Enter ~a, or ~a to decrypt a file, or:\n" (ansi-underline "regexp") (ansi-underline "!path/to/file.gpg"))
+(let mainloop ([with-tags #f])
+  (printf "~a\n" filename)
+  (if with-tags
+      (printf "Enter ~a, or ~a to decrypt a file, or:\n" (ansi-underline "tags,regexp") (ansi-underline "!path/to/file.gpg"))
+      (printf "Enter ~a, or ~a to decrypt a file, or:\n" (ansi-underline "regexp") (ansi-underline "!path/to/file.gpg")))
   (printf "~a to decrypt\n" (charbutton "d"))
   (printf "~a or ~a to exit\n" (charbutton "q") (charbutton "e"))
   (printf "~a to reload\n" (charbutton "r"))
+  (printf "~a to show tags\n" (charbutton "t"))
   (let ([r (read-line)])
     (cond
-     [(string=? r "") (ansi-clear-screen) (mainloop)]
-     [(string=? r "d") (decrypt-file) (mainloop)]
-     [(char=? (string-ref r 0) #\!) (decrypt-file (substring r 1)) (mainloop)]
+     [(string=? r "") (ansi-clear-screen) (mainloop #f)]
+     [(string=? r "d") (decrypt-file) (mainloop #f)]
+     [(char=? (string-ref r 0) #\!) (decrypt-file (substring r 1)) (mainloop #f)]
      [((string=? r "e") . or . (string=? r "q")) (display (exitbutton "Exiting\n"))]
-     [(string=? r "r") (ansi-clear-screen) (reload) (mainloop)]
+     [(string=? r "r") (ansi-clear-screen) (reload) (mainloop #f)]
+     [(string=? r "t") (mainloop (hint-tags))]
      [else ;treat as regular expression
-      (let [(ms (get-matches r))]
+      (let [(ms 
+             (if with-tags
+                 (let ([rr (split-on-first-comma r)])
+                   (get-matches (cdr rr) (hints->tags with-tags (car rr))))
+                 (get-matches r)))
+            ]
         (if (cons? (hash-keys ms))
-            (begin (suggest-matches ms)   (mainloop))
-            (begin (nothing-found-info r) (mainloop))))])))
+            (begin (suggest-matches ms)   (mainloop #f))
+            (begin (nothing-found-info r) (mainloop #f))))])))
 
