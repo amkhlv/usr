@@ -31,7 +31,11 @@ element xml {
          attribute url  { text },
          element account {
             attribute login { text },
-            element password { text },
+            element password { 
+               attribute changed { xsd:date }?,
+               attribute expired { xsd:date }?,
+               text 
+            },
             element description { text },
             element notes { text }?,
             element login_challenge { text }?,
@@ -67,6 +71,8 @@ element xml {
                 url
                 login
                 password
+                password-changed
+                password-expires
                 description
                 notes
                 login-challenge
@@ -119,16 +125,19 @@ element xml {
   )
 
 (define (xexpr->pwdata a site-nick site-url)
+  (define (f x) (and (cons? x) (apply string-append x)))
   (pwdata
    site-nick
    site-url
    (se-path* '(account #:login) a)
-   (apply string-append (se-path*/list '(account password) a))
-   (apply string-append (se-path*/list '(account description) a))
-   (apply string-append (se-path*/list '(account notes) a))
-   (apply string-append (se-path*/list '(account login_challenge) a))
-   (apply string-append (se-path*/list '(account forgot_password_challenge) a))
-   (apply string-append (se-path*/list '(account secret_notes) a))
+   (let ([x (se-path*/list '(account password) a)]) (apply string-append x))
+   (let ([x (se-path*/list '(account password #:changed) a)]) (f x))
+   (let ([x (se-path*/list '(account password #:expires) a)]) (f x))
+   (let ([x (se-path*/list '(account description) a)]) (f x))
+   (let ([x (se-path*/list '(account notes) a)]) (f x))
+   (let ([x (se-path*/list '(account login_challenge) a)]) (f x))
+   (let ([x (se-path*/list '(account forgot_password_challenge) a)]) (f x))
+   (let ([x (se-path*/list '(account secret_notes) a)]) (f x))
    (for/list ([x (se-path*/list '(account tags) a)] #:when (cons? x)) 
      (apply string-append (se-path*/list '(tag) x)))
    ))
@@ -188,7 +197,7 @@ element xml {
             (pwdata-nick (hash-ref accts_e k)) 
             (urlbutton (pwdata-url  (hash-ref accts_e k)))
             (loginbutton (pwdata-login (hash-ref accts_e k))))
-    (printf " ╰─── ~a\n" (pwdata-description (hash-ref accts_e k))))
+    (printf " ╰─── ~a\n" (or (pwdata-description (hash-ref accts_e k)) "---")))
   (let askhint ([msg "\n--------------\nEnter letter or ESC: "])
     (printf msg)
     (define ch (- (char->integer (get-one-char)) 97))
@@ -204,20 +213,20 @@ element xml {
    "\n~a -> ~a\n\n"
    (urlbutton (pwdata-url p))
    (loginbutton (pwdata-login p)))
-  (unless (equal? "" (pwdata-description p))
+  (when (pwdata-description p)
     (printf 
      (string-append (ansi-underline "\nDescription:") "  ~a\n")
      (pwdata-description p)))
-  (unless (equal? "" (pwdata-login-challenge p))
+  (when (pwdata-login-challenge p)
     (printf
      (string-append (ansi-underline "\nLogin challenge:") "  ~a\n")
      (pwdata-login-challenge p)))
-  (unless (equal? "" (pwdata-notes p))
+  (when (pwdata-notes p)
     (printf
      (string-append (ansi-underline "\nNotes:") "  ~a\n")
      (pwdata-notes p)))
-  (unless (equal? "" (pwdata-forgot-password-challenge p)) (display "\n\n+forgot password challenge\n"))
-  (unless (equal? "" (pwdata-secret-notes p)) (display "\n\n+secret notes\n"))
+  (when (pwdata-forgot-password-challenge p) (display "\n\n+forgot password challenge\n"))
+  (when (pwdata-secret-notes p) (display "\n\n+secret notes\n"))
   (insert-into-xsel (pwdata-password p))
   (display (strong-warning "password copied"))
   (request-keypress 
@@ -285,6 +294,7 @@ element xml {
   (printf "~a or ~a to exit\n" (charbutton "q") (charbutton "e"))
   (printf "~a to reload\n" (charbutton "r"))
   (printf "~a to show tags\n" (charbutton "t"))
+  (printf "~a to copy password\n" (charbutton "p"))
   (let ([r (read-line)])
     (cond
      [(string=? r "") (ansi-clear-screen) (mainloop #f)]
@@ -293,6 +303,8 @@ element xml {
      [((string=? r "e") . or . (string=? r "q")) (display (exitbutton "Exiting\n"))]
      [(string=? r "r") (ansi-clear-screen) (reload) (mainloop #f)]
      [(string=? r "t") (mainloop (hint-tags))]
+     [(string=? r "p") 
+      (insert-into-xsel (current-passphrase)) (sleep 3) (insert-into-xsel "---") (mainloop #f)]
      [else ;treat as regular expression
       (let [(ms 
              (if with-tags

@@ -36,17 +36,11 @@ Then, the command:
 
 saves into  `/etc/iptables/rules.v4` and `/etc/iptables/rules.v6`, which are then loaded on startup.
 
-> &#x3d;item\* On CentOS
->
->     /sbin/service iptables save
->
-> &#x3d;item\* On Debian
->
-> After setting up iptables as described above, say:
->
->     /etc/init.d/iptables-persistent save
->
-> It saves into  `/etc/iptables/rules.v4` and `/etc/iptables/rules.v6`; it it then loaded on startup
+After setting up iptables as described above, say:
+
+     /etc/init.d/iptables-persistent save
+
+It saves into  `/etc/iptables/rules.v4` and `/etc/iptables/rules.v6`; it it then loaded on startup
 
 The two files  `/etc/iptables/rules.v4` and `/etc/iptables/rules.v6` can be edited directly, and then:
 
@@ -113,6 +107,15 @@ Suppose `eth0` is WAN and `eth1` is LAN
     COMMIT
     # Completed on Tue Jan  1 03:15:49 2002
 
+__Dont forget__ to edit the file `/etc/sysctl.conf` to have:
+
+    net.ipv4.ip_forward = 1
+
+(It is typically commented out; just uncomment it.)
+To change to take effect immediately, execute: `sysctl -p /etc/sysctl.conf`
+
+A very nice writeup can be found [here](http://www.karlrupp.net/en/computer/nat_tutorial)
+
 # ip6
 
 I am not sure if I am doing it right. For now, I just want to block everything except the loopback
@@ -130,4 +133,12 @@ I am not sure if I am doing it right. For now, I just want to block everything e
     COMMIT
     # Completed on Tue Jan  1 03:15:49 2002
 
+# Logging
+
+The `iptables` could be very useful to monitor traffic. For example, to see all outgoing UDP, say:
+
+    iptables -N LOGGING
+    iptables -A OUTPUT -p udp -j LOGGING
+    iptables -A LOGGING -m limit --limit 2/sec -j LOG --log-prefix "IPTables-OUTPUT: " --log-level 4
+    iptables -A LOGGING -j RETURN
 

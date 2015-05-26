@@ -250,32 +250,8 @@ On the server:
 
 --- this shows the number of connected hosts _etc._
 
-# Forwarding through the server to the outside world
+# No /dev/net/tun
 
-This I actually have not tried.
+    mkdir /dev/net
+    mknod /dev/net/tun c 10 200
 
-Suppose that the VPS server is on OpenVZ with interfaces like this:
-
-    venet0    Link encap:Nao Especificado  Endereco de HW 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  
-              inet end.: 127.0.0.2  P-a-P:127.0.0.2  Bcast:0.0.0.0  Masc:255.255.255.255
-              ...
-    venet0:0  Link encap:Nao Especificado  Endereco de HW 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  
-              inet end.: 77.237.250.157  P-a-P:77.237.250.157  Bcast:77.237.250.157  Masc:255.255.255.255
-              ...
-
-
-
-Then the `iptables` should be like this:
-
-    iptables -A FORWARD -s 192.168.88.0/24 -j ACCEPT
-    iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
-    iptables -t nat -A POSTROUTING -s 192.168.88.0/24 -j SNAT --to-source <PUBLIC_VPN_IP>
-    iptables -t nat -A POSTROUTING -s 192.168.88.0/24 -o venet0 -j SNAT --to-source 77.237.250.157
-    # This below works for real machines, not for openvz/vservers:
-    # iptables -t nat -A POSTROUTING -s 192.168.88.0/24 -o eth0 -j MASQUERADE
-
-Also, we have to make sure that IP forwarding is enabled. 
-Enable it by uncommenting/adding `net.ipv4.ip_forward = 1` to `/etc/sysctl.conf` and then
-executing: 
-
-    sysctl -p
