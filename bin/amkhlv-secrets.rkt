@@ -9,7 +9,7 @@ it defaults to "passwords.gpg". The contents are of the form:
   <sites>
     <site nick="facebook" url="facebook.com">
       <account login="my@email.com">
-        <password>mysecretword</password>
+        <password changed="2014-06-19" expires="2015-06-19">mysecretword</password>
         <description>My Facebook account</description>
         <notes>maybe extra info</notes>
         <login_challenge>additional challenge questions needed to login, if any</login_challenge>
@@ -33,7 +33,7 @@ element xml {
             attribute login { text },
             element password { 
                attribute changed { xsd:date }?,
-               attribute expired { xsd:date }?,
+               attribute expires { xsd:date }?,
                text 
             },
             element description { text },
@@ -53,10 +53,12 @@ element xml {
 (require racket/cmdline 
          racket/set
          racket/port
+         racket/date
          (prefix-in the: xml) 
          xml/path 
          (planet amkhlv/bystroTeX/utils) 
-         (planet amkhlv/truques/terminal))
+         (planet amkhlv/truques/terminal)
+         (planet amkhlv/truques/xml))
 
 (define (charbutton x) (ansi-bold (ansi-bg256 76 (ansi-fg256 232 x))))
 (define (loginbutton x) (ansi-bold (ansi-bg256  0 (ansi-fg256 82 x)))) 
@@ -192,11 +194,19 @@ element xml {
   (define accts_e (make-hash (reverse (p_enumerated accts '()))))
   (display "\n--------------\n")
   (for ([k (hash-keys accts_e)])
-    (printf "~a── ~a   ~a   ~a\n" 
+    (printf "~a── ~a   ~a   ~a   ~a\n" 
             (charbutton (string #\space (integer->char (+ 97 k)) #\space))
             (pwdata-nick (hash-ref accts_e k)) 
             (urlbutton (pwdata-url  (hash-ref accts_e k)))
-            (loginbutton (pwdata-login (hash-ref accts_e k))))
+            (loginbutton (pwdata-login (hash-ref accts_e k)))
+            (let ([expiring (pwdata-password-expires (hash-ref accts_e k))])
+              (if expiring
+                  (let* ([exp-date* (xsd:date->date* expiring)]
+                         [exp-seconds (date->seconds exp-date*)])
+                    (if (> (+ (current-seconds) (* 30 86400)) exp-seconds)
+                        (strong-warning (string-append "Expires on " expiring))
+                        (exitbutton "❄")))
+                  "")))
     (printf " ╰─── ~a\n" (or (pwdata-description (hash-ref accts_e k)) "---")))
   (let askhint ([msg "\n--------------\nEnter letter or ESC: "])
     (printf msg)
@@ -213,6 +223,14 @@ element xml {
    "\n~a -> ~a\n\n"
    (urlbutton (pwdata-url p))
    (loginbutton (pwdata-login p)))
+  (when (pwdata-password-changed p)
+    (printf
+     (string-append (ansi-underline "\nPassword changed on:") "  ~a   ")
+     (pwdata-password-changed p)))
+  (when (pwdata-password-expires p)
+    (printf
+     (string-append (ansi-underline "expires on:") "  ~a   \n")
+     (pwdata-password-changed p)))
   (when (pwdata-description p)
     (printf 
      (string-append (ansi-underline "\nDescription:") "  ~a\n")
@@ -225,14 +243,30 @@ element xml {
     (printf
      (string-append (ansi-underline "\nNotes:") "  ~a\n")
      (pwdata-notes p)))
-  (when (pwdata-forgot-password-challenge p) (display "\n\n+forgot password challenge\n"))
-  (when (pwdata-secret-notes p) (display "\n\n+secret notes\n"))
+  (when (pwdata-forgot-password-challenge p) 
+    (printf "\n\n+forgot password challenge (press ~a to see)\n" (charbutton "c")))
+  (when (pwdata-secret-notes p) 
+    (printf "\n\n+secret notes (press ~a to see)\n" (charbutton "s")))
   (insert-into-xsel (pwdata-password p))
   (display (strong-warning "password copied"))
-  (request-keypress 
-   (format "\nPress ~a to copy login and return to mainloop\n" spacebutton) 
-   #\space)
-  (insert-into-xsel (pwdata-login p))
+  (printf "\n\nPress ~a to copy login and return to mainloop\n" spacebutton)
+  (let askhint ()
+    (define ch (get-one-char))
+    (cond
+     [(and (char=? ch #\s) (pwdata-secret-notes p)) 
+      (display (high-yellow (pwdata-secret-notes p)))
+      (request-keypress 
+       (printf "\n\nPress ~a to copy login and return to mainloop\n" spacebutton) 
+       #\space)
+      (insert-into-xsel (pwdata-login p))]
+     [(and (char=? ch #\c) (pwdata-forgot-password-challenge p))
+      (display (high-yellow (pwdata-forgot-password-challenge p)))
+      (request-keypress 
+       (printf "\n\nPress ~a to copy login and return to mainloop\n" spacebutton) 
+       #\space)
+      (insert-into-xsel (pwdata-login p))]
+     [(char=? ch #\space) (insert-into-xsel (pwdata-login p))]
+     [else (askhint)]))
   (ansi-clear-screen))
 
 (define decrypt-file
