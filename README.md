@@ -4,8 +4,7 @@ Introduction
 
 This is a collection of various scripts (which are probably only useful for myself) and [notes on Linux](share/notes)
 
-    aptitude install ufw stow emacs gmrun xbindkeys racket inkscape vimperator
-    ufw enable
+    aptitude install stow emacs gmrun xbindkeys racket inkscape screen 
 
 
 Legal

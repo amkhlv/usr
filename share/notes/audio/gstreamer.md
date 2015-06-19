@@ -57,3 +57,16 @@ This seems to be the best:
     gst-launch udpsrc port=8888 caps="application/x-rtp,clock-rate=(int)8000" ! queue ! rtppcmudepay ! mulawdec ! audioconvert ! alsasink
 
 __Attention__ : if the __receiver__ side has pulseaudio, have to use `pulsesink` instead of `alsasink`
+
+
+# Wav file over UDP
+
+Transmitting:
+
+    gst-launch-1.0 -v filesrc location=catcall.wav ! wavparse ! audioconvert ! audioresample  ! mulawenc ! rtppcmupay ! udpsink host=N.N.N.N port=8888
+
+Listening:
+
+    gst-launch-0.10 -v udpsrc uri=udp://N.N.N.N:8888 caps='application/x-rtp' ! rtppcmudepay ! mulawdec  ! pulsesink
+
+

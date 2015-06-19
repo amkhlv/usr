@@ -5,9 +5,9 @@
 # --
 #lang scribble/base
 @(require racket scribble/core scribble/base scribble/html-properties)
-@(require (for-syntax "defs_for-syntax.rkt" (planet amkhlv/bystroTeX/slides_for-syntax)))
+@(require "defs_for-syntax.rkt" (for-syntax (planet amkhlv/bystroTeX/slides_for-syntax)))
 @(require "defs.rkt" (planet amkhlv/bystroTeX/common) (planet amkhlv/bystroTeX/slides))
-@(require (only-in (planet jaymccarthy/sqlite) close))
+@(require (only-in db/base disconnect))
 @; ---------------------------------------------------------------------------------------------------
 @; User definitions:
 @(define bystro-conf   
@@ -23,13 +23,7 @@
 @(set-bystro-extension! bystro-conf "svg")
 @; This controls the single page mode:
 @(define singlepage-mode #t)
-@; ---------------------------------------------------------------------------------------------------
-@(begin ;do not change anything here:
-   (define-syntax (syntax-setter x) (defines-syntax-for-formulas x))                
-   (syntax-setter defineshiftedformula)
-   (defineshiftedformula "formula-enormula-humongula!"))
-@; ---------------------------------------------------------------------------------------------------
-
+@(bystro-def-formula "formula-enormula-humongula!")
 
 @(bystro-inject-style "misc.css" "no-margin.css")
 
@@ -44,7 +38,7 @@ $0
 
 @; ---------------------------------------------------------------------------------------------------
 @(bystro-close-connection bystro-conf)
-@close[formula-database]
+@disconnect[formula-database]
 
 `(let ((x (call-process-shell-command 
            "find ~/usr/share/scribble/myscribbles -type f | 

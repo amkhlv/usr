@@ -82,12 +82,12 @@ Also, the `SSL` support has to be enabled:
     a2enmod ssl
     apache2ctl restart
 
-Configure `DAViCal`
--------------------
-
 
 Changing the password
 =====================
+
+Learning the original password
+------------------------------
 
 The original password can be learned by doing:
 
@@ -95,6 +95,28 @@ The original password can be learned by doing:
 
 Notice that the original password is stored in __plaintext__ --- it is the expression __after two asterisks__
 
+Changing the password and emails
+--------------------------------
+
 Then change the password by navigating to the Web interface, then logging in with that original password, and
-changing the password in that web interface.
+changing the password in that web interface. After that, only the __hash__ is stored in the `postgres`.
+
+Also: <spn style="color:red; font-weight:bold;">dont forget to change emails</spn> for both `admin` and the
+new user (because the password recovery is by email):
+
+    sudo -u postgres psql davical -c 'update usr set email='example@com' where user_no=... ;'
+
+(usually the `admin` is `user_no=1` and the new user is `1001`)
+
+Recovering the password
+-----------------------
+
+If you forgot the password, can change it in the `postgres` to a __plain text__ (again):
+
+    sudo -u postgres psql davical -c "update usr set password='**someplainword' where user_no = 1;"
+
+Two asterisks before `someplainword` means that it will be stored as plain text. But then, I can
+login through the web interface and change the password again, and then it will be stored as a __hash__.
+
+
 
