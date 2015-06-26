@@ -140,22 +140,21 @@
                           (displayln (strong-warning (string-join `("ERROR:" ,name))))
                           (displayln (ansi-fg256 166 y)))))
                    (displayln (string-join (list spaces (ansi-fg256 39 "╰─") x)))))))))
-      (when (or received? changed?)
-        (when file?
-          (if (file-exists? (string-append from-dir name))
-              (with-external-command-as
-               md5-calc
-               #:cmdline
-               `("md5sum" ,(string-append from-dir name))
-               (current-md5-list 
-                (cons 
-                 (string-join 
-                  `(,(car (string-split (read-line md5-calc-stdout)))
-                    ,(string-append to-dir name)))
-                 (current-md5-list)))
-               (show-errors md5-calc-stderr)
-               (md5-calc-ctrl 'wait))
-              (displayln (string-join `(,(ansi-bg256 16 (ansi-fg256 160 "✕✕✕")) ,l))))))
+      (when (and file? current-md5-list (or received? changed?))
+        (if (file-exists? (string-append from-dir name))
+            (with-external-command-as
+             md5-calc
+             #:cmdline
+             `("md5sum" ,(string-append from-dir name))
+             (current-md5-list 
+              (cons 
+               (string-join 
+                `(,(car (string-split (read-line md5-calc-stdout)))
+                  ,(string-append to-dir name)))
+               (current-md5-list)))
+             (show-errors md5-calc-stderr)
+             (md5-calc-ctrl 'wait))
+            (displayln (string-join `(,(ansi-bg256 16 (ansi-fg256 160 "✕✕✕")) ,l)))))
       (when message?
         (displayln (ansi-bg256 183 (ansi-fg256 16 l)))))))
 
@@ -229,12 +228,14 @@
            (with-external-command-as
             fsyncer
             ("rsync" flag ... #,@args-a)
+            (process-rsync-output fsyncer-stdout usb-main-dir computer-a-dir #f)
             (show-errors fsyncer-stderr)
             (fsyncer-ctrl 'wait))
            (display-bold "rsync" flag ... #,@args-aa)
            (with-external-command-as
             fsyncer
             ("rsync" flag ... #,@args-aa)
+            (process-rsync-output fsyncer-stdout usb-tmp-dir computer-aa-dir #f)
             (show-errors fsyncer-stderr)
             (fsyncer-ctrl 'wait))
            ))]))
