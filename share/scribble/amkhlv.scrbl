@@ -1,6 +1,6 @@
 #lang scribble/base
 @(require scribble/core scribble/html-properties scriblib/render-cond)
-@(require (planet amkhlv/bystroTeX/common) (prefix-in truques: (planet amkhlv/truques/truques)))
+@(require bystroTeX/common (prefix-in truques: truques/truques))
 
 
 @(require scribble/decode)

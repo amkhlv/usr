@@ -1,0 +1,24 @@
+
+<scribblings>
+  <scribbling>
+    <name>
+      streets
+    </name>
+    <dest>
+      strdir
+    </dest>
+  </scribbling>
+  <scribbling>
+    <name>
+      bairros
+    </name>
+    <dest>
+      brdir
+    </dest>
+  </scribbling>
+  <scribbling>
+    <name>
+      main
+    </name>
+  </scribbling>
+</scribblings>

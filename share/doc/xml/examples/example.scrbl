@@ -1,6 +1,6 @@
 #lang scribble/base
 @(require racket scribble/core scribble/base scribble/html-properties)
-@(require (planet amkhlv/truques/xml))
+@(require truques/xml)
 
 @title[#:style '(no-toc no-sidebar)]{Example}
 
