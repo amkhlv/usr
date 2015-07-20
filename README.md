@@ -4,7 +4,7 @@ Introduction
 
 This is a collection of various scripts (which are probably only useful for myself) and [notes on Linux](share/notes)
 
-    aptitude install stow emacs gmrun xbindkeys racket inkscape screen xul-ext-noscript
+    aptitude install stow emacs gmrun xbindkeys racket inkscape screen xul-ext-noscript vim-gtk
 
 
 Legal

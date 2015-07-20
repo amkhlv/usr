@@ -9,6 +9,9 @@ xfconf-query -c thunar-volman -p "/automount-media/enabled"  -s false
 xfconf-query -c thunar-volman -p "/autoopen/enabled" -s false
 xfconf-query -c thunar-volman -p "/autobrowse/enabled" -s false
 
+# hinting:
+xfconf-query -c xsettings -p /Xft/HintStyle -s hintfull
+xfconf-query -c xsettings -p /Xft/Antialias -s 1
 
 ## I do not use any more, because I now use xbindkeys
 # xfconf-query -c xfce4-keyboard-shortcuts  --create -t "string" -p '/commands/custom/<Alt>k'  -s 'wmjump -v  --rich --timeout=5 >> /tmp/wmjump-log.txt'
