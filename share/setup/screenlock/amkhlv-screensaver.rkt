@@ -104,10 +104,13 @@
   (mainloop r))
 (define (mainloop lockrun)
   (let ([com (read-from-pipe)])
-    (case com
-      [("lock") (launch-xtrlock lockrun)]
-      [("unlock") (kill-xtrlock lockrun)]
-      [("exit") (finalize lockrun)]
+    (cond
+      [(regexp-match? #rx"unlock" com) (kill-xtrlock lockrun)]
+      [(regexp-match? #rx"lock" com) 
+       (begin
+         (notify-send "Locking" com #:icon "face-angel")
+         (launch-xtrlock lockrun))]
+      [(regexp-match? #rx"exit" com) (finalize lockrun)]
       [else (proceed-with-error com lockrun)]
       )))
 (if (do-stop)

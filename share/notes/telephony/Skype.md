@@ -41,3 +41,7 @@ I think it requires `pulseaudio`, but this is standard now.
 Skype is [suspected spyware](http://techrights.org/wiki/index.php/Skype_is_Spy_Campaign).
 
 
+Configuring
+===========
+
+Set all sound devices to PulseAudio Server.
