@@ -56,9 +56,9 @@ element xml {
          racket/date
          (prefix-in the: xml) 
          xml/path 
-         (planet amkhlv/bystroTeX/utils) 
-         (planet amkhlv/truques/terminal)
-         (planet amkhlv/truques/xml))
+         bystroTeX/utils
+         truques/terminal
+         truques/xml)
 
 (define (charbutton x) (ansi-bold (ansi-bg256 76 (ansi-fg256 232 x))))
 (define (loginbutton x) (ansi-bold (ansi-bg256  0 (ansi-fg256 82 x)))) 

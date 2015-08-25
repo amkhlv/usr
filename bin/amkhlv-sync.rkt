@@ -4,7 +4,7 @@
 
 (require (for-syntax racket/syntax))
 (require racket/cmdline racket/string) 
-(require (planet amkhlv/bystroTeX/utils) (planet amkhlv/truques/terminal))
+(require bystroTeX/utils truques/terminal)
 
 (define testing #f)
 

@@ -9,6 +9,7 @@ mkdir ~/usr ~/usr/local ~/usr/local/lib
 
 mkdir ~/mo ~/mo1 ~/mo2 ~/mo3
 mkdir ~/msdos
+mkdir ~/pny8
 
 [ -d ~/maildirs ] || ln -s ~/a/maildirs ~/maildirs
 ln -s ~/usr/lib/emacs/emacs.el ~/.emacs

@@ -472,18 +472,20 @@
   (require 'ys-bundle)
   )
 
-(require 
- 'scribble 
- (replace-regexp-in-string 
-  "\n$" 
-  "" 
-  (shell-command-to-string 
-   "find ~/.racket/planet/300/ -type f -path '*/cache/neil/scribble-emacs.plt/*/scribble.el' | head -n1 "
-  )))
+(require 'scribble)
+;(require 
+; 'scribble 
+; (replace-regexp-in-string 
+;  "\n$" 
+;  "" 
+;  (shell-command-to-string 
+;   "find ~/.racket/planet/300/ -type f -path '*/cache/neil/scribble-emacs.plt/*/scribble.el' | head -n1 "
+;  )))
 
 (require 'quack)
 (require 'epa-file)
 (epa-file-enable)
+(setenv "GPG_AGENT_INFO" nil)
 
 ;; Create Cyrillic-CP1251 Language Environment menu item
 (set-language-info-alist

@@ -5,6 +5,25 @@ In `/etc/dovecot/dovecot.conf` have a line:
 
     listen = 127.0.0.1
 
+Also, the file `/etc/systemd/system/sockets.target.wants/dovecot.socket` should say:
+
+    [Unit]
+    Description=Dovecot IMAP/POP3 email server activation socket
+
+    [Socket]
+    #dovecot expects separate IPv4 and IPv6 sockets
+    BindIPv6Only=ipv6-only
+    ListenStream=127.0.0.1:143
+    ListenStream=[::]:143
+    ListenStream=127.0.0.1:993
+    ListenStream=[::]:993
+    KeepAlive=true
+
+    [Install]
+    WantedBy=sockets.target
+
+<span style="color:red;font-weight:bold">Notice that</span> that file is actually a symlink
+to `/lib/systemd/system/dovecot.socket` ; I just re-link it to a file in `/usr/local/lib/systemd/system/`
 
 Authentication
 ==============
