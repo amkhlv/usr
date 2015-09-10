@@ -32,13 +32,24 @@ This will give a long list of printers which can be `grep`ped.
 Setting up
 ==========
 
+Laser Printer
+-------------
+
 Suppose that `lpinfo` gave us:
 
     drv:///hpcups.drv/hp-laserjet_p4515n.ppd HP LaserJet p4515n, hpcups 3.14.6
 
 We then say:
 
-    lpadmin -p myprintername -v lpd://172.16.10.13/queue -m drv:///hpcups.drv/hp-laserjet_p4515n.ppd -L location -E
+    lpadmin -p myprintername -v lpd://172.16.10.13/queue -m drv:///hpcups.drv/hp-laserjet_p4515n.ppd -L IFT-3rd-floor -E
+
+Jet Printer
+-----------
+
+Notice that home `DeskJet` type of printer is likely to support the `ipp` protocol, e.g.:
+
+    lpadmin -p hp-home -v ipp://192.168.1.153 -m drv:///hpcups.drv/hp-deskjet_2540_series.ppd -L home -E
+
 
 Test
 ====
