@@ -99,16 +99,12 @@
       [else (display (string-append (print-date) ": already exited the locking process\n") log-port)]))
   (close-output-port log-port)
   (close-output-port err-port)
-  (let ([sub-control
-         (notify-send "amkhlv-screenlock" "exiting" #:icon "face-sick")])
-    (display (string-append "notification is " (symbol->string (sub-control 'status))))
-    (sub-control 'wait)
-    ))
+  )
 (define (proceed-with-error c r)
-  (let ([error-message (string-append "received " c)])
+  (let ([error-message (string-append (print-date) ": received " c "\n")])
     (display error-message)
-    (write error-message err-port)
-    (notify-send "Error"  error-message #:icon "face-worried"))
+    (display error-message err-port)
+    (flush-output err-port))
   (mainloop r))
 (define (mount-pendrive)
   (let-values ([(mount-proc inp outp errp)
@@ -144,46 +140,49 @@
 (define (mainloop lockrun)
   (let ([com (read-from-pipe)])
     (cond
-      [(regexp-match? #rx"unlock" com) 
-       (if (subprocess? lockrun)
-         (let ([s (subprocess-status lockrun)])
-           (case s
-             [(running) 
-              (if (sha256sum-is-OK?) 
-                  (kill-xtrlock lockrun)
-                  (mainloop lockrun))]
-             [else 
-              (display 
-               (string-append 
-                (print-date) 
-                ": already exited the locking process with status " 
-                (number->string s)
-                "\n") 
-               log-port)
-              (mainloop #f)]))
-         (mainloop #f))]
-      [(regexp-match? #rx"lock" com) 
-       (if (subprocess? lockrun)
-           (let ([s (subprocess-status lockrun)])
-             (case s
-               [(running)
-                (display 
-                 (string-append 
-                  (print-date) 
-                  ": the locking process is already running \n" 
-                  )
-                 log-port)
-                (mainloop lockrun)]
-               [else 
-                (launch-xtrlock lockrun)]))
-           (begin
-             (launch-xtrlock lockrun)))]
-      [(regexp-match? #rx"exit" com) (finalize lockrun)]
-      [else (proceed-with-error com lockrun)]
-      )))
+     [(eof-object? com) 
+      (proceed-with-error "EOF object" lockrun)]
+     ;; [(regexp-match? #rx"poisson-pill" com)
+     ;;  (error "Got poissoned")]
+     [(regexp-match? #rx"unlock" com) 
+      (if (subprocess? lockrun)
+          (let ([s (subprocess-status lockrun)])
+            (case s
+              [(running) 
+               (if (sha256sum-is-OK?) 
+                   (kill-xtrlock lockrun)
+                   (mainloop lockrun))]
+              [else 
+               (display 
+                (string-append 
+                 (print-date) 
+                 ": already exited the locking process with status " 
+                 (number->string s)
+                 "\n") 
+                log-port)
+               (mainloop #f)]))
+          (mainloop #f))]
+     [(regexp-match? #rx"lock" com) 
+      (if (subprocess? lockrun)
+          (let ([s (subprocess-status lockrun)])
+            (case s
+              [(running)
+               (display 
+                (string-append 
+                 (print-date) 
+                 ": the locking process is already running \n" 
+                 )
+                log-port)
+               (mainloop lockrun)]
+              [else 
+               (launch-xtrlock lockrun)]))
+          (begin
+            (launch-xtrlock lockrun)))]
+     [(regexp-match? #rx"exit" com) (finalize lockrun)]
+     [else (proceed-with-error com lockrun)]
+     )))
+;; MAINLOOP
 (if (do-stop)
     (write-to-a-file (pipename) 'exit #:mode 'text #:exists 'append)
-    (begin
-      (notify-send "amkhlv-screenlock" "starting" #:icon "face-angel")
-      (mainloop #f)))
+    (mainloop #f))
     
