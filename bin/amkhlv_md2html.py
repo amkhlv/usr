@@ -1,12 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import markdown
 import sys
 
 with open(sys.argv[1],'r') as fh:
     md = markdown.Markdown(extensions=['toc'])
-    orig = fh.read().decode('utf-8') 
-    html = md.convert(orig)
+#    orig = fh.read().decode('utf-8') 
+#    html = md.convert(orig)
+    html = md.convert(fh.read())
     toc  = md.toc
     print("""
 <!DOCTYPE html>

@@ -30,42 +30,7 @@
          (filename (file-name-nondirectory filepath))
          (htmlpath (progn
                      (string-match "\\(.*\\)\.scrbl$" filepath)
-                     (match-string 1 filepath)))
-         (registry
-          (if (file-exists-p "REGISTRY.yaml")
-              (json-read-from-string (amkhlv/yaml2json "REGISTRY.yaml"))
-            '())))
-    (if (car registry)
-        (progn 
-          (message (concat "looking up " filename " in registry"))
-                                        ; First we iterate over --html :
-          (dolist
-              (h (mapcar (lambda (x) x) ; this is to convert vector to list
-                         (cdr (assoc 'html registry))))
-            (message (concat "considering " (cdr (assoc 'name h))))
-            (when (string= filename (concat (cdr (assoc 'name h)) ".scrbl"))
-              (if (cdr (assoc 'dest h))
-                  (progn
-                    (message (concat "viewing single html " 
-                                     (cdr (assoc 'dest h)) 
-                                     "/" 
-                                     (cdr (assoc 'name h)) 
-                                     ".html"))
-                    (shell-command (concat "firefox " 
-                                           (cdr (assoc 'dest h)) 
-                                           "/" 
-                                           (cdr (assoc 'name h))
-                                           ".html"
-                                           )))
-                (progn
-                  (message (concat "viewing single html " (cdr (assoc 'name h)) ".html"))
-                  (shell-command (concat "firefox " (cdr (assoc 'name h)) ".html"))))))
-                                        ; Then iterate over --htmls :
-          (dolist
-              (h (mapcar (lambda (x) x) ; this is to convert vector to list
-                         (cdr (assoc 'htmls registry))))
-            (when (string= filename (concat h ".scrbl")) 
-              (message (concat "viewing multipage, starting at " h "/index.html"))
-              (shell-command (concat "firefox " h "/index.html")))))
-    (shell-command (concat "firefox "  htmlpath ".html")))))
+                     (match-string 1 filepath))))
+    (shell-command 
+     (concat "firefox `bystrotex -l " filename "` &"))))
 

@@ -4,6 +4,7 @@ Preparation
 Preparing `inintramfs-tools`
 ----------------------------
 
+    cp files/sbin/* /usr/local/sbin/
     cp files/gpg_cryptroot /etc/initramfs-tools/hooks/
     cp files/modules /etc/initramfs-tools/
     cp files/conf_cryptroot /etc/initramfs-tools/conf.d/

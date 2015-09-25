@@ -2,6 +2,9 @@
 (require 'color-theme)
 (require 'thingatpt)
 
+(setq w32-lwindow-modifier 'super) ; Left Windows key
+
+
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
@@ -81,6 +84,12 @@
                           (local-set-key (kbd "C-c p") 'outline-previous-heading)
                           (local-set-key (kbd "C-c n") 'outline-next-heading)
                           )))
+
+(defun xsel () (interactive) (insert (shell-command-to-string "xsel")))
+(global-set-key (kbd "<s-mouse-2>") (quote xsel))
+(add-hook 'minibuffer-setup-hook
+          (lambda ()
+            (local-set-key (kbd "<s-mouse-2>") (quote xsel))))
 
 (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
 (add-hook 'enriched-mode-hook '(lambda () (use-hard-newlines -1)))

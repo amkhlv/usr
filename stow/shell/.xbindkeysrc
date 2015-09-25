@@ -93,5 +93,30 @@
     m:0x0 + c:90
     KP_Insert 
 
+#left-click
+"xte 'usleep 100000' 'mouseclick 1'"
+    m:0x40 + c:38
+    Mod4 + a 
+
+#right-click
+"xte 'usleep 100000' 'mouseclick 3'"
+    m:0x40 + c:40
+    Mod4 + d 
+
+#middle-click
+"xte 'usleep 100000' 'mouseclick 2'"
+    m:0x40 + c:39
+    Mod4 + s 
+
+#mouse-down
+"xte 'mousedown 1'"
+    m:0x40 + c:24
+    Mod4 + q 
+
+#mouse-up
+"xte 'mouseup 1'"
+    m:0x40 + c:10
+    Mod4 + 1 
+
 #
 # End of xbindkeys configuration
