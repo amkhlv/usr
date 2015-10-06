@@ -94,17 +94,17 @@
     KP_Insert 
 
 #left-click
-"xte 'usleep 100000' 'mouseclick 1'"
+"xte 'mouseclick 1'"
     m:0x40 + c:38
     Mod4 + a 
 
 #right-click
-"xte 'usleep 100000' 'mouseclick 3'"
+"xte 'usleep 250000' 'mouseclick 3'"
     m:0x40 + c:40
     Mod4 + d 
 
 #middle-click
-"xte 'usleep 100000' 'mouseclick 2'"
+"xte 'usleep 250000' 'mouseclick 2'"
     m:0x40 + c:39
     Mod4 + s 
 

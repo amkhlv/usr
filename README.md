@@ -4,8 +4,13 @@ Introduction
 
 This is a collection of various scripts (which are probably only useful for myself) and [notes on Linux](share/notes)
 
-    aptitude install stow emacs gmrun xbindkeys racket inkscape screen xul-ext-noscript vim-gtk emacs-goodies-el xfonts-terminus python3-markdown
+    aptitude install stow emacs gmrun xbindkeys racket inkscape screen xul-ext-noscript vim-gtk emacs-goodies-el xfonts-terminus python3-markdown xautomation xbinkeys
 
+My `emacs` configuration uses `yasnippet` which should be setup like this:
+
+    mkdir ~/a/git
+    cd ~/a/git
+    git clone https://github.com/capitaomorte/yasnippet
 
 Legal
 =====

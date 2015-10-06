@@ -9,7 +9,8 @@ xfconf-query -c thunar-volman -p "/automount-media/enabled"  -s false
 xfconf-query -c thunar-volman -p "/autoopen/enabled" -s false
 xfconf-query -c thunar-volman -p "/autobrowse/enabled" -s false
 xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lid-action-on-ac" -s 0
-xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lid-action-on-battery" -s 0
+xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lid-action-on-battery" -s 1
+xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lock-screen-suspend-hibernate" -s false
 
 # hinting:
 xfconf-query -c xsettings -p /Xft/HintStyle -s hintfull
