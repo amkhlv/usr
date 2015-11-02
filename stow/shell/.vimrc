@@ -10,7 +10,7 @@ autocmd BufWinEnter *.* silent loadview
 "set guifont=Monospace\ 12
 
 set guioptions-=T
-set guifont=Terminus\ 18
+set guifont=Terminus\ 12
 "colorscheme morning
 set background=dark
 let psc_style='warm'

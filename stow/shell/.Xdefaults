@@ -85,10 +85,18 @@ xclock*secondColor: yellow
 xterm*faceName: xft:DejaVu Sans Mono
 xterm*eightBitInput: false
 
-xterm*faceSize:  12
-xterm*faceSize1: 8
-xterm*faceSize2: 9
-xterm*faceSize3: 10
-xterm*faceSize4: 14
-xterm*faceSize5: 16
-xterm*faceSize6: 18
+xterm*faceSize:  10
+xterm*faceSize1: 7
+xterm*faceSize2: 8
+xterm*faceSize3: 9
+xterm*faceSize4: 12
+xterm*faceSize5: 14
+xterm*faceSize6: 16
+
+!xterm*faceSize:  12
+!xterm*faceSize1: 8
+!xterm*faceSize2: 9
+!xterm*faceSize3: 10
+!xterm*faceSize4: 14
+!xterm*faceSize5: 16
+!xterm*faceSize6: 18

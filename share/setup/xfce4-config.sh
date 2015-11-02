@@ -8,10 +8,13 @@ xfconf-query -c thunar-volman -p "/automount-drives/enabled" -s false
 xfconf-query -c thunar-volman -p "/automount-media/enabled"  -s false
 xfconf-query -c thunar-volman -p "/autoopen/enabled" -s false
 xfconf-query -c thunar-volman -p "/autobrowse/enabled" -s false
+#lid close and locking:
 xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lid-action-on-ac" -s 0
 xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lid-action-on-battery" -s 1
 xfconf-query -c xfce4-power-manager -p "/xfce4-power-manager/lock-screen-suspend-hibernate" -s false
-
+#keyboard shortcuts:
+xfconf-query --channel xfce4-keyboard-shortcuts --property "/xfwm4/custom/<Alt>space" --reset
+xfconf-query --channel xfce4-keyboard-shortcuts --property "/xfwm4/custom/<Super>space"  -n -t string -s popup_menu_key
 # hinting:
 xfconf-query -c xsettings -p /Xft/HintStyle -s hintfull
 xfconf-query -c xsettings -p /Xft/Antialias -s 1
