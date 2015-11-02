@@ -1,3 +1,11 @@
+Use adduser instead
+===================
+
+Usually it is advised to use the command `adduser` instead of `useradd` :
+
+    adduser andrei
+
+
 Creating new user
 =================
 
