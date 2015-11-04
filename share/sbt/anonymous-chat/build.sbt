@@ -21,3 +21,6 @@ libraryDependencies ++= Seq(
 )
 
 
+scalacOptions in (Compile, doc) <++= baseDirectory map { d =>
+  Seq("-doc-root-content", d / "rootdoc.txt" getPath)
+}
