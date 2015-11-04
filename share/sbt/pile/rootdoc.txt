@@ -46,8 +46,9 @@ WantedBy=multi-user.target
        2. A subdirectory `username/` (which is initially empty; thats where the files will be stored)
        3. A file `username.md` with some greeting
 
-The folder `/var/www/pile-users/`  and everything in them should be owned by `www-data:www-data`,
-while  `/opt/pile/bin/pile` and `/etc/pile` and everything in them should be owned by `root:root`.
+The folders `/var/www/pile-users/`  and `/etc/pile` and everything in them should be owned by `www-data:www-data`.
+While  `/opt/pile/bin/pile` and everything in it should be owned by `root:root`.
+
 
 = Building and installation =
 
