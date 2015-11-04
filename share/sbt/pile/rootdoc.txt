@@ -13,16 +13,29 @@ sbt clean doc
 List of files:
 
  - `/etc/pile/application.conf` : the main configuration file, includes :
-    - the secret key
-    - the URL of the site
-    - path to the users directory
-    - path to the logging configurator
- - `/etc/init.d/amkhlv-pile` : the start/stop file, includes the '''flags''' :
-    - -Dhttp.port=...
-    - -Dhttp.address=127.0.0.1
-    - -Dconfig.file=/etc/pile/application.conf
-    - -Dpidfile.path=/var/www/amkhlv-pile.pid
+    - the secret key `application.secret` 
+    - the URL of the site (at the tail of the file)
+    - path to the users directory (at the tail)
+    - path to the logging configurator (at the tail), which is:
  - `/etc/pile/log4j.properties` : logging configurator (an example can be found in the root of this project)
+ - `/etc/systemd/system/amkhlv-pile.service` (if using systemd):
+{{{
+[Unit]
+Description=file server
+
+[Service]
+ExecStart=/opt/pile/bin/pile  -Dconfig.file=/etc/pile/application.conf -Dhttp.port=29430 -Dhttp.address=127.0.0.1 -Dpidfile.path=/tmp/amkhlv-pile.pid
+PIDFile=/tmp/amkhlv-pile.pid
+User=www-data
+
+[Install]
+WantedBy=multi-user.target
+}}}
+ - `/opt/pile/` : the directory for binaries and jars
+ - `/opt/pile/conf/logger.xml` : this file configures the logging 
+ (unfortunately this one is impossible to configure in the `/etc/systemd/system/amkhlv-pile.service` because the option `-Dlogger.file` is broken; 
+ there are two logs: one is mine, configured in `/etc/pile/log4j.properties`, 
+ and another, built-in, is configured in `/opt/pile/conf/logger.xml`)
  - `/var/www/pile-users` : the user directory; contains :
     - `config.xml`
     - for every user :
@@ -32,9 +45,9 @@ List of files:
           (It will ask for the plaintext password, and then print the hash)
        2. A subdirectory `username/` (which is initially empty; thats where the files will be stored)
        3. A file `username.md` with some greeting
- - `/var/www/pile-app` : the directory for binaries and jars
 
-Both `/var/www/pile-users/` and `/var/www/pile-app/` and everything in them should be owned by `www-data:www-data`
+The folder `/var/www/pile-users/`  and everything in them should be owned by `www-data:www-data`,
+while  `/opt/pile/bin/pile` and `/etc/pile` and everything in them should be owned by `root:root`.
 
 = Building and installation =
 
@@ -49,19 +62,9 @@ sbt clean stage
 As root:
 
 {{{
-rsync -cav --delete target/universal/stage/  /var/www/pile-app/
-chown -R www-data:www-data /var/www/pile-app/
+rsync -cav --delete target/universal/stage/  /opt/pile/
+chown -R root:root /opt/pile
 }}}
 
-= Running in development mode =
-
-When `application.secret="TESTING"` the application will not run. So, change it to something else.
-
-Then:
-
-{{{
-sbt run
-}}}
-
-Then navigate to [[http://localhost:9000/pile/]]
+Then look inside `/opt/pile/conf/logger.xml` and see if it is OK. Then set up `/var/www/pile-users/` and `/etc/pile/` as described above.
 

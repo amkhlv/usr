@@ -241,7 +241,7 @@ def exec_query(q):
     link = build_link()
     curs = link.cursor()
     com = """select messageid from mail where """ + q
-    print(com)
+    #print(com)
     curs.execute(com)
     a_msgids = [a[0].lstrip('<').rstrip('>') for a in curs]
     for a in a_msgids:
