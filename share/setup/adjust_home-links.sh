@@ -18,7 +18,8 @@ ln -s ~/usr/lib/emacs/emacs.el ~/.emacs
 
 ln -s ~/a/other/home/.m2    ~/.m2
 ln -s ~/a/other/home/.ivy2  ~/.ivy2
-ln -s ~/a/other/home/.IdeaIC14 ~/.IdeaIC14
+ln -s ~/a/other/home/.IdeaIC* ~/
+ln -s ~/a/other/home/.PyCharm* ~/
 
 ln -s ~/a/other/IdeaProjects ~/IdeaProjects
 

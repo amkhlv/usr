@@ -21,17 +21,18 @@ import re
 from email.parser import Parser
 import email.Header
 import email.Message
-from optparse import OptionParser
 from glob import glob
 import subprocess
 import datetime
 import dateutil.parser
 import fileinput
-
+import getpass
+import argparse
 
 dbfile = "/home/andrei/a/maildirs/mymail.db"
 mailpath = "/home/andrei/a/maildirs/"
 myroot = "/home/andrei/a"
+default_mbox_path = "/var/mail/" + getpass.getuser()
 
 rex_from = re.compile(r"^From: (.*)")
 rex_messageid = re.compile(r"^Message-ID: <(.*)>", flags=re.IGNORECASE)
@@ -39,48 +40,59 @@ rex_subject = re.compile(r"^Subject: (.*)")
 rex_tstamp = re.compile(r"^(\d+)\..+")
 rex_fname = re.compile(r"(.+\:)[^\:]*")
 
-parser = OptionParser(help_header)
+parser = argparse.ArgumentParser(description="email indexer", formatter_class=argparse.RawTextHelpFormatter)
 
+query_examples = """ --where
+   to_whom   like '...'        and
+   from_whom like '...'        and
+   mime      like 'pdf'        and
+   subject   like '...'        and
+   messageid like '...'        and
+   ( cc like '...' or
+     bcc like 'some' )         and
+   xlabel    like '...'        and
+   header_date like '...'      and
+   ( ts(header_date) between ts('2012-09-21') and ts('2012-09-25') or
+     timestamp between ts('2012-09-21') and ts('2012-09-25') or
+     betw('2012-09-21','2012-09-25',ts(header_date)) or
+     ts(header_date) > ts(date('now', '-5 days'))       ) and
+   tags      like '...'
+Nnotice:
+ 1. header_date is something like:   Mon, 02 Nov 2015 21:20:04 +0100
+ 2. timestamp is derived from the maildir filename; it depens on the inner working of getmail
+"""
+
+sqlite_examples = """
+   select * from sqlite_master
+   select to_whom from mail where betw('2012-09-21','2012-09-25',timestamp) """
 
 def command_line_arguments(parser):
     """Invocation"""
-    parser.add_option("-r", "--rebuild", dest="rebuild", default=False, action="store_true",
-                      help="""delete all entries in the database; rebuild the database from start""")
-    parser.add_option("-f", "--forced", dest="forced", default=False, action="store_true",
-                      help="""proceed even if there are new mails""")
-    parser.add_option("-m", "--mutt", dest="msgid", default=False, action="store_true",
-                      help="open in mutt the emails with Message IDs remaining arguments\n see also option --tmp",
-                      metavar="MSGID")
-    parser.add_option("--tombox", dest="convert_to_this_mbox", 
-                      help="given a list of MessageID on stding, add them all to the mbox MBOXNAME", metavar="MBOXNAME")
-    parser.add_option("--just-prep-tmp", dest="just_prep_maildir", action="store_true",
-                      help="prepare the maildir with symlinks to Message IDs remaining arguments \n" +
-                           "and print its path to stdout; see also the option --tmp")
-    parser.add_option("-t", "--tmp", dest="tmpdirname",
-                      help="name of the folder /tmp/mymail/TMPDIRNAME for the --mutt action\n" +
-                           "otherwize /tmp/mymail/default will be used")
-    parser.add_option("-l", "--locate", dest="msgid2locate",
-                      help="print out the permanent part of the filename for Message ID MSGID",
-                      metavar="MSGID")
-    parser.add_option("-c", "--clean", dest="clean", default=False, action="store_true",
-                      help="""delete /tmp/mymail""")
-    parser.add_option("-i", "--info", dest="info4file", default=False, action="store_true",
+    parser.add_argument("args", nargs = '*')
+    parser.add_argument("-r", "--rebuild", action = "store_true",
+                        help="""delete all entries in the database; rebuild the database from start""")
+    parser.add_argument("-f", "--forced", action = "store_true",
+                        help="""proceed even if there are new mails""")
+    parser.add_argument("-m", "--mutt", action = "store_true",
+                        help="open in mutt the emails with Message IDs remaining arguments")
+    parser.add_argument("-t", "--tmp", dest="tmpdirname",
+                        help="name of the folder /tmp/amail/TMPDIRNAME for the --mutt or --just-prep-tmp actions" +
+                             "\n" + "(the default TMPDIRNAME is derived from the PID)")
+    parser.add_argument("--just-prep-tmp", dest="just_prep_maildir", action="store_true",
+                        help="prepare the maildir with symlinks to Message IDs remaining arguments \n" +
+                             "and print its path to stdout; see also the option --tmp")
+    parser.add_argument("--tombox",
+                        help="(stdin!) given a list of MessageID on stdin, add them all to the mbox tombox")
+    parser.add_argument("--t0", action="store_true",
+                        help="same as --tombox but add to the mbox " + default_mbox_path)
+    parser.add_argument("-l", "--locate", dest="msgid2locate", action="store_true",
+                        help="remaining arguments being MSGIDs, print out the filenames")
+    parser.add_argument("-i", "--info", dest="info4file", default=False, action="store_true",
                       help="""print from and subject of filenames which are remaining arguments""")
-    parser.add_option("--decorate", dest="decorate", default=False, action="store_true",
-                      help="""print decorated when showing info""")
-    parser.add_option("-s", "--sqlite", dest="sqlite", help="execute sqlite statement, for example: " + "\n" +
-                                                      "select * from sqlite_master  --- this is to see all tables")
-    parser.add_option("-w", "--where", dest="criterium",
+    parser.add_argument("-s", "--sqlite", help="execute sqlite statement, for example: " + sqlite_examples)
+    parser.add_argument("-w", "--where", dest="criterium",
                       help="""print the msgids for those satisfying the where criterium""" +
-                      """ e.g. --where "to_whom like '%somename%' and mime like '%pdf%'""" +
-                      """ e.g. --where "from_whom like '%foo.bar%' and subject like '%something%'" """ + "\n" +
-                      """ e.g. --where "betw('2012-09-21','2012-09-25',timestamp)" """ + "\n" +
-                      """ or equiv: --where "timestamp between ts('2012-09-21') and ts('2012-09-25')" """ + "\n" +
-                      """ (here "betw" and "ts" are my custom functions which I defined) """ + "\n" +
-                      """ Or simply "timestamp > ts(date('now', '-5 days'))" """ + "\n" +
-                      """ More examples: http://sqlite.org/lang_datefunc.html """ + "\n" +
-                      """ Column names are: """ + "\n" +
-                      """  (file, timestamp, messageid, from_whom, to_whom, cc, bcc, subject, header_date, xlabel, mime, tags) """)
+                      """ e.g. """ + query_examples)
 
 
 class EmailMeta(object):
@@ -209,10 +221,10 @@ def emailfiles(msgid):
     link = sqlite3.connect(dbfile)
     curs = link.cursor()
     curs.execute("""select file from mail where messageid like ?""", ("""%""" + msgid + """%""",))
-    results = curs.fetchone()
+    results = curs.fetchall()
     curs.close()
     link.close()
-    return results
+    return [f for x in [glob(r[0]+'*') for r in results] for f in x]
 
 
 def datestr_to_int(ts):
@@ -396,15 +408,13 @@ def index(places):
 
 
 def prepare_maildir(tmpdirname, args):
-    tmpdir = "mymail/default"
     if tmpdirname:
-        tmpdir = "mymail/" + tmpdirname
+        tmpdir = "amail/" + tmpdirname
     else:
-        tmpdir = "mymail/PID-" + str(os.getpid())
+        tmpdir = "amail/PID-" + str(os.getpid())
     os.system("""[ -d "/tmp/""" + tmpdir + """" ] && find "/tmp/""" + tmpdir + """" -delete""")
     os.system("""[ -d "/tmp/""" + tmpdir + """" ] || { mkdir -p """ +
-              """ "/tmp/""" + tmpdir + "\""
-                                       """ "/tmp/""" + tmpdir + """/new" """ +
+              """ "/tmp/""" + tmpdir + """/new" """ +
               """ "/tmp/""" + tmpdir + """/cur" """ +
               """ "/tmp/""" + tmpdir + """/tmp" ; }""")
     for msgid1 in args:
@@ -412,8 +422,9 @@ def prepare_maildir(tmpdirname, args):
         print(" >>>" + msgid + "<<<")
         fls = emailfiles(msgid.rstrip())
         if not fls: continue
-        for fl in sum([glob(fl1 + "*") for fl1 in fls],[]):
+        for fl in fls:
             try:
+                print("      symlink to >>>" + fl + "<<< in /tmp/""" + tmpdir + """/cur/""" + os.path.basename(fl))
                 os.symlink(fl, """/tmp/""" + tmpdir + """/cur/""" + os.path.basename(fl))
             except OSError as err:
                 print(str(err))
@@ -423,30 +434,31 @@ def prepare_maildir(tmpdirname, args):
 
 def main():
     command_line_arguments(parser)
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
     if options.rebuild:
         places = list_files()
         safety_check(places, options.forced)
         rebuild(places)
     elif options.sqlite:
         exec_and_print_results(options.sqlite)
-    elif options.msgid:
+    elif options.mutt:
         if options.criterium:
-            subprocess.call(["mutt", "-f", prepare_maildir(options.tmpdirname, exec_query(options.criterium))])
+            muttpath = prepare_maildir(options.tmpdirname, exec_query(options.criterium))
+            os.system("""uxterm -e "{ export TERM=screen-256color ; mutt -f """ + muttpath + """ ; }" """)
         else:
-            subprocess.call(["mutt", "-f", prepare_maildir(options.tmpdirname, args)])
+            muttpath = prepare_maildir(options.tmpdirname, options.args)
+            os.system("""uxterm -e "{ export TERM=screen-256color ; mutt -f """ + muttpath + """ ; }" """)
     elif options.just_prep_maildir:
-        print(prepare_maildir(options.tmpdirname, args))
+        print(prepare_maildir(options.tmpdirname, options.args))
     elif options.msgid2locate:
-        for ef in emailfiles(options.msgid2locate):
-            print(ef)
-    elif options.clean:
-        os.system("""find /tmp/mymail -delete""")
+        for a in options.args:
+            for ef in emailfiles(a):
+                print(ef)
     elif options.info4file:
-        sprtr = u"." if options.decorate else u"." # for now options.decorate does nothing
+        sprtr = u"."
         sprtr1 = u"  "
         lines_to_print = []
-        for x in args:
+        for x in options.args:
             fh = open(x, 'r')
             msg = prep_message(fh)
             try:
@@ -464,18 +476,18 @@ def main():
             print(u[1])
     elif options.criterium:
         exec_query(options.criterium)
-    elif options.convert_to_this_mbox:
+    elif (options.tombox or options.t0):
+        path_to_mbox = default_mbox_path if options.t0 else options.tombox
         idlist = list(sys.stdin)
         strange_efs = []
         for message_id in idlist:
             print "\n Processing " + message_id.rstrip()
             efs = emailfiles(message_id.rstrip())
-            if not(efs): efs = []
             for ef in efs:
-                print("adding to MBOX " + options.convert_to_this_mbox + " the email file: " + ef)
+                print("adding to MBOX " + path_to_mbox + " the email file: " + ef)
                 fullnames = glob(ef + "*")
                 if fullnames:
-                    os.system("formail < " + fullnames[0] + " >> " + options.convert_to_this_mbox)
+                    os.system("formail < " + fullnames[0] + " >> " + path_to_mbox)
                 else:
                     strange_efs.append(ef)
         if strange_efs:

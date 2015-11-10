@@ -23,7 +23,7 @@ List of files:
 Description=chat server
 
 [Service]
-ExecStart=/opt/anonymous-chat/bin/anonymous-chat  -Dconfig.file=/etc/anonymous-chat/application.conf -Dhttp.port=29431 -Dhttp.address=127.0.0.1 -Dpidfile.path=/tmp/amkhlv-chat.pid
+ExecStart=/opt/anonymous-chat/bin/a_chat  -Dconfig.file=/etc/anonymous-chat/application.conf -Dhttp.port=29431 -Dhttp.address=127.0.0.1 -Dpidfile.path=/tmp/amkhlv-chat.pid
 PIDFile=/tmp/amkhlv-chat.pid
 User=www-data
 
