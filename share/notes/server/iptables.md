@@ -14,13 +14,32 @@ directly and loaded by the commands:
     iptables -P INPUT ACCEPT
     iptables -F
     iptables -A INPUT -i lo -j ACCEPT
-    ...
+    iptables -A INPUT -p icmp --icmp-type any -j ACCEPT
+    iptables -A INPUT -p tcp ! --syn -m state --state NEW -j DROP
+    iptables -A INPUT -f -j DROP
     iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+    iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
+    iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
+    iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
     iptables -P INPUT DROP
     iptables -P FORWARD DROP
     iptables -P OUTPUT ACCEPT
 
     iptables -L -v
+
+    ip6tables -P INPUT ACCEPT
+    ip6tables -F
+    ip6tables -A INPUT -i lo -j ACCEPT
+    ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+    ip6tables -A INPUT -p tcp -m tcp ! --tcp-flags FIN,SYN,RST,ACK SYN -m state --state NEW -j DROP
+    ip6tables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+    ip6tables -A INPUT -m state --state INVALID -j DROP
+    ip6tables -P INPUT DROP
+    ip6tables -P FORWARD DROP
+    ip6tables -P OUTPUT ACCEPT
+
+    ip6tables -L -v
+
 
 __Removing__ the rule is the same as creating except instead of `-A` use `-D`
 

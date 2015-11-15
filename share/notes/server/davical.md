@@ -28,9 +28,21 @@ __After that__  automatically configure the `PostgreSQL`:
 
     su postgres -c /usr/share/davical/dba/create-database.sh
 
+Write down the admin password when it is displayed. You will need it later.
+
 
 Configure `Apache2`
 -------------------
+
+Enable the `SSL` support:
+
+    a2enmod ssl
+    apache2ctl restart
+
+Create certificates:
+
+    mkdir /etc/apache2/ssl
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
 
 The `VirtualHost` stanza (in `sites-available/...`) is like this:
 
@@ -77,11 +89,20 @@ The `VirtualHost` stanza (in `sites-available/...`) is like this:
       </VirtualHost>
     </IfModule>
 
-Also, the `SSL` support has to be enabled:
+then enable it:
 
-    a2enmod ssl
-    apache2ctl restart
+    a2ensite default-ssl
 
+
+Need more configuration
+=======================
+
+The file `/etc/davical/config.php` should be, literally:
+
+    <?php
+      $c->pg_connect[] = 'dbname=davical user=davical_app';
+
+(notice how the angular bracket is not closed)
 
 Changing the password
 =====================
@@ -119,4 +140,8 @@ Two asterisks before `someplainword` means that it will be stored as plain text.
 login through the web interface and change the password again, and then it will be stored as a __hash__.
 
 
+Adding users and calendars
+==========================
+
+In admin web interface, go to `User Functions` → `Create Principal`
 

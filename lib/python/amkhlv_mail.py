@@ -60,6 +60,7 @@ query_examples = """ --where
 Nnotice:
  1. header_date is something like:   Mon, 02 Nov 2015 21:20:04 +0100
  2. timestamp is derived from the maildir filename; it depens on the inner working of getmail
+ 3. AVOID DOLLAR SIGN in sqlite LIKE patterns ! (just replace it with _ )
 """
 
 sqlite_examples = """

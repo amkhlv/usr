@@ -19,3 +19,19 @@ The corresponding line in `/etc/passwd` will be like this:
 
 where `42:42` is some user and group numbers.
 
+
+
+Managing groups
+===============
+
+Adding user to group
+--------------------
+
+    usermod -a -G group user
+
+
+Deleting user from group
+------------------------
+
+    deluser user group
+
