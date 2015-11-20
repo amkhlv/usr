@@ -9,7 +9,7 @@ SIP
 The main problem with using SIP is firewall traversal.
 There is a very nice VOIP service called
 [Diamond worldwide communication service](https://www.diamondcard.us/).
-They provide an `openvpn` firewall, which typically works from inside the firewall (unless if you have a
+They provide an `openvpn` VPN service, which typically works from inside the firewall (unless if you have a
 partucularly draconian firewall, which e.g. blocks UDP). They allow to call to ordinary phones.
 See [my writeup on Ekiga](ekiga.md).
 
@@ -27,6 +27,8 @@ Those "Google Circles" have some very confusing interface, I was not able to fig
 Installing Skype
 ================
 
+Skype only works on 32 bit systems.
+
 I could not find a secure download link, so the download is over `http`:
 
     wget -O skype-install.deb http://www.skype.com/go/getskype-linux-deb
@@ -36,6 +38,9 @@ Google for it. This, at least, would show that other people have also downloaded
 I think it requires `pulseaudio`, but this is standard now.
 
     dpkg -i skype-install
+
+will report errors; to fix, say:
+
     apt-get -f install
 
 Skype is [suspected spyware](http://techrights.org/wiki/index.php/Skype_is_Spy_Campaign).

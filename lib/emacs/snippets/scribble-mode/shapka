@@ -8,7 +8,7 @@
 @(require "defs.rkt" bystroTeX/common bystroTeX/slides (for-syntax bystroTeX/slides_for-syntax))
 @; ---------------------------------------------------------------------------------------------------
 @; User definitions:
-@(bystro-set-css-dir (build-path (find-system-path 'home-dir) "usr" "share" "scribble" "writeups"))
+@(bystro-set-css-dir (build-path (find-system-path 'home-dir) "a" "git" "amkhlv" "examples" "profiles" "writeup"))
 @(define bystro-conf   
    (bystro (bystro-connect-to-server #f "127.0.0.1" 29049 "svg")
            "${1:`(progn (file-name-sans-extension (file-name-nondirectory (buffer-file-name))))`}_formulas.sqlite"  ; name for the database
@@ -24,7 +24,6 @@
 @(define singlepage-mode #t)
 @(bystro-def-formula "formula-enormula-humongula!")
 
-@(bystro-inject-style "misc.css" "no-margin.css")
 
 @title[#:style '(no-toc no-sidebar)]{$3}
 
