@@ -11,3 +11,26 @@ Compression options are:
     compress=lzo  - Faster compression.
     compress=no   - Disables compression (starting with kernel 3.6).
 
+
+Viewing free space
+==================
+
+    btrfs filesystem df /
+
+or:
+
+    btrfs filesystem show /
+
+
+Balancing
+=========
+
+Apparently it is OK to balance the mounted system:
+
+
+    btrfs balance start /
+
+If this reports not enough space, try to start with lower values of the `usage` parameter:
+
+    btrfs balance start -dusage=5 /
+
