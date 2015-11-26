@@ -1,12 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import httplib, urllib
+import http.client, urllib
 import argparse
 import os
 import sqlite3
 
 DBASE = os.environ['HOME'] + "/.config/amkhlv/misc.sqlite"
 SPA_URL="/bsipura.spa"
+SPEEDDIAL2_KEY="28078"
 
 instructions="""
 Linksys SPA interface
@@ -25,24 +26,24 @@ def command_line_arguments(parser):
                         help="number to set")
 
 def set_speeddial2(conn, number):
-    params = urllib.urlencode({'28078': number})
+    params = urllib.parse.urlencode({SPEEDDIAL2_KEY : number})
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
     conn.request("POST", SPA_URL, params, headers)
     response = conn.getresponse()
-    print response.status, response.reason
-    data = response.read()
-    data
+    print(response.status)
 
-if __name__ == "__main__":
+def get_address_and_port():
     sqlite_conn = sqlite3.connect(DBASE)
     cursor = sqlite_conn.cursor()
     cursor.execute("SELECT ip,port FROM ips WHERE nick=?",("linksys",))
-    x,y = cursor.fetchone()
-    spa_address = x.encode('ascii', 'ignore')
-    spa_port = y.encode('ascii', 'ignore')
+    (x,y) = cursor.fetchone()
     sqlite_conn.close()
+    return x,y
+
+if __name__ == "__main__":
     command_line_arguments(parser)
     options = parser.parse_args()
-    conn = httplib.HTTPConnection(spa_address, spa_port)
+    spa_address, spa_port = get_address_and_port()
+    conn = http.client.HTTPConnection(spa_address, spa_port)
     set_speeddial2(conn, "".join([x for x in list(options.number) if x not in [" ", ".", "-", ")", "("]]))
     conn.close()
