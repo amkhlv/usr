@@ -76,7 +76,7 @@
     Mod4 + y 
 
 #gmrun
-"/home/andrei/bin/amkhlv-gmrun.sh"
+"/usr/local/bin/amkhlv-gmrun.sh"
     m:0x8 + c:68
     Alt + F2 
 

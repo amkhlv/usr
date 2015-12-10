@@ -7,7 +7,9 @@ Script for launching the gstreamer streams through UDP ports.
 This is a simplistic replacement to more advanced methods such as Ekiga, Linphone, SFLPhone, ...
 In practice this solution requires VPN.
 
-Requires gst-launch (which on Debian is in   gstreamer-tools  )
+Requires gst-launch (which on Debian is in   gstreamer-tools  ):
+
+aptitude install gstreamer0.10-tools gstreamer0.10-plugins-bad gstreamer0.10-plugins-good gstreamer0.10-pulseaudio
 
 The configuration file: ~/.config/amkhlv/simplyphone.xml , the conf file should contain lines similar to the following:
 

@@ -9,6 +9,15 @@ directly and loaded by the commands:
      iptables-restore < /etc/iptables/rules.v4
      ip6tables-restore < /etc/iptables/rules.v6
 
+This requires:
+
+    aptitude install iptables-persistent
+
+We also use `ulogd2`:
+
+    aptitude install ulogd2
+
+
 ## Example of configuration using the command line tool `iptables`
 
     iptables -P INPUT ACCEPT
@@ -21,6 +30,7 @@ directly and loaded by the commands:
     iptables -A INPUT -p tcp --tcp-flags ALL ALL -j DROP
     iptables -A INPUT -p tcp --tcp-flags ALL NONE -j DROP
     iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+    iptables -A INPUT -j NFLOG --nflog-group 0 --nflog-prefix "--- Break in Attempt ---"
     iptables -P INPUT DROP
     iptables -P FORWARD DROP
     iptables -P OUTPUT ACCEPT
@@ -144,12 +154,25 @@ I am not sure if I am doing it right. For now, I just want to block everything e
     COMMIT
 
 
-# Logging
+# Logging with ULOG (NFLOG)
 
-The `iptables` could be very useful to monitor traffic. For example, to see all outgoing UDP, say:
+We use `ulogd2`. It is configured in `/etc/ulogd.conf`
 
-    iptables -N LOGGING
-    iptables -A OUTPUT -p udp -j LOGGING
-    iptables -A LOGGING -m limit --limit 2/sec -j LOG --log-prefix "IPTables-OUTPUT: " --log-level 4
-    iptables -A LOGGING -j RETURN
+The configuration file is very complicated, for us it is important to have uncommented one of the "stack" lines, e.g.:
+
+    stack=log1:NFLOG,base1:BASE,ifi1:IFINDEX,ip2str1:IP2STR,print1:PRINTPKT,emu1:LOGEMU
+
+Then important sections are:
+
+    [log1]
+    ...
+    group=0
+    ...
+
+(which determines `-j NFLOG --nflog-group 0`) and:
+
+    [emu1]
+    file="/var/log/ulog/syslogemu.log"
+
+(which determines the location of the log file)
 

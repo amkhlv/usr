@@ -1,6 +1,8 @@
 
 This is a script to create the pdf file of the selected bibliography
 
+To run, say: `sbt run`
+
 All the necessary parameters are fixed in `resources/specs.yaml` ; notice that there are several YAML files
 in `resources/` , so one of them should be symlinked to `specs.yaml` ; the parameters are:
 

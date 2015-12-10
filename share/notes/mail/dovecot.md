@@ -14,9 +14,9 @@ Also, the file `/etc/systemd/system/sockets.target.wants/dovecot.socket` should 
     #dovecot expects separate IPv4 and IPv6 sockets
     BindIPv6Only=ipv6-only
     ListenStream=127.0.0.1:143
-    ListenStream=[::]:143
+    ListenStream=[::1]:143
     ListenStream=127.0.0.1:993
-    ListenStream=[::]:993
+    ListenStream=[::1]:993
     KeepAlive=true
 
     [Install]
