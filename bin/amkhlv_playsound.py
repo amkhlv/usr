@@ -4,7 +4,7 @@
 import pyaudio  
 import wave
 import os
-
+import sys
 
 FIFO="/tmp/amkhlv-soundpipe.fifo"
 #define stream chunk

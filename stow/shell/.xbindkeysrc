@@ -81,15 +81,15 @@
     Alt + F2 
 
 #mouse button 8
-"amkhlv-mousebutton.sh 8"
+"/home/andrei/usr/bin/amkhlv-mousebutton.sh 8"
    b:8
 
 #mouse button 9
-"amkhlv-mousebutton.sh 9"
+"/home/andrei/usr/bin/amkhlv-mousebutton.sh 9"
    b:9
 
 #Remark
-"amkhlv-mousebutton.sh 8"
+"/home/andrei/usr/bin/amkhlv-mousebutton.sh 8"
     m:0x0 + c:90
     KP_Insert 
 

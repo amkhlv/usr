@@ -27,8 +27,8 @@
 
 @title[#:style '(no-toc no-sidebar)]{$3}
 
-@table-of-contents[]
 @bystro-ribbon[]
+@table-of-contents[]
 
 $0
 

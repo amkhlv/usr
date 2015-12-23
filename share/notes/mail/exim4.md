@@ -10,7 +10,7 @@ Sample dpkg-reconfigure answers for `belavista.ift.unesp.br`
 
 - Nome do sistema de mensagens:
 
-        belavista.ift.unesp.br
+        belavista.lan
 
 - Lista de endereços IP nos quais escutar por conexões SMTP: 
 
@@ -18,7 +18,7 @@ Sample dpkg-reconfigure answers for `belavista.ift.unesp.br`
 
 - Outros destinos para os quais mensagens devem ser aceitas:
 
-        LEAVE_BLANK
+        belavista.lan
 
 - Máquinas para as quais fazer "relay":
 
