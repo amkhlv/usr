@@ -1,9 +1,8 @@
 package controllers;
 
 /**
- * Created by andrei on 30/09/14.
+ * Created by andrei on 26/12/15.
  */
-
 
 import net.fortuna.ical4j.data.*;
 import net.fortuna.ical4j.model.*;
@@ -14,10 +13,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import play.api.Play;
 
 public class ICalendar {
     public static Component[] getEventsForDay(java.util.Date d) {

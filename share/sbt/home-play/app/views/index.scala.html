@@ -1,5 +1,5 @@
 @(weeks: List[List[MyDay]])
-<link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
 @Html(Application.markdown)
 
 <table>
@@ -28,7 +28,8 @@
                       </td>
                   </tr>
               </table>
-          </td> } </tr>
+          </td> }
+      </tr>
     }
 </table>
 
@@ -42,6 +43,14 @@
                 </div>
             </form>
         </td>
-}
+        }
     </tr>
-    </table>
+</table>
+
+
+
+
+
+
+
+

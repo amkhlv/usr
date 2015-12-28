@@ -1,22 +1,23 @@
-import play.Project._
-
 name := """homeplay"""
 
 version := "1.0-SNAPSHOT"
 
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
+
+scalaVersion := "2.11.6"
+
 libraryDependencies ++= Seq(
-  "org.webjars" %% "webjars-play" % "2.2.0", 
-  "org.webjars" % "bootstrap" % "2.3.1",
+  specs2 % Test,
   "org.commonjava.googlecode.markdown4j" % "markdown4j" % "2.2-cj-1.0",
-  "org.mnode.ical4j" % "ical4j" % "1.0.5.2"
+  "org.mnode.ical4j" % "ical4j" % "1.0.7"
 )
 
 scalacOptions in (Compile, doc) <++= baseDirectory map { d =>
   Seq("-doc-root-content", d / "rootdoc.txt" getPath)
 }
 
+resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
-scalacOptions ++= Seq("-feature")
-
-playScalaSettings
-
+// Play provides two styles of routers, one expects its actions to be injected, the
+// other, legacy style, accesses its actions statically.
+routesGenerator := InjectedRoutesGenerator

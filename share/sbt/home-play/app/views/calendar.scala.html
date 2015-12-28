@@ -1,0 +1,36 @@
+@(months: List[MyMonth])
+<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
+
+<table>
+@months.map { month =>
+    <tr><td><b>@month.title</b></td></tr>
+    <tr>
+        <td class="weekDayName">Monday</td>
+        <td class="weekDayName">Tuesday</td>
+        <td class="weekDayName">Wednesday</td>
+        <td class="weekDayName">Thursday</td>
+        <td class="weekDayName">Friday</td>
+        <td class="weekDayName">Saturday</td>
+        <td class="weekDayName">Sunday</td>
+    </tr>
+    <tr>@month.days.map { week =>
+    <tr> @week.map { day =>
+    <td class="calendarCell">
+        <table class="dayTable">
+            <tr>
+                <td class="@day.style">
+                    @day.dayTitle
+                </td>
+                <td class="summariesListCell">
+                    <ul class="summaries">
+                        @day.summaries.map { s =>
+                        <li class="summary"> @s </li> }
+                    </ul>
+                </td>
+            </tr>
+        </table>
+    </td> }
+</tr>
+    }</tr>
+}
+</table>
