@@ -26,7 +26,7 @@ Then do the following:
 
 - `passwd` to create the root password
 
-- `apt-get update && apt-get dist-upgrade` (althought this should not be necessary)
+- `apt-get update && apt-get dist-upgrade`
 
 - `adduser andrei` to create the new user (for logging in via `machinectl login`)
 
@@ -61,7 +61,7 @@ Locales
 
     dpkg-reconfigure locales
 
-and set `LOCALE` to `en_US-UTF8`
+Generate both `en_US.UTF-8 UTF-8` and `pt_BR.UTF-8 UTF-8` and set Default locale for the system environment to `en_US-UTF8`
 
 
 Machinectl
