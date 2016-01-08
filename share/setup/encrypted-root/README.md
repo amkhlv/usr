@@ -58,7 +58,7 @@ Finally
 
 2. `update-initramfs -kall -u`
 
-3. `grub-update`
+3. `update-grub`
 
 
 

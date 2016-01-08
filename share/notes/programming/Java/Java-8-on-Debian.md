@@ -1,5 +1,18 @@
-Install Java 8 from Oracle
-==========================
+OpenJDK from backports
+======================
+
+Add the following line to `/etc/apt/sources.list` :
+
+    deb http://http.debian.net/debian jessie-backports main
+
+Then install `openjdk-8-jdk` and:
+
+    update-alternatives --config java
+    update-alternatives --config javac
+
+
+From Oracle
+===========
 
     echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee /etc/apt/sources.list.d/webupd8team-java.list
     echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/webupd8team-java.list

@@ -1,3 +1,15 @@
+# Maildirs
+
+For some strange reason, every maildir folder should contain a file named:
+
+    ..maildir++
+
+with the following content:
+
+    maildir++ 1
+
+Otherwise, `Evolution` will start renaming the folders in some very strange way (with lots of `5E` and `5F`).
+
 # Setup
 
 Notice that `localhost` appears to be invalid, need to use `127.0.0.1` instead (why???)

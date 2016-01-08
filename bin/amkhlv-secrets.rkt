@@ -107,7 +107,7 @@ element xml {
 
 (define (insert-into-xsel s)
   (with-external-command-as 
-   xsel ("xsel" "-i")
+   xsel ("/usr/local/lib/amkhlv/xvkbd-helper.sh")
    (display s xsel-stdin)))
 
 (define (read-line-from-xsel)

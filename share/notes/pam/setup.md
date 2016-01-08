@@ -13,7 +13,7 @@ Instructions are taken from [here](http://linuxconfig.org/linux-authentication-l
 __NOTE:__ There was anomaly: for some reason the `/etc/fstab` got automount
 lines. __Check /etc/fstab after doing pamusb-conf__!
 
-- Format flashka to `vfat` and do AS ROOT:
+- Format flashka to `ext2` and do AS ROOT:
 
         pamusb-conf --add-device amkhlv-unlock
         pamusb-conf --add-user andrei

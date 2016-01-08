@@ -118,5 +118,15 @@
     m:0x40 + c:10
     Mod4 + 1 
 
+#insert-text
+"/usr/local/lib/amkhlv/xvkbd-trigger.sh"
+    m:0x40 + c:55
+    Mod4 + v 
+
+#insert-text-clean
+"/usr/local/lib/amkhlv/xvkbd-cleaner.sh"
+    m:0x41 + c:55
+    Shift+Mod4 + v 
+
 #
 # End of xbindkeys configuration

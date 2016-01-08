@@ -23,7 +23,8 @@
 
 <h1 id="preparation">Preparation</h1>
 <h2 id="preparing-inintramfs-tools">Preparing <code>inintramfs-tools</code></h2>
-<pre><code>cp files/gpg_cryptroot /etc/initramfs-tools/hooks/
+<pre><code>cp files/sbin/* /usr/local/sbin/
+cp files/gpg_cryptroot /etc/initramfs-tools/hooks/
 cp files/modules /etc/initramfs-tools/
 cp files/conf_cryptroot /etc/initramfs-tools/conf.d/
 gvim /etc/initramfs-tools/conf.d/conf_cryptroot
@@ -61,7 +62,7 @@ key file.</p>
 <p><code>update-initramfs -kall -u</code></p>
 </li>
 <li>
-<p><code>grub-update</code></p>
+<p><code>update-grub</code></p>
 </li>
 </ol>
 
