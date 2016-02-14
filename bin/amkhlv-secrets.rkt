@@ -338,7 +338,11 @@ element xml {
      [(string=? r "r") (ansi-clear-screen) (reload) (mainloop #f)]
      [(string=? r "t") (mainloop (hint-tags))]
      [(string=? r "p") 
-      (insert-into-xsel (current-passphrase)) (sleep 3) (insert-into-xsel "---") (mainloop #f)]
+      (insert-into-xsel (current-passphrase)) 
+      (mainloop #f)
+      ;;(sleep 3) 
+      ;;(insert-into-xsel "---") (mainloop #f)
+      ]
      [else ;treat as regular expression
       (let [(ms 
              (if with-tags

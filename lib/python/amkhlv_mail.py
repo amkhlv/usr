@@ -45,7 +45,7 @@ parser = argparse.ArgumentParser(description="email indexer", formatter_class=ar
 query_examples = """ --where
    to_whom   like '...'        and
    from_whom like '...'        and
-   mime      like 'pdf'        and
+   mime      like '%%pdf%%'        and
    subject   like '...'        and
    messageid like '...'        and
    ( cc like '...' or
