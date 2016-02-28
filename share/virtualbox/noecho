@@ -1,0 +1,7 @@
+#!/bin/bash
+stty_orig=`stty -g`
+stty -echo
+$*
+stty $stty_orig
+
+

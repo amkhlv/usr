@@ -194,7 +194,6 @@ file is in `/usr/share/doc/openvpn/examples/sample-config-files/client.conf`
     tls-auth /root/openvpn/servername/ta.key 1
     ;nobind
     auth-nocache
-    script-security 2
     persist-key
     persist-tun
     user nobody
