@@ -30,7 +30,7 @@ import urwid
 import yaml
 
 
-DEFAULT_FILENAME = getenv("HOME") + "/a/calendars/calendar.ics"
+DEFAULT_FILENAME = getenv("HOME") + "/calendar.ics"
 DEFAULT_JOURNAL_FILENAME = getenv("HOME") + "/.local/share/evolution/memos/system/journal.ics"
 DEFAULT_TODOLIST_FILENAME = getenv("HOME") + "/.local/share/evolution/tasks/system/tasks.ics"
 SERIAL_FILE = getenv("HOME") + "/.clndr-serial"

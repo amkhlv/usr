@@ -86,7 +86,7 @@ style "notebook_maybelabel" = "default"
 style "scrollbar" = "default"
 {
     bg[NORMAL] = "#f5f5f5"
-    bg_pixmap[ACTIVE] = "winter.xpm"
+    bg_pixmap[ACTIVE] = "fallbackmoon.xpm"
 }
 
 widget_class "*" style "custom"
