@@ -1,0 +1,14 @@
+
+
+sudo aptitude install build-essential libqt5webkit5 libqt5webkit5-dev qt5-qmake
+
+mkdir build
+
+cd build
+
+QT_SELECT=qt5 qmake -makefile ../qt5msgr/
+
+make
+
+
+
