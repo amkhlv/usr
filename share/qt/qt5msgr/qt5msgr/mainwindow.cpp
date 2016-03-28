@@ -6,6 +6,7 @@
 #include <QWebView>
 #include <QDebug>
 #include <QScrollBar>
+#include <QTime>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,9 +22,19 @@ void MainWindow::setIncomingFile(QString f)
     incomingFile = new QFile(f);
 }
 
+void MainWindow::delay()
+{
+    QTime dieTime= QTime::currentTime().addMSecs(100);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
 void MainWindow::handleFileChanged(const QString &path)
 {
     qDebug() << "file changed: " << QFileInfo(path).absoluteFilePath() ;
+    QFileInfo checkFile(path);
+    while(!checkFile.exists()) delay();
+    watch->addPath(path);
     ui->webView->load(QUrl("file://" + QFileInfo(path).absoluteFilePath()));
 }
 

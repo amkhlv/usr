@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
     QFileSystemWatcher watcher;
     watcher.addPath(argv[1]);
     QObject::connect(&watcher, SIGNAL(fileChanged(const QString&)), &w, SLOT(handleFileChanged(const QString&)));
+    w.watch = &watcher;
     w.show();
     int result = a.exec();
     return result;
