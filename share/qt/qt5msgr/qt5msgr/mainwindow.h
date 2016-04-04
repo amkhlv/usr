@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFile>
 #include <QFileSystemWatcher>
+#include <QDir>
 
 namespace Ui {
 class MainWindow;
@@ -16,17 +17,23 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     void setIncomingFile(QString f);
-    QFileSystemWatcher* watch;
+    QFileSystemWatcher *watcher;
+    void setWatchedDir(QString dir);
     ~MainWindow();
 
 public slots:
     void handleFileChanged(const QString & path);
+    void handleDirectoryChanged(const QString & path);
     void handleUserTyped();
 
 private:
+    QStringList knownFiles;
+    QDir watchedDir;
+    bool doesMatchRegExp(const QString & p);
+    bool couldOpen(const QString & path);
     QFile* incomingFile;
     Ui::MainWindow *ui;
-    void delay();
+    QList<QRegExp> regexen;
 };
 
 #endif // MAINWINDOW_H
