@@ -5,15 +5,18 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QWebView>
-#include <QDebug>
 #include <QScrollBar>
+#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     regexen(QList<QRegExp>()),
-    knownFiles(QStringList())
+    knownFiles(QStringList()),
+    logFile("qt5msgr.log")
 {
+    logFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    logger = new QTextStream(&logFile);
     regexen << QRegExp(".*\\.html$") << QRegExp(".*\\.svg$");
     ui->setupUi(this);
     connect(ui->lineEdit, SIGNAL(returnPressed()), this, SLOT(handleUserTyped()));
@@ -27,12 +30,13 @@ void MainWindow::setIncomingFile(QString f)
 
 void MainWindow::setWatchedDir(QString dir)
 {
+    *logger << "=== STARTING ===" << endl;
     watchedDir = QDir(dir);
     knownFiles = watchedDir.entryList(QDir::Files);
     for (int i = 0; i < knownFiles.length(); i++) {
         QString f = knownFiles[i];
         if (doesMatchRegExp(f)) {
-            qDebug() << "adding file to watch: " << watchedDir.filePath(f);
+            *logger << "adding file to watch: " << f << endl;
             watcher->addPath(watchedDir.filePath(f));
         }
     }
@@ -60,38 +64,52 @@ bool MainWindow::couldOpen(const QString &path)
         ui->webView->load(QUrl("file://" + QFileInfo(path).absoluteFilePath()));
         watcher->addPath(path);
         return true;
-    } else { return false ; }
+    } else {
+        *logger << "*** FAILED TO OPEN " << path << " ***" << endl;
+        qDebug()<< "*** FAILED TO OPEN " << path << " ***" << endl;
+        //but re-add it anyway:
+        watcher->addPath(path);
+        return false ;
+    }
 }
 
 void MainWindow::handleFileChanged(const QString &filenamepath)
 {
-    qDebug() << "file changed: " << QFileInfo(filenamepath).absoluteFilePath() ;
+    *logger << "file changed: " << filenamepath << endl;
     if (doesMatchRegExp(filenamepath)) {
-        qDebug() << "and it matches our patterns";
+        *logger << "and it matches our patterns" << endl;
         if (!couldOpen(filenamepath)) {
-           qDebug() << "*** but we could not open it ***" ;
+           *logger << "*** but we could not open it ***" << endl;
+        } else {
+           *logger << "refreshed view of : " << filenamepath << endl;
         }
     }
 }
 
 void MainWindow::handleDirectoryChanged(const QString &path)
 {
-    qDebug() << "-- watched files now: " << watcher->files();
-    qDebug() << "directory changed: " << path;
+    *logger << "directory changed: " << path << "\n";
     QStringList nowFiles = watchedDir.entryList(QDir::Files);
     for (int i = 0; i < nowFiles.length(); i++) {
         QString f = nowFiles[i];
         if (! knownFiles.contains(f)) {
             if (doesMatchRegExp(f)) {
-                qDebug() << "detected new relevant file: " << watchedDir.filePath(f);
                 watcher->addPath(watchedDir.filePath(f));
                 knownFiles << f ;
-                if (!couldOpen(watchedDir.filePath(f))) { qDebug() << "UNABLE TO OPEN FILE"; }
+                if (!couldOpen(watchedDir.filePath(f))) {
+                    *logger << "******** UNABLE TO OPEN FILE ********" << endl;
+                } else {
+                    *logger << "refreshed view of : " << f << endl;
+                }
             }
         }
     }
+    QStringList watchlist = watcher->files();
+    for (int i=0; i < watchlist.length(); i++) {
+        *logger << " -- " << watchlist[i] ;
+    }
+    *logger << endl;
 }
-
 void MainWindow::handleUserTyped()
 {
     QString t = ui->lineEdit->text();
@@ -108,6 +126,7 @@ void MainWindow::handleUserTyped()
 
 MainWindow::~MainWindow()
 {
+    delete logger;
     delete ui;
     delete incomingFile;
 }

@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QFileSystemWatcher>
 #include <QDir>
+#include <QTextStream>
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +20,8 @@ public:
     void setIncomingFile(QString f);
     QFileSystemWatcher *watcher;
     void setWatchedDir(QString dir);
+    QFile logFile;
+    QTextStream* logger;
     ~MainWindow();
 
 public slots:
