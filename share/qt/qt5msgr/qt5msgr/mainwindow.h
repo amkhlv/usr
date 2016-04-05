@@ -17,11 +17,11 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = 0);
-    void setIncomingFile(QString f);
     QFileSystemWatcher *watcher;
     void setWatchedDir(QString dir);
     QFile logFile;
     QTextStream* logger;
+    QTextStream* output;
     ~MainWindow();
 
 public slots:
@@ -30,11 +30,9 @@ public slots:
     void handleUserTyped();
 
 private:
-    QStringList knownFiles;
     QDir watchedDir;
     bool doesMatchRegExp(const QString & p);
     bool couldOpen(const QString & path);
-    QFile* incomingFile;
     Ui::MainWindow *ui;
     QList<QRegExp> regexen;
 };

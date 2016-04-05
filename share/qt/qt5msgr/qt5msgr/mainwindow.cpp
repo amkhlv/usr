@@ -7,12 +7,13 @@
 #include <QWebView>
 #include <QScrollBar>
 #include <QTextStream>
+#include <QDateTime>
+#include <cstdio>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     regexen(QList<QRegExp>()),
-    knownFiles(QStringList()),
     logFile("qt5msgr.log")
 {
     logFile.open(QIODevice::WriteOnly | QIODevice::Append);
@@ -23,18 +24,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit->setFocus();
 }
 
-void MainWindow::setIncomingFile(QString f)
-{
-    incomingFile = new QFile(f);
-}
-
 void MainWindow::setWatchedDir(QString dir)
 {
-    *logger << "=== STARTING ===" << endl;
+    *logger << "=== STARTING at " << QDateTime::currentDateTime().toString("hh:mm:ss") << " ===" << endl;
+    *output << "ATTN: when creating a NEW file, it should be saved twice to be shown!" << endl;
     watchedDir = QDir(dir);
-    knownFiles = watchedDir.entryList(QDir::Files);
-    for (int i = 0; i < knownFiles.length(); i++) {
-        QString f = knownFiles[i];
+    QStringList fs = watchedDir.entryList(QDir::Files);
+    for (int i = 0; i < fs.length(); i++) {
+        QString f = fs[i];
         if (doesMatchRegExp(f)) {
             *logger << "adding file to watch: " << f << endl;
             watcher->addPath(watchedDir.filePath(f));
@@ -62,7 +59,7 @@ bool MainWindow::couldOpen(const QString &path)
     }
     if (n > 0 ) {
         ui->webView->load(QUrl("file://" + QFileInfo(path).absoluteFilePath()));
-        watcher->addPath(path);
+//        watcher->addPath(path);
         return true;
     } else {
         *logger << "*** FAILED TO OPEN " << path << " ***" << endl;
@@ -92,15 +89,9 @@ void MainWindow::handleDirectoryChanged(const QString &path)
     QStringList nowFiles = watchedDir.entryList(QDir::Files);
     for (int i = 0; i < nowFiles.length(); i++) {
         QString f = nowFiles[i];
-        if (! knownFiles.contains(f)) {
+        if (! watcher->files().contains(f)) {
             if (doesMatchRegExp(f)) {
                 watcher->addPath(watchedDir.filePath(f));
-                knownFiles << f ;
-                if (!couldOpen(watchedDir.filePath(f))) {
-                    *logger << "******** UNABLE TO OPEN FILE ********" << endl;
-                } else {
-                    *logger << "refreshed view of : " << f << endl;
-                }
             }
         }
     }
@@ -117,16 +108,11 @@ void MainWindow::handleUserTyped()
     QScrollBar *sb = ui->textBrowser->verticalScrollBar();
     sb->setValue(sb->maximum());
     ui->lineEdit->setText("");
-    QByteArray utf8 ;
-    utf8.append(t + "\n");
-    incomingFile->open(QIODevice::Append);
-    incomingFile->write(utf8);
-    incomingFile->close();
+    *output << t << endl;
 }
 
 MainWindow::~MainWindow()
 {
     delete logger;
     delete ui;
-    delete incomingFile;
 }

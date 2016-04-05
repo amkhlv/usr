@@ -1,5 +1,12 @@
+(defun myclargs () 
+  (when (equal argi "--outdir")
+    (message "setting outdir")
+    (shell-command 
+     (concat "DISPLAY=:0.0  XAUTHORITY=~/.Xauthority  build-qt5msgr-Desktop-Debug/qt5msgr " (pop command-line-args-left) " &" )
+     (generate-new-buffer "incoming")
+     )
+    t
+    ))
 
-(custom-set-variables
- '(auto-revert-interval 1))
+(setq command-line-functions (cons 'myclargs command-line-functions))
 
-(global-auto-revert-mode 1)

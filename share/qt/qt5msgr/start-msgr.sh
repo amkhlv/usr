@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DISPLAY=:0.0  XAUTHORITY=~/.Xauthority  build-qt5msgr-Desktop-Debug/qt5msgr outgoing incoming.txt &
+[ "$1" ] || { echo ERROR: the argument must be  the absolute path to OUTGOING DIR ; exit 1 ; }
 
-emacs -nw -q -l init.el outgoing/hi.html incoming.txt
+emacs -l init.el --outdir "$1" -nw -q  "$1"/start.html
 
 
