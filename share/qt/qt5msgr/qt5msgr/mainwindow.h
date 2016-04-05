@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     QFileSystemWatcher *watcher;
+    QFileSystemWatcher *watcherForDir;
     void setWatchedDir(QString dir);
     QFile logFile;
     QTextStream* logger;

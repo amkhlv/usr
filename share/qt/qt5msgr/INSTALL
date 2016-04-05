@@ -1,23 +1,6 @@
-Install packages
-================
 
 sudo aptitude install build-essential libqt5webkit5 libqt5webkit5-dev qt5-qmake
 
 
-Maybe need to cleanup
-=====================
-
-rm build-qt5msgr-Desktop-Debug/*
-
-
-To build, copypaste lines below to terminal
-===========================================
-
-cd build-qt5msgr-Desktop-Debug
-
-QT_SELECT=qt5 qmake -makefile ../qt5msgr/
-
-make
-
-cd ..
+./build.sh
 
