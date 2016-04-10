@@ -1,3 +1,24 @@
+Starting and stopping
+=====================
+
+To stop:
+
+    pulseaudio -k
+
+To start in verbose diagnostic mode:
+
+    pulseaudio -vvvv
+
+To start as a daemon:
+
+    pulseaudio -D
+
+To check status:
+
+    pulseaudio --check
+    echo $?
+
+(`0` means running, `1` means not running)
 
 Confusing-defuzzing
 ===================

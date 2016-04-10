@@ -9,6 +9,7 @@
 #include <QTextStream>
 #include <QDateTime>
 #include <cstdio>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -122,6 +123,8 @@ void MainWindow::handleUserTyped()
 MainWindow::~MainWindow()
 {
     delete watcher;
+    delete watcherForDir;
     delete logger;
     delete ui;
+    delete output;
 }

@@ -37,7 +37,7 @@ Maybe compute `sha256sum` and
 Google for it. This, at least, would show that other people have also downloaded the same file.
 I think it requires `pulseaudio`, but this is standard now.
 
-    dpkg -i skype-install
+    dpkg -i skype-install.deb
 
 will report errors; to fix, say:
 
