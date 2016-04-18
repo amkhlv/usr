@@ -9,8 +9,6 @@ echo "$WMC" >> /tmp/amkhlv-mousebutton.log
 
 [ "$1" ] || { echo $WMC ; exit 0 ; }
 
-date >> /tmp/amkhlv-mousebutton.log
-
 case $WMC in
     '"Inkscape"')
         xte 'keydown Control_L' 'key S' 'keyup Control_L'
