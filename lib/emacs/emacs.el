@@ -167,8 +167,6 @@
                                  (local-set-key (kbd "C-c C-c") 'markdown-to-html)
                                  (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
 
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
 
 (add-hook 'nxml-mode-hook
           (lambda()
@@ -515,3 +513,10 @@
 
 (autoload 'rnc-mode "rnc-mode")
 (add-to-list 'auto-mode-alist '("\\.rnc\\'" . rnc-mode))
+
+
+(add-to-list 'load-path "~/a/git/haskell-mode/")
+(require 'haskell-mode-autoloads)
+(add-to-list 'Info-default-directory-list "~/a/git/haskell-mode/")
+;(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)

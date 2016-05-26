@@ -50,6 +50,14 @@ Notice that home `DeskJet` type of printer is likely to support the `ipp` protoc
 
     lpadmin -p hp-home -v ipp://192.168.1.153 -m drv:///hpcups.drv/hp-deskjet_2540_series.ppd -L home -E
 
+USB printer
+-----------
+
+To obtain the list of devices, say:
+
+    lpinfo -v
+
+The corresponding device will go under `-v` flag.
 
 Test
 ====

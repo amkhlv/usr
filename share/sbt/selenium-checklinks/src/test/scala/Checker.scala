@@ -16,7 +16,8 @@ class Checker extends FlatSpec with ShouldMatchers with HtmlUnit {
       case SimpleLink(url) => {
         go to (url)
         val bodies:Iterator[Element] = findAll(tagName("body"))
-        bodies.length should be (1)
+        bodies.next().attribute("id") should be (Some("scribble-racket-lang-org"))
+        //bodies.length should be (1)
       }
       case LinkWithTag(url, tag) => {
         println("Going to visit: " + url + "#" + tag)

@@ -113,6 +113,7 @@ export PATH="$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin"
 export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$HOME/usr/local/share/man"
 export MAIL=/var/mail/andrei
 export MAILCHECK=30
+export XDG_RUNTIME_DIR="/run/user/$UID"
 
 source ~/.andrei
 source /etc/bash_completion
@@ -128,8 +129,5 @@ source /etc/bash_completion
 #         echo "---- TODO: -------------"
 #         echo "$TDLIST"
 # fi
-
-address-reminders
-
 
 
