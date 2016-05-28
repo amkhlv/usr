@@ -1,0 +1,64 @@
+name:                depot
+version:             0.1.0.0
+synopsis:            Simple file server
+description:         Please see README.md
+homepage:            https://github.com/githubuser/depot#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Andrei Mikhailov
+maintainer:          example@example.com
+copyright:           2016 Andrei Mikhailov
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+
+executable depot-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  other-modules:       Model
+                     , Foundation
+                     , Dispatch
+  build-depends:       base
+                     , yesod
+                     , yesod-form
+                     , text
+                     , clientsession
+                     , persistent
+                     , persistent-template
+                     , persistent-sqlite
+                     , transformers
+                     , resourcet
+                     , monad-logger
+                     , filepath
+                     , directory
+                     , esqueleto
+                     , time
+                     , iso8601-time
+                     , bytestring
+                     , yaml
+                     , yesod-core
+                     , warp
+                     , pwstore-fast
+                     , haskeline
+                     , depot
+  default-language:    Haskell2010
+
+test-suite depot-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , yesod
+                     , depot
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/depot
