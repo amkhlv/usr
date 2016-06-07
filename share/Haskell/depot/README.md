@@ -42,9 +42,11 @@ The `password` field in the `user` table contains the password hash, which can b
 Systemd
 -------
 
+`depot@.service` should contain:
+
     [Service]
     WorkingDirectory=/var/www/depot
-    ExecStart=/usr/local/bin/depot-exe depconf.yaml
+    ExecStart=/usr/local/bin/depot-exe %i.yaml
     User=www-data
 
 Nginx

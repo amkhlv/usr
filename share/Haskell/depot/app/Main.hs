@@ -23,6 +23,7 @@ import           Control.Monad.Logger (runStderrLoggingT)
 import           Data.Yaml
 import           Data.Maybe (fromJust)
 import           System.Environment
+import           System.Exit
 
 import Model
 import Foundation
@@ -44,9 +45,14 @@ instance FromJSON DepConf where
 main :: IO ()
 main = do
   args <- getArgs
-  ymlData <- BS.readFile (head args)
-  let conf = Data.Yaml.decode ymlData :: Maybe DepConf
-  let stts = setPort (port (fromJust conf)) $ setHost "127.0.0.1" defaultSettings
-  runStderrLoggingT $ withSqlitePool (dbfile (fromJust conf)) 10 $ \pool -> liftIO $ do
-    waiApp <- toWaiApp $ Depot pool (root (fromJust conf)) (dir (fromJust conf))
-    runSettings stts waiApp
+  if null args
+    then do
+      putStrLn "argument should be the path to YAML config file"
+      exitWith $ ExitFailure 1 
+    else do
+      ymlData <- BS.readFile (head args)
+      let conf = Data.Yaml.decode ymlData :: Maybe DepConf
+      let stts = setPort (port (fromJust conf)) $ setHost "127.0.0.1" defaultSettings
+      runStderrLoggingT $ withSqlitePool (dbfile (fromJust conf)) 10 $ \pool -> liftIO $ do
+        waiApp <- toWaiApp $ Depot pool (root (fromJust conf)) (dir (fromJust conf))
+        runSettings stts waiApp

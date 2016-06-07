@@ -26,6 +26,7 @@ import           System.FilePath
 import           System.Directory (removeFile, doesFileExist)
 import qualified Database.Esqueleto as E
 import           Crypto.PasswordStore
+import           Yesod.Default.Util
 
 import Foundation
 import Model
@@ -43,13 +44,7 @@ uploadForm = renderDivs $ fileAFormReq "file"
 getAuthR :: Handler Html
 getAuthR = do
   (widget, enctype) <- generateFormPost loginForm
-  defaultLayout
-    [whamlet|
-            <p> please login
-            <form method=post action=@{AuthR} enctype=#{enctype}>
-                ^{widget}
-                <button>Submit
-            |]
+  defaultLayout $(widgetFileNoReload def "login")
 
 postAuthR :: Handler Html
 postAuthR = do
@@ -71,22 +66,17 @@ postAuthR = do
                 if (verifyPassword (encodeUtf8 pass) (encodeUtf8 p))
                   then do setSession "username" nm
                           getUploadR
-                  else defaultLayout [whamlet|
-                                             <p>sorry, wrong password !
-                                             |]
-              0 -> defaultLayout [whamlet|
-                                         <p>sorry, either user #{show nm} does not exist, or wrong password !
-                                         |]
+                  else defaultLayout $(widgetFileNoReload def "wrong-password")
+              0 -> defaultLayout $(widgetFileNoReload def "no-such-user")
               _ -> defaultLayout [whamlet|
                                          <p>ERROR: user registered more than once 
                                          |]
-    _ -> defaultLayout
+    _ -> defaultLayout $ do
       [whamlet|
                 <p>Invalid input, let's try again.
-                <form method=post action=@{AuthR} enctype=#{enctype}>
-                    ^{widget}
-                    <button>Submit
-      |]
+              |]
+      $(widgetFileNoReload def "login")
+
 
 getUploadR :: Handler Html
 getUploadR = do
@@ -100,19 +90,7 @@ getUploadR = do
         $ E.from $ \f -> do
           E.where_ (f E.^. UploadedFileOwnerName E.==. E.val u)
           return f
-      defaultLayout
-        [whamlet|
-                <p>#{show sess}
-                <p>file upload
-                <form method=post action=@{UploadR} enctype=#{enctype}>
-                    ^{widget}
-                    <input type="submit" value="Upload">
-                $forall f <- fs
-                    <hr>
-                    <a href=@{DownloadR (uploadedFileTimeStamp (entityVal f))}>#{unpack (uploadedFileFileName (entityVal f))}
-                    <form method=post action=@{DeleteR (uploadedFileTimeStamp (entityVal f))}>
-                        <input type="submit" value="DELETE">
-                |]
+      defaultLayout $(widgetFileNoReload def "upload")
     Nothing ->
        defaultLayout
          [whamlet|

@@ -1,0 +1,4 @@
+<p> please login
+<form method=post action=@{AuthR} enctype=#{enctype}>
+    ^{widget}
+    <button>Submit

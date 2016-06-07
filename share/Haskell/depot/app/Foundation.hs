@@ -20,12 +20,7 @@ import Model
 
 data Depot = Depot { depPool :: E.ConnectionPool , depRoot :: Text , depUploadsDir :: Text }
 
-mkYesodData "Depot" [parseRoutes|
-/login AuthR GET POST
-/files UploadR GET POST
-/delete/#String DeleteR POST
-/download/#String DownloadR GET
-|]
+mkYesodData "Depot" $(parseRoutesFile "config/routes")
 
 instance Yesod Depot
     where
