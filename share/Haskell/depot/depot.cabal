@@ -46,6 +46,7 @@ executable depot-exe
                      , warp
                      , pwstore-fast
                      , haskeline
+                     , shakespeare
                      , depot
   default-language:    Haskell2010
 

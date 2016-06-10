@@ -15,6 +15,8 @@ import           Yesod
 import           Yesod.Form.Jquery
 import           Data.Text (Text, unpack, pack, concat)
 import qualified Database.Esqueleto as E
+import           Yesod.Default.Util
+import           Text.Hamlet
 
 import Model
 
@@ -28,6 +30,9 @@ instance Yesod Depot
       maximumContentLength _ p = case p of
         (Just UploadR) -> Just (1024 * 1024 * 1024)
         _ -> Just (1024 * 1024)
+      defaultLayout widget = do
+        pc <- widgetToPageContent $ $(widgetFileNoReload def "default-layout")
+        withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
 instance YesodPersist Depot where
     type YesodPersistBackend Depot = E.SqlBackend

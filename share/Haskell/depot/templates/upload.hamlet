@@ -3,8 +3,3 @@
 <form method=post action=@{UploadR} enctype=#{enctype}>
     ^{widget}
     <input type="submit" value="Upload">
-$forall f <- fs
-    <hr>
-    <a href=@{DownloadR (uploadedFileTimeStamp (entityVal f))}>#{unpack (uploadedFileFileName (entityVal f))}
-    <form method=post action=@{DeleteR (uploadedFileTimeStamp (entityVal f))}>
-        <input type="submit" value="DELETE">

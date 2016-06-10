@@ -1,0 +1,9 @@
+<hr>
+<form method=post action=@{DeleteR (uploadedFileTimeStamp (entityVal fl))} enctype=#{enc}>
+    ^{wid}
+    <table>
+      <tr>
+        <td><a href=@{DownloadR (uploadedFileTimeStamp (entityVal fl))}>#{unpack (uploadedFileFileName (entityVal fl))}
+        <td><input type="submit" value="Delete">
+
+

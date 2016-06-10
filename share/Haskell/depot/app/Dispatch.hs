@@ -41,6 +41,11 @@ loginForm = renderDivs $ User
 uploadForm :: Html -> MForm Handler (FormResult FileInfo, Widget)
 uploadForm = renderDivs $ fileAFormReq "file"
 
+data Foo = Foo{ x :: Text } deriving Show
+
+fooForm :: Html -> MForm Handler (FormResult Foo, Widget)
+fooForm = renderDivs $ Foo <$> areq hiddenField "" (Just "foo")
+
 getAuthR :: Handler Html
 getAuthR = do
   (widget, enctype) <- generateFormPost loginForm
@@ -68,19 +73,16 @@ postAuthR = do
                           getUploadR
                   else defaultLayout $(widgetFileNoReload def "wrong-password")
               0 -> defaultLayout $(widgetFileNoReload def "no-such-user")
-              _ -> defaultLayout [whamlet|
-                                         <p>ERROR: user registered more than once 
-                                         |]
+              _ -> defaultLayout [whamlet|<p>ERROR: user registered more than once|]
     _ -> defaultLayout $ do
-      [whamlet|
-                <p>Invalid input, let's try again.
-              |]
+      [whamlet|<p>Invalid input, let's try again.|]
       $(widgetFileNoReload def "login")
 
 
 getUploadR :: Handler Html
 getUploadR = do
   (widget, enctype) <- generateFormPost uploadForm
+  (wid, enc) <- generateFormPost fooForm
   sess <- getSession
   mu <- lookupSession $ pack "username"
   case mu of
@@ -90,12 +92,12 @@ getUploadR = do
         $ E.from $ \f -> do
           E.where_ (f E.^. UploadedFileOwnerName E.==. E.val u)
           return f
-      defaultLayout $(widgetFileNoReload def "upload")
+      defaultLayout $ do
+        $(widgetFileNoReload def "upload")
+        sequence_ $ map (\fl -> $(widgetFileNoReload def "file-item")) fs
     Nothing ->
        defaultLayout
-         [whamlet|
-               <p>not authorized
-               |]
+         [whamlet|<p>not authorized|]
 
 postUploadR :: Handler Html
 postUploadR = do
@@ -112,22 +114,15 @@ postUploadR = do
             $ insert $ UploadedFile u (fileName fileinfo) (fileContentType fileinfo) ts
           getUploadR
         _ -> defaultLayout
-          [whamlet|
-                  <p>Something wrong, no file upload
-                  |]
+          [whamlet|<p>Something wrong, no file upload|]
     Nothing ->
        defaultLayout
-         [whamlet|
-               <p>not authorized
-               |]
+         [whamlet|<p>not authorized|]
 
 writeToServer :: FileInfo -> Text -> String -> IO ()
 writeToServer file dirname filename = do
   let path = (unpack dirname) </> filename 
   fileMove file path
-
-uploadDirectory :: FilePath
-uploadDirectory = "uploads"
 
 getDownloadR :: String -> Handler TypedContent
 getDownloadR ts = do
@@ -153,15 +148,19 @@ postDeleteR ts = do
   mu <- lookupSession $ pack "username"
   case mu of
     Just u -> do
-      let filepath = uploadDirectory </> ((unpack u) ++ "_" ++ ts)
-      liftIO $ removeFile filepath
-      runDB
-        $ E.delete $
-            E.from $ \f -> do
-            E.where_ (f E.^. UploadedFileTimeStamp E.==. E.val ts E.&&. f E.^. UploadedFileOwnerName E.==. E.val u)
-      getUploadR
+      ((result, widget), enctype) <- runFormPost fooForm
+      case result of
+        FormSuccess _ -> do
+          Depot pl rt ud <- getYesod
+          let filepath = (unpack ud) </> ((unpack u) ++ "_" ++ ts)
+          liftIO $ removeFile filepath
+          runDB
+            $ E.delete $
+                E.from $ \f -> do
+                E.where_ (f E.^. UploadedFileTimeStamp E.==. E.val ts E.&&. f E.^. UploadedFileOwnerName E.==. E.val u)
+          getUploadR
+        _ -> defaultLayout
+          [whamlet|<p>Something wrong, no file deletion|]
     Nothing ->
        defaultLayout
-         [whamlet|
-               <p>not authorized
-               |]
+         [whamlet|<p>not authorized|]
