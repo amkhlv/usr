@@ -56,33 +56,28 @@ postAuthR = do
   ((result, widget), enctype) <- runFormPost loginForm
   case result of
     FormSuccess user ->
-      do
-        case user of
-          User nm pass -> do
-            -- p <- runDB $ selectList [UserUserName ==. nm, UserPassword ==. pass] [LimitTo 1]
-            pp <- runDB
-              $ E.select 
-              $ E.from $ \u -> do
-                E.where_ (u E.^. UserUserName E.==. E.val nm)
-                return (u E.^. UserPassword)
-            case length pp of
-              1 -> do
-                let p = E.unValue (head pp)
-                if (verifyPassword (encodeUtf8 pass) (encodeUtf8 p))
-                  then do setSession "username" nm
-                          getUploadR
-                  else defaultLayout $(widgetFileNoReload def "wrong-password")
-              0 -> defaultLayout $(widgetFileNoReload def "no-such-user")
-              _ -> defaultLayout [whamlet|<p>ERROR: user registered more than once|]
+      case user of
+        User nm pass -> do
+          pp <- runDB
+            $ E.select 
+            $ E.from $ \u -> do
+              E.where_ (u E.^. UserUserName E.==. E.val nm)
+              return (u E.^. UserPassword)
+          case length pp of
+            1 -> do
+              let p = E.unValue (head pp)
+              if (verifyPassword (encodeUtf8 pass) (encodeUtf8 p))
+                then (setSession "username" nm) >> getUploadR
+                else defaultLayout $(widgetFileNoReload def "wrong-password")
+            0 -> defaultLayout $(widgetFileNoReload def "no-such-user")
+            _ -> defaultLayout [whamlet|<p>ERROR: user registered more than once|]
     _ -> defaultLayout $ do
       [whamlet|<p>Invalid input, let's try again.|]
       $(widgetFileNoReload def "login")
 
-
 getUploadR :: Handler Html
 getUploadR = do
   (widget, enctype) <- generateFormPost uploadForm
-  (wid, enc) <- generateFormPost fooForm
   sess <- getSession
   mu <- lookupSession $ pack "username"
   case mu of
@@ -92,12 +87,11 @@ getUploadR = do
         $ E.from $ \f -> do
           E.where_ (f E.^. UploadedFileOwnerName E.==. E.val u)
           return f
+      (wid, enc) <- generateFormPost fooForm
       defaultLayout $ do
         $(widgetFileNoReload def "upload")
-        sequence_ $ map (\fl -> $(widgetFileNoReload def "file-item")) fs
-    Nothing ->
-       defaultLayout
-         [whamlet|<p>not authorized|]
+        sequence_ [ $(widgetFileNoReload def "file-item") | fl <- fs ]
+    Nothing -> defaultLayout [whamlet|<p>not authorized|]
 
 postUploadR :: Handler Html
 postUploadR = do
@@ -115,9 +109,7 @@ postUploadR = do
           getUploadR
         _ -> defaultLayout
           [whamlet|<p>Something wrong, no file upload|]
-    Nothing ->
-       defaultLayout
-         [whamlet|<p>not authorized|]
+    Nothing -> defaultLayout [whamlet|<p>not authorized|]
 
 writeToServer :: FileInfo -> Text -> String -> IO ()
 writeToServer file dirname filename = do
@@ -140,8 +132,7 @@ getDownloadR ts = do
       filecont <- liftIO $ DBSL.readFile ((unpack ud) </> ((unpack u) ++ "_" ++ ts))
       sendResponse (encodeUtf8 (uploadedFileContentType (entityVal (head fs))),
                     toContent filecont)
-    Nothing -> do
-      return $ TypedContent "" (ContentBuilder "not authorized" Nothing)
+    Nothing -> return $ TypedContent "" (ContentBuilder "not authorized" Nothing)
 
 postDeleteR :: String -> Handler Html
 postDeleteR ts = do
@@ -159,8 +150,18 @@ postDeleteR ts = do
                 E.from $ \f -> do
                 E.where_ (f E.^. UploadedFileTimeStamp E.==. E.val ts E.&&. f E.^. UploadedFileOwnerName E.==. E.val u)
           getUploadR
-        _ -> defaultLayout
-          [whamlet|<p>Something wrong, no file deletion|]
-    Nothing ->
-       defaultLayout
-         [whamlet|<p>not authorized|]
+        _ -> defaultLayout [whamlet|<p>Something wrong, no file deletion|]
+    Nothing -> defaultLayout [whamlet|<p>not authorized|]
+
+postLogoutR :: Handler Html
+postLogoutR = do
+  mu <- lookupSession $ pack "username"
+  case mu of
+    Just u -> do
+      ((result, widget), enctype) <- runFormPost fooForm
+      case result of
+        FormSuccess _ -> do
+          deleteSession $ pack "username"
+          getAuthR
+        _ -> defaultLayout [whamlet|<p>Something wrong, logout failed!|]
+    Nothing -> defaultLayout [whamlet|<p>not authorized|]

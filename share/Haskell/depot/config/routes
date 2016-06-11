@@ -1,4 +1,5 @@
 /login AuthR GET POST
+/logout LogoutR POST
 /files UploadR GET POST
 /delete/#String DeleteR POST
 /download/#String DownloadR GET

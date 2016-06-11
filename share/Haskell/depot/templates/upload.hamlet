@@ -1,5 +1,9 @@
+<form method=post action=@{LogoutR} enctype=#{enc}>
+    ^{wid}
+    <input type="submit" value="Logout">
+<hr>
 <p>#{show sess}
-<p>file upload
+<hr>
 <form method=post action=@{UploadR} enctype=#{enctype}>
     ^{widget}
     <input type="submit" value="Upload">
