@@ -1,15 +1,16 @@
 package controllers
 
 import java.text.SimpleDateFormat
-
+import play.api._
 import play.api.mvc._
+import play.api.Play.current
 import play.api.{Configuration, Play}
 import org.markdown4j.Markdown4jProcessor
 import java.io.File
-import scala.sys.process._
+import scala.sys.process.Process
 
 object Application {
-  val ics: String = Play.current.configuration.getString("application.ics") match {
+  val ics: String = current.configuration.getString("application.ics") match {
     case None => throw new Exception("conf parameter application.ics is missing from the file application.conf!")
     case Some(s) => s
   }
@@ -22,6 +23,16 @@ object Application {
       }
     ))
   }
+  val xauthority: String = Play.current.configuration.getString("application.xauthority") match {
+    case None => "/home/andrei/.Xauthority"
+    case Some(s) => s
+  }
+
+  val display: String = Play.current.configuration.getString("application.display") match {
+    case None => ":0.0"
+    case Some(s) => s
+  }
+
   val sqliConf: Configuration = Play.current.configuration.getConfig("application.sqlis") match {
     case None => throw new Exception("conf parameter application.sqlis is missing from the file application.conf!")
     case Some(c) => c
@@ -100,7 +111,16 @@ class Application extends Controller {
     Application.sqliMap.get(s) match {
       case None => Ok(views.html.index(weeks(1, 2)))
       case Some(x) => {
-        Seq("/home/andrei/bin/amkhlv-x-launcher.sh", "/home/andrei/bin/linii2 -y " + x).run
+        Process(Seq(
+          "/home/andrei/bin/linii2",
+          "-y",
+          x
+        ),
+          None,
+          ("DISPLAY",
+          Application.display),
+          ("XAUTHORITY",
+          Application.xauthority)).run
         Ok(views.html.index(weeks(1, 2)))
       }
     }

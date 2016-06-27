@@ -1,4 +1,8 @@
 #!/bin/bash
 
-DISPLAY=:0.0 XAUTHORITY=/home/andrei/.Xauthority $@
+DSP=:0.0
+
+[ "$DISPLAY" ] && DSP=$DISPLAY
+
+DISPLAY=$DSP XAUTHORITY=/home/andrei/.Xauthority $@
 

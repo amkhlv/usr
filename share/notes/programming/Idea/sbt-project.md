@@ -2,7 +2,9 @@
 Opening
 =======
 
-To  open the `SBT` project in `IntelliJ` click on the `build.sbt` file
+To  open the `SBT` project in `IntelliJ` click on the `build.sbt` file.
+__Do__ select `use-auto-import` and "Download Sources/Javadoc/Sources for SBT".
+
 
 Importing JAR files
 ===================
