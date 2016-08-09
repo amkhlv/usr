@@ -1,15 +1,14 @@
+/**
+  * Created by andrei on 08/08/16.
+  */
 
-
-import java.io.{FileWriter, File, FileReader}
+import java.io.{File, FileReader, FileWriter}
 import java.util
+
+import org.jbibtex._
+
 import scala.collection.JavaConverters._
-import org.jbibtex.{BibTeXEntry, Key, Value, BibTeXDatabase, BibTeXParser}
-import scala.sys.process._
 import scala.collection.mutable._
-
-
-
-
 
 object Bib {
 
@@ -125,12 +124,16 @@ object Bib {
     fwPre.write(preHeader + references + preFooter)
     print(preHeader + references + preFooter)
     fwPre.close()
+    val removalOfBBL: Boolean = runInMyDir(Seq("rm", fPreNoExt + ".bbl"))
     val preLaTeXFirstRun: Boolean  = runInMyDir(Seq("pdflatex", fPreNoExt))
     println("----------- About to run BibTeX ----------------------------")
     val preBibTeXRun: Boolean      = runInMyDir(Seq("bibtex", fPreNoExt))
     println("----------- Finished running BibTeX ------------------------")
     val preLaTeXSecondRun: Boolean = runInMyDir(Seq("pdflatex", fPreNoExt))
     val preLaTeXThirdRun: Boolean  = runInMyDir(Seq("pdflatex", fPreNoExt))
+    if (!preBibTeXRun) println("===================================================\n" +
+      "got WRROR running BibTeX ; did you follow instructions concerning /usr/share/texlive/texmf-dist/web2c/texmf.cnf ?\n" +
+      "===================================================")
     val bbl = scala.io.Source.fromFile(fPreNoExt + ".bbl").mkString
     val fw: FileWriter = new FileWriter(new File(fNoExt + ".tex"))
     fw.write(
@@ -145,14 +148,19 @@ object Bib {
     fw.close()
     val firstRun:  Boolean = runInMyDir(Seq("pdflatex", fNoExt))
     val secondRun: Boolean = runInMyDir(Seq("pdflatex", fNoExt))
-    println(preLaTeXFirstRun)
-    println(preLaTeXSecondRun)
-    println(preLaTeXThirdRun)
-    println(preBibTeXRun)
-    println(firstRun)
-    println(secondRun)
-    println(dois)
-    println(refCount)
+    println()
+    println("=========================================")
+    println()
+    if (!preLaTeXFirstRun) println("got ERROR on the first pass of LaTeX on _pre" + fPreNoExt)
+    if (!preLaTeXSecondRun) println("got ERROR on the second pass of LaTeX on _pre" + fPreNoExt)
+    if (!preLaTeXThirdRun) println("got ERROR on the third pass of LaTeX on " + fPreNoExt)
+    if (!preBibTeXRun) println("got WRROR running BibTeX ; did you follow instructions concerning /usr/share/texlive/texmf-dist/web2c/texmf.cnf ?")
+    if (!firstRun) println("got ERROR on the first pass of LaTeX on " + fNoExt)
+    if (!secondRun) println("got ERROR on the second pass of LaTeX on " + fNoExt)
+
+    println("list of references consists of " + refCount.toString + " items")
+    println()
   }
 
 }
+
