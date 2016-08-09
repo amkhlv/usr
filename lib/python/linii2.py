@@ -351,7 +351,7 @@ class Row:
         self.aux_hbox = Gtk.HBox()
         self.aux_hbox.pack_start(Gtk.VBox(),False,False,2)
         self.item_button = Gtk.Button(
-            "[F" + str(n) + "] " + row_of_items[0],
+            "[F" + str(n) + "] " + str(row_of_items[0]),
             name="RowItemButton"
             )
         self.item_button.connect("clicked", self.update_fn)

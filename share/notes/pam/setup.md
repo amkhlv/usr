@@ -34,12 +34,6 @@ lines. __Check /etc/fstab after doing pamusb-conf__!
 
     with such settings, we will have the one-time pads on the USB regenerated every time
 
-- Add the following line to `/etc/pmount.allow`:
-
-        /dev/disk/by-uuid/xxxxxxxxxxxxxxx
-
-    where `xxxxxxxxxxxxxxx` is the UUID of the flashka partition on which the pads are
-
 - Set the permissions on the `.pamusb` partition in flashka
 
     Mount the flashka and:
@@ -48,6 +42,9 @@ lines. __Check /etc/fstab after doing pamusb-conf__!
         chmod g+x .pamusb 
         chmod g+r .pamusb
         chmod g+w .pamusb
+        chmod o-x .pamusb
+        chmod o-r .pamusb
+        chmod o-w .pamusb
 
 - Execute as `andrei`:
 

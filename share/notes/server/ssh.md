@@ -83,9 +83,13 @@ To remember:
 Local port forwarding
 ---------------------
 
+This creates __outgoing tunnel__ . This means that LOCAL, _i.e._ outgoing, port on my machine gets positioned on some remote machine (as if my
+computer grows a huge appendage). In other words "local port forwarding" means "the forwarding of a local port".
+
     ssh -L 9000:forbidden.com:80 myname@my-vps-server.com
 
-This opens up the blocked website `forbidden.com` through a remote server `my-vps-server.com`. In particular, if I want to access some service on that very server `my-vps-server.com`
+This opens up the blocked website `forbidden.com` through a remote server `my-vps-server.com`.
+In particular, if I want to access some service on that very server `my-vps-server.com`
 (e.g. `PostgreSQL` port 5432):
 
     ssh -L 9000:localhost:5432 myname@my-vps-server.com 
@@ -94,7 +98,23 @@ This opens up the blocked website `forbidden.com` through a remote server `my-vp
 Remote port forwarding
 ----------------------
 
+This creates __incoming tunnel__ .
+This means that a remote machine "grows a huge appendage"
+and places ITS outgoing port inside MY machine.
+In other words "remote port forwarding" means "the forwarding of a remote port".
+Although I would rather call it "backwarding".
+
     ssh -R 9000:localhost:3000 my-name@my-vps-server.com
 
 This connects port (3000 on __remote__) to (9000 on __localhost__)
 
+
+Formal similarity between local and remote port forwarding
+----------------------------------------------------------
+
+In both situations, a part of the command looks like:
+
+    9000:somehost:3000 my-name@otherhost
+
+In both cases we should understand `9000:somehost:3000` as 
+"9000 : (somehost:3000)" where `9000` is a port on `otherhost`.

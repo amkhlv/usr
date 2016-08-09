@@ -1,3 +1,8 @@
+# Update
+
+Excellent discussion can be found [here](http://security.stackexchange.com/questions/88629/preventing-dma-attacks)
+
+
 # Finding out if firewire is present
 
 ## Using `lsmod`

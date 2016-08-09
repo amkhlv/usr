@@ -6,9 +6,9 @@
 Welcome to amkhlv's documentation!
 ==================================
 
-The sources are in `~/a/other/Python/mydoc`. To build:\ ::
+The sources are in `~/usr/share/doc/python/source`. To build:\ ::
 
-  cd ~/a/other/Python/mydoc
+  cd ~/usr/share/doc/python/
   make html
 
 Contents:
@@ -24,6 +24,7 @@ Contents:
    amkhlv_music
    yaml
    curses
+   vcard2dict
 
 Indices and tables
 ==================
