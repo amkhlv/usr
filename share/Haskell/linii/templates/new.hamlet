@@ -1,0 +1,14 @@
+
+<section.page-header>
+  <h2>Enter new address
+
+  <div>
+    <form method=post action=@{NewR} enctype=#{newEnctype}>
+      ^{newWidget}
+      <button .btn .btn-primary type="submit">
+         Insert! <span class="glyphicon glyphicon-upload"></span>
+
+  <br>
+  <hr>
+  <div>
+    <a href=@{HomeR} class="glyphicon glyphicon-home">home

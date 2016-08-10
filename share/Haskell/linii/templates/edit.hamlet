@@ -1,0 +1,13 @@
+  <a href=@{HomeR} class="glyphicon glyphicon-home">home
+
+  <div>
+    <form method=post action=@{EditR i} enctype=#{editEnctype}>
+      ^{editWidget}
+      <button .btn .btn-primary type="submit">
+         insert <span class="glyphicon glyphicon-upload"></span>
+  <div>
+    <b>scroll down for delete button
+    <form method=post action=@{DeleteR i} enctype=#{deleteEnctype}>
+      ^{deleteWidget}
+      <button .btn .btn-primary type="submit">
+         delete <span class="glyphicon glyphicon-upload"></span>

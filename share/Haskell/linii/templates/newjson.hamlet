@@ -1,0 +1,18 @@
+
+<section.page-header>
+  <h2>Upload a JSON file
+
+<form method=post action=@{NewJSONR} enctype=#{enctype}>
+    ^{widget}
+    <input type="submit" value="Upload">
+
+<hr>
+
+<form method=post action=@{NewVCFR} enctype=#{enctypeVCF}>
+    ^{widgetVCF}
+    <input type="submit" value="Upload">
+
+<br>
+<hr>
+<div>
+  <a href=@{HomeR} class="glyphicon glyphicon-home">home

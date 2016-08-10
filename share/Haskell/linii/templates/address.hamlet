@@ -1,0 +1,81 @@
+<a href=@{EditR (fromSqlKey (entityKey m))} class="glyphicon glyphicon-edit">edit
+&emsp;
+<a href=@{VCardR  (fromSqlKey (entityKey m))} class="glyphicon glyphicon-download">getVCF
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3"><b>Last Name
+    <div class="col-md-9">#{unpack (addressLast (entityVal m))}
+  $maybe afirst <- (addressFirst (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>First Name
+      <div class="col-md-9">#{unpack afirst}
+  <div class="row">
+    <div class="col-md-3"><b>DateCollected
+    <div class="col-md-9">#{unpack (addressDatecollected (entityVal m))}
+  $maybe aemail <- (addressEmail (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>email
+      <div class="col-md-9">
+              $forall emlitm <- emlSplit aemail
+                $if (itemIsEml emlitm)
+                  <a href="mailto:#{unEmlItem emlitm}">#{unEmlItem emlitm}</a>
+                $else 
+                  #{unEmlItem emlitm}
+  $maybe aworkphone <- (addressWorkphone (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>workphone
+      <div class="col-md-9">
+              $forall telitm <- telSplit aworkphone
+                $if (itemIsTel telitm)
+                  <a href="tel:#{unTelItem telitm}">#{unTelItem telitm}</a>
+                $else 
+                  #{unTelItem telitm}
+  $maybe ahomephone <- (addressHomephone (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>homephone
+      <div class="col-md-9">
+              $forall telitm <- telSplit ahomephone
+                $if (itemIsTel telitm)
+                  <a href="tel:#{unTelItem telitm}">#{unTelItem telitm}</a>
+                $else 
+                  #{unTelItem telitm}
+  $maybe afax <- (addressFax (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>fax
+      <div class="col-md-9">#{unpack afax}
+  $maybe acellphone <- (addressCellphone (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>cellphone
+      <div class="col-md-9">
+              $forall telitm <- telSplit acellphone
+                $if (itemIsTel telitm)
+                  <a href="tel:#{unTelItem telitm}">#{unTelItem telitm}</a>
+                $else 
+                  #{unTelItem telitm}
+  $maybe ahomeaddress <- (addressHomeaddress (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>homeaddress
+      <div class="col-md-9">#{unpack ahomeaddress}
+  $maybe aworkaddress <- (addressWorkaddress (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>workaddress
+      <div class="col-md-9">#{unpack aworkaddress}
+  $maybe awebsite <- (addressWebsite (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>website
+      <div class="col-md-9">#{unpack awebsite}
+  $maybe atags <- (addressTags (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>tags
+      <div class="col-md-9">#{unpack atags}
+  $maybe abirthday <- (addressBirthday (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>birthday
+      <div class="col-md-9">#{unpack abirthday}
+  $maybe anotes <- (addressNotes (entityVal m))
+    <div class="row">
+      <div class="col-md-3"><b>notes
+      <div class="col-md-9">#{unpack anotes}
+
+<hr>
