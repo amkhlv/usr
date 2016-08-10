@@ -22,7 +22,10 @@ library
                      Settings.StaticFiles
                      Handler.Common
                      Handler.Home
-                     Handler.Comment
+                     Handler.New
+                     Handler.NewJSON
+                     Handler.Edit
+                     Handler.Utils
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -84,6 +87,10 @@ library
                  , time
                  , case-insensitive
                  , wai
+                 , conduit-extra
+                 , process
+                 , regex-pcre
+                 , regex-base
 
 executable         linii
     if flag(library-only)
@@ -98,9 +105,11 @@ executable         linii
 test-suite test
     type:              exitcode-stdio-1.0
     main-is:           Spec.hs
-    other-modules:     Handler.CommentSpec
-                       Handler.CommonSpec
+    other-modules:     Handler.CommonSpec
                        Handler.HomeSpec
+                       Handler.NewSpec
+                       Handler.EditSpec
+                       Handler.NewJSONSpec
                        TestImport
     hs-source-dirs:    test
     ghc-options:       -Wall
