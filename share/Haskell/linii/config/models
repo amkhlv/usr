@@ -13,5 +13,39 @@ Comment json -- Adding "json" causes ToJSON and FromJSON instances to be derived
     userId UserId Maybe
     deriving Eq
     deriving Show
+Address json
+    last Text
+    first Text Maybe
+    datecollected Text
+    email Text Maybe
+    workphone Text Maybe
+    homephone Text Maybe
+    fax Text Maybe
+    cellphone Text Maybe
+    homeaddress Text Maybe
+    workaddress Text Maybe
+    website Text Maybe
+    tags  Text Maybe
+    birthday Text Maybe
+    notes Text Maybe
+A1
+    newLast Text
+    newFirst Text Maybe
+    newDatecollected Text
+    newEmail Textarea Maybe
+    newWorkphone Textarea Maybe
+    newHomephone Textarea Maybe
+    newFax Textarea Maybe
+    newCellphone Textarea Maybe
+    newHomeaddress Textarea Maybe
+    newWorkaddress Textarea Maybe
+    newWebsite Textarea Maybe
+    newTags Textarea Maybe
+    newBirthday Textarea Maybe
+    newNotes Textarea Maybe
+
+SearchPerson
+    last Text
+    first Text Maybe
 
  -- By default this file is used in Model.hs (which is imported by Foundation.hs)
