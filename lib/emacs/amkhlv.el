@@ -117,12 +117,25 @@
     (import-image import-command)))
 
 (defun amkhlv/bookmarks ()
-  "Compiles bookmarks if in markdown-mode, otherwise loads bookmarks file"
+  "Compiles bookmarks if current file is bm.md, otherwise loads bookmarks file"
   (interactive)
-  (if (string= (format "%s" major-mode) "markdown-mode")
+  (if (let ((s (buffer-file-name)) (ending "/bm.md"))
+        (cond ((>= (length s) (length ending))
+               (let ((elength (length ending)))
+                 (string= (substring s (- 0 elength)) ending)))
+              (t nil)))
       (progn 
         (save-buffer)
-        (shell-command "cd ~/a/homepage ; scribble bookmarks.scrbl"))
+        (let ((exit-status 
+               (let ((default-directory "/home/andrei/a/homepage/"))
+                 (call-process 
+                  "bash"
+                  nil 
+                  (get-buffer-create "BM-OUT") 
+                  nil
+                  "-c"
+                  "bystrotex"))))
+          (message (concat "exit status " (number-to-string exit-status) " ; see buffer BM-OUT for details"))))
     (progn
       (find-file "~/a/bm.md")
       (hide-body))))
