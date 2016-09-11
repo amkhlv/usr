@@ -241,21 +241,26 @@ checkTS lName cfg ttz = do
              Nothing -> False
 
 insertTS :: String -> Cfg -> (UTCTime, TimeZone) -> IO ()
-insertTS lName cfg ttz = let path = (fst ((todoList cfg) ! lName)) in do
-  let newCfg =
-        Cfg
-        (rngFile cfg)
-        (Data.Map.insert
-         lName
-         (path,
-          Just (formatTime defaultTimeLocale (iso8601DateFormat Nothing) (utcToLocalTime (snd ttz) (fst ttz))))
-         (Data.Map.delete lName (todoList cfg)))
+insertTS lName cfg ttz = do
   home <- getHomeDirectory
+  let  newTS = formatTime defaultTimeLocale (iso8601DateFormat Nothing) (utcToLocalTime (snd ttz) (fst ttz))
   mc <- runX $ readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
                               , withRemoveWS yes
                               ] (home ++ "/" ++ tdhsXML) >>>
-      (setChildren $ DTC.getChildren (pickleDoc xpCfg newCfg)) >>>
-      writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
+        (processChildren
+         (processChildren (orElse
+                           (hasName "rngFile")
+                           (processChildren
+                            (orElse
+                             ((hasName "todolist") >>>
+                              (hasAttrValue "name" (== lName)) >>>
+                              (processChildren (orElse
+                                                ((hasName "ts") >>>
+                                                  (processChildren (changeText (\_ -> newTS))))
+                                                 returnA)))
+                             returnA)
+                            )))) >>>
+        writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
   return ()
 
 dispatch :: (Clops, Maybe Cfg, (UTCTime, TimeZone)) -> IO ()
