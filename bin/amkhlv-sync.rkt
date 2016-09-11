@@ -253,6 +253,13 @@
             (close-output-port md5-checker-stdin)
             (for ([l (in-lines md5-checker-stdout)]) (display l) (display "\n"))))])))
 
+(define (show-reminders)
+  (with-external-command-as
+   td
+   #:cmdline '("td" "syncout") 
+   (close-output-port td-stdin)
+   (for ([l (in-lines td-stdout)]) (display l) (display "\n"))))
+
 ;; main ------------------------------------------------------------------------------------------------
 
 (unless (fast-mode?) 
@@ -269,6 +276,7 @@
   (check-md5s (current-md5s-in-a))
   (high-yellow "checking aa:\n")
   (check-md5s (current-md5s-in-aa))
+  (show-reminders)
   )
 
 (when (direction=in?)

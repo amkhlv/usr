@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<element name="config" xmlns="http://relaxng.org/ns/structure/1.0">
+  <element name="rngFile">
+    <text/>
+  </element>
+  <element name="todolists">
+    <zeroOrMore>
+      <element name="todolist">
+        <interleave>
+          <attribute name="name"/>
+          <optional>
+            <element name="ts">
+              <text/>
+            </element>
+          </optional>
+          <element name="path">
+            <text/>
+          </element>
+        </interleave>
+      </element>
+    </zeroOrMore>
+  </element>
+</element>

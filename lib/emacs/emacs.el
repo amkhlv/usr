@@ -344,6 +344,7 @@
  '(package-archives
    (quote
     (("gnu" . "http://elpa.gnu.org/packages/")
+     ("melpa" . "http://melpa.org/packages/") 
      ("MELPA" . "http://melpa.milkbox.net/packages/"))))
  '(preview-LaTeX-command
    (quote
@@ -514,9 +515,9 @@
 (autoload 'rnc-mode "rnc-mode")
 (add-to-list 'auto-mode-alist '("\\.rnc\\'" . rnc-mode))
 
+(require 'package)
+;(package-initialize)
+;(package-refresh-contents)
 
-(add-to-list 'load-path "~/a/git/haskell-mode/")
-(require 'haskell-mode-autoloads)
-(add-to-list 'Info-default-directory-list "~/a/git/haskell-mode/")
-;(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-;(add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
+;(package-install 'intero)
+(add-hook 'haskell-mode-hook 'intero-mode)

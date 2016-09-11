@@ -109,7 +109,7 @@ setxkbmap -option "ctrl:nocaps"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 export PYTHONPATH=/home/andrei/usr/lib/python/
-export PATH="$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin"
+export PATH="$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin:$HOME/.local/bin"
 export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$HOME/usr/local/share/man"
 export MAIL=/var/mail/andrei
 export MAILCHECK=30
@@ -120,7 +120,7 @@ source /etc/bash_completion
 # keychain ~/.ssh/id_rsa 2>&-
 # source ~/.keychain/$(uname -n)-sh > /dev/null
 
-gtd
+td now
 
 # find /home/andrei/maildirs/ -regextype posix-basic -regex '.*:.*F.*' | xargs amail.py -i
 # clndr.py --tt
