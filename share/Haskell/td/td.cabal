@@ -27,3 +27,5 @@ executable td
                      , process
                      , time
                      , iso8601-time
+                     , gtk
+                     , transformers

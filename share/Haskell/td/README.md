@@ -1,6 +1,12 @@
 Building
 ========
 
+Should have installed `libgtk2.0-dev`:
+
+    sudo aptitude install libgtk2.0-dev
+
+Then build:
+
     stack build
 
 or, to install immediately by copying the executable to `~/.local/bin/`:
