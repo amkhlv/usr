@@ -515,9 +515,10 @@
 (autoload 'rnc-mode "rnc-mode")
 (add-to-list 'auto-mode-alist '("\\.rnc\\'" . rnc-mode))
 
+; Uncomment lines below to install Intero:
+; ========================================
 (require 'package)
-;(package-initialize)
+(package-initialize t)
 ;(package-refresh-contents)
-
 ;(package-install 'intero)
 (add-hook 'haskell-mode-hook 'intero-mode)

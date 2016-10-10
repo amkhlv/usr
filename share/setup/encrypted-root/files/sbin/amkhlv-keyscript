@@ -38,7 +38,8 @@ fi
 if [ ! -d /mnt/bootkey ]; then
 	mkdir -p -m 0700 /mnt/bootkey > /dev/null 2>&1
 fi
-mount -r -t ext2 "${keydevice}" /mnt/bootkey > /dev/null 2>&1
+/lib/cryptsetup/askpass "PASSPHRASE + Ctrl-D : " | /sbin/cryptsetup --key-file=- luksOpen "${keydevice}" keys > /dev/null 2>&1
+mount -r -t ext2 /dev/mapper/keys /mnt/bootkey > /dev/null 2>&1
 
 # check status
 if [ $? -ne 0 ]; then
@@ -59,5 +60,6 @@ fi
 
 # unmount and close the USB Keys
 umount /mnt/bootkey > /dev/null 2>&1
+/sbin/cryptsetup luksClose keys > /dev/null 2>&1
 rmdir /mnt/bootkey > /dev/null 2>&1
 

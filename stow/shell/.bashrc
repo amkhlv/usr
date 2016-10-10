@@ -121,6 +121,7 @@ source /etc/bash_completion
 # source ~/.keychain/$(uname -n)-sh > /dev/null
 
 td now
+events -n 3
 
 # find /home/andrei/maildirs/ -regextype posix-basic -regex '.*:.*F.*' | xargs amail.py -i
 # clndr.py --tt

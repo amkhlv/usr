@@ -1,50 +1,33 @@
-# Lock and unlock by the USB key
-
-## Dependencies
+# Dependencies
 
     aptitude install pamusb-tools libpam-usb
 
-## Basic conf
-
-Instructions are taken from [here](http://linuxconfig.org/linux-authentication-login-with-usb-device).
-
-## \*\*\* CHECKLIST \*\*\*
+# CHECKLIST
 
 __NOTE:__ There was anomaly: for some reason the `/etc/fstab` got automount
 lines. __Check /etc/fstab after doing pamusb-conf__!
 
 - Format flashka to `ext2` and do AS ROOT:
 
-        pamusb-conf --add-device amkhlv-unlock
+        pamusb-conf --add-device amkhlv-unlock-andrei
+        pamusb-conf --add-device amkhlv-unlock-root
         pamusb-conf --add-user andrei
-        pamusb-conf --add-user root  
+        pamusb-conf --add-user root
 
     (the last line is because I also want to execute the command `su`).
 
 - Edit `/etc/pamusb.conf` so that it contains:
 
-                    <user id="andrei">
-                            <device>amkhlv-unlock</device>
-                            <option name="pad_expiration">0</option>
-                    </user>
-                    <user id="root">
-                            <device>amkhlv-unlock</device>
-                            <option name="pad_expiration">0</option>
-                    </user>
+        <user id="andrei">
+                <device>amkhlv-unlock-andrei</device>
+                <option name="pad_expiration">0</option>
+        </user>
+        <user id="root">
+                <device>amkhlv-unlock-root</device>
+                <option name="pad_expiration">0</option>
+        </user>
 
     with such settings, we will have the one-time pads on the USB regenerated every time
-
-- Set the permissions on the `.pamusb` partition in flashka
-
-    Mount the flashka and:
-
-        chown root:andrei .pamusb
-        chmod g+x .pamusb 
-        chmod g+r .pamusb
-        chmod g+w .pamusb
-        chmod o-x .pamusb
-        chmod o-r .pamusb
-        chmod o-w .pamusb
 
 - Execute as `andrei`:
 
@@ -54,11 +37,16 @@ lines. __Check /etc/fstab after doing pamusb-conf__!
 
         pamusb-check root
 
-__If pamusb-check fails__, do:  `rm -rf ~/.pamusb/`
-(for `andrei` or `root`, depending on which one failed).
+- Edit `/etc/pam.d/other` ; it should be:
 
+        auth     required       pam_deny.so
+        account  required       pam_deny.so
+        password required       pam_deny.so
+        session  required       pam_deny.so
 
-## Repairing one-time pads
+- Proceed to [pam-auth-update](pam-auth-update.html)
+
+# Repairing one-time pads
 
 Just remove the `~/.pamusb` and then:
 

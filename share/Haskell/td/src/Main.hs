@@ -469,3 +469,4 @@ main = join $ dispatch <$> (execParser opts) <*> getConf <*> getTTZ
            ( fullDesc
              <> progDesc "todolist manager"
              <> header "use XML files to track TODOs" )
+

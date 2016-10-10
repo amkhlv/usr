@@ -17,5 +17,5 @@ cat > "$2/schemas.xml" <<'EOD'
 </locatingRules>
 EOD
 
-emacsclient "$2/bystrotex.xml"
+emacs "$2/bystrotex.xml" &
 echo now $2/bystrotex.xml is opened in emacsclient
