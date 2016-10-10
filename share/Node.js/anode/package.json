@@ -1,0 +1,10 @@
+{
+    "name": "anode",
+    "version": "0.0.1",
+    "dependencies": {
+        "fs": "latest",
+        "http": "latest",
+        "net":  "latest",
+        "ical.js": "git+https://github.com/kewisch/ical.js#master"
+    }
+}
