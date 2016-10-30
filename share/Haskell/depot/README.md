@@ -16,6 +16,10 @@ To install `ghc` into `~/.stack/programs/x86_64-linux/` run:
 
     stack setup
 
+Observations
+============
+
+Could not bump `resolver` any higher than `lts-6.23` because `esqueleto` is missing starting from `7.0`
 
 Building
 ========

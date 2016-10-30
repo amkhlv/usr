@@ -1,6 +1,8 @@
 OpenSSL in socat
 ================
 
+The server is on the receiving end.
+
 Generating certificates
 -----------------------
 
@@ -28,5 +30,21 @@ Running server
 Running client
 --------------
 
-    socat  ...  openssl-connect:server.domain.org:4433,cert=/root/socat-client/$(hostname).pem,cafile=/root/socat-client/SERVER-HOST-NAME.crt
+    socat  ...  openssl-connect:SERVER-HOST-NAME:4433,cert=/root/socat-client/$(hostname).pem,cafile=/root/socat-client/SERVER-HOST-NAME.crt
+
+It is __important__ that the remote server is specified by `SERVER-HOST-NAME`, which is the same string as was used as `CommonName` when
+[generating certificates](#generating-certificates)
+
+The `hostname` is usually automatically registered by the router. If this is not the case, just enter the desired hostname in the client's `/etc/hosts`.
+
+
+Receiving file
+==============
+
+When receiving file, necessary to use the switch `-u` to avoid the __bad file descriptor__ issue,
+as explained [here](http://serverfault.com/questions/768942/socat-create-returning-bad-file-descriptor) :
+
+    socat  -u  openssl-listen:4433,reuseaddr,cert=/root/socat-server/$(hostname).pem,cafile=/root/socat-server/CLIENT-HOST-NAME.crt   CREATE:some-filename.txt
+
+
 

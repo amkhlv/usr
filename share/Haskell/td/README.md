@@ -13,6 +13,12 @@ or, to install immediately by copying the executable to `~/.local/bin/`:
 
     stack install
 
+Also need:
+
+    stack install gtk2hs-buildtools
+
+
+
 Schema files
 ============
 
