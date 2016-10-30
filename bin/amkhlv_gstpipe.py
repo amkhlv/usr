@@ -11,7 +11,6 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject,Gtk
 from gi.repository import Gst as gst
-from collections import OrderedDict
 import json
 import argparse
 
