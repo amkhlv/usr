@@ -22,7 +22,12 @@ def make_elements(xs):
     result = [gst.ElementFactory.make(xs[i][0], "e" + str(i)) for i in range(len(xs))]
     for i in range(len(xs)):
         for prop in xs[i][1].keys():
-            result[i].set_property(prop, xs[i][1][prop])
+            print("setting prop: " + prop)
+            if prop == "caps":
+                caps = gst.Caps.from_string(xs[i][1][prop])
+                result[i].set_property(prop, caps)
+            else:
+                result[i].set_property(prop, xs[i][1][prop])
     return result
 
 def prepare_pipeline(xs):
