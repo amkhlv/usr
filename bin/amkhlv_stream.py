@@ -6,10 +6,10 @@ import hashlib
 import struct
 import socket
 
-parser = argparse.ArgumentParser(description='Send stream over socket')
+parser = argparse.ArgumentParser(description='Send (client) or receive (server) a stream over a socket')
 parser.add_argument('--host', dest ='host', default="localhost", help="host")
-parser.add_argument('-p', dest='port', help='port number')
-parser.add_argument('-s', dest='am_server', action="store_true", help="run as server (as opposed to client)")
+parser.add_argument('-p', '--port', dest='port', help='port number')
+parser.add_argument('-s', '--server', dest='am_server', action="store_true", help="run as server (as opposed to client)")
 parser.add_argument('--size', dest="chunk_size", default=str(16*1024*1024), help="size of chunk (default 16 Mb)")
 
 args = parser.parse_args()
@@ -39,9 +39,9 @@ def recv_bytes(sock, MSGLEN):
         bytes_recd = bytes_recd + len(chunk)
     return b''.join(chunks)
 
-def run_client(port):
+def run_client(host,port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("localhost", port))
+    s.connect((host, port))
     while True:
         bs = inbuff.read(int(args.chunk_size))
         if bs == b'' : 
@@ -68,10 +68,10 @@ def run_client(port):
                 send_bytes(s,bs)
                 reply = struct.unpack('b', recv_bytes(s,1))[0]
 
-def run_server(port):
+def run_server(host,port):
     dsize = hashlib.md5().digest_size
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind(('localhost', port))
+    serversocket.bind((host, port))
     serversocket.listen(5)
     #we only accept one client:
     (clientsocket, address) = serversocket.accept()
@@ -96,5 +96,5 @@ def run_server(port):
                 send_bytes(clientsocket, struct.pack('b', reply))
 
 if __name__ == '__main__' :
-    if args.am_server : run_server(int(args.port))
-    else : run_client(int(args.port))
+    if args.am_server : run_server(args.host,int(args.port))
+    else : run_client(args.host,int(args.port))
