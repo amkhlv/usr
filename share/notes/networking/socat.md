@@ -1,3 +1,30 @@
+Plain
+=====
+
+Simple file transfer over TCP
+-----------------------------
+
+On client:
+
+    echo hithere | socat - TCP4:www.domain.org:11111
+
+On server:
+
+    socat TCP-LISTEN:11111 CREATE:eraseme.txt
+
+
+Simple file transfer over UDP
+-----------------------------
+
+On client:
+
+    echo hithere | socat - UDP:www.domain.org:11111
+
+On server:
+
+    socat UDP-LISTEN:123 CREATE:eraseme.txt
+
+
 OpenSSL in socat
 ================
 
