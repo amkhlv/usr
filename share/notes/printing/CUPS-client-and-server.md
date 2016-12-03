@@ -23,7 +23,7 @@ Client setup
 
 Source: [debianadmin](http://www.debianadmin.com/setup-cups-common-unix-printing-system-server-and-client-in-debian.html)
 
-Need to __create__ the file `/etc/cups/cupsd.conf` with the following contents:
+Need to __create__ the file `/etc/cups/client.conf` with the following contents:
 
   # Servername
   ServerName 192.168.101.1

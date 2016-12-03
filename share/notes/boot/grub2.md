@@ -34,3 +34,19 @@ Background image
 
     GRUB_BACKGROUND=/path/to/filename.png
 
+
+Resolution
+----------
+
+First have to figure out available resolutions:
+
+    hwinfo --framebuffer
+
+Then put into `/etc/default/grub`:
+
+    GRUB_GFXMODE=1152x864x24
+    GRUB_GFXPAYLOAD_LINUX=keep
+
+Moreover, it seems that I need:
+
+    echo "FRAMEBUFFER=y"   > /etc/initramfs-tools/conf.d/splash

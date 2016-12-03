@@ -128,5 +128,10 @@
     m:0x41 + c:55
     Shift+Mod4 + v 
 
+#tile
+"uxterm -e wmc"
+    m:0x40 + c:28
+    Mod4 + t 
+
 #
 # End of xbindkeys configuration
