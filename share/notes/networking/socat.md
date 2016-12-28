@@ -10,7 +10,7 @@ On client:
 
 On server:
 
-    socat TCP-LISTEN:11111 CREATE:eraseme.txt
+    socat -u TCP-LISTEN:11111 CREATE:eraseme.txt
 
 
 Simple file transfer over UDP

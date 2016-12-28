@@ -9,6 +9,7 @@
 (define testing #f)
 
 (define LIST_OF_FILES_TO_SYNC "files-to-sync.txt")
+(define LIST_OF_FILES_TO_EXCLUDE "files-to-not-sync.txt")
 
 ;;on USB drive:
 (define USB_MOUNT (build-path (find-system-path 'home-dir) "pny8"))
@@ -45,8 +46,13 @@
 (define
   list-of-files-to-sync-in-a (path->string (build-path SYNCED_HOME_IN_A LIST_OF_FILES_TO_SYNC)))
 (define
+  list-of-files-to-not-sync-in-a (path->string (build-path SYNCED_HOME_IN_A LIST_OF_FILES_TO_EXCLUDE)))
+(define
   list-of-files-to-sync-in-home (path->string 
                                  (build-path HOME_DIR LIST_OF_FILES_TO_SYNC)))
+(define
+  list-of-files-to-not-sync-in-home (path->string 
+                                 (build-path HOME_DIR LIST_OF_FILES_TO_EXCLUDE)))
 (define ;this is *only* for syncing HOME files
   computer-home-dir (string-append (path->string HOME_DIR) "/"))
 (define
@@ -163,8 +169,10 @@
                               "-r" 
                               rsync_short-flags 
                               "--delete"
+                              "--exclude-from"
+                              list-of-files-to-not-sync-in-a
                               "--files-from" 
-                              list-of-files-to-sync-in-a 
+                              list-of-files-to-sync-in-a
                               computer-synced-home-dir-in-a
                               computer-home-dir)])
     #`(begin
@@ -182,6 +190,8 @@
                               "-r" 
                               rsync_short-flags 
                               "--delete"
+                              "--exclude-from"
+                              list-of-files-to-not-sync-in-home
                               "--files-from" 
                               list-of-files-to-sync-in-home
                               computer-home-dir

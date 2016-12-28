@@ -52,9 +52,13 @@ section similar to the following (note the `<model type='virtio'/>` line is opti
 Shut down, then restart each of these guests. 
 
 
-Setup video
+Virsh shell
 ===========
 
+By the way saying `virsh` opens a nice administrative shell with many useful commands.
+
+Setup video
+===========
 
 `virsh edit MACHINENAME` and include:
 
