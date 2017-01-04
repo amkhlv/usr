@@ -61,3 +61,8 @@ correct the `chroot` filesystem, then `lb binary` again
 
     apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket xul-ext-noscript
 
+# Problems
+
+## Several kernels
+
+`lb binary` fails if the directory `chroot/boot/` has more than one linux kernel. Have to purge all older kernels.

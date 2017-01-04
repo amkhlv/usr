@@ -1,8 +1,0 @@
-regexTitle: 
-  - .*
-regexAuthors:
-  - .*Mikhailov.*
-autodir: /home/andrei/a/Jobs/Auto/
-autofile: AMbibliography
-bibfile: /home/andrei/a/Work/andrei.bib
-bibstyle: jhep
