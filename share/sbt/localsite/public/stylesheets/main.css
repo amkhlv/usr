@@ -1,0 +1,46 @@
+ul.summaries {
+    margin-left: 0.4em;
+    margin-right: 0px;
+    padding-left: 0.8em;
+    padding-right: 0px;
+}
+
+li.summary {
+
+    color: red;
+    font-size: 0.75em;
+}
+
+td.weekDayName {
+   border: 1px solid black;
+   background-color: #eeeeee;
+}
+
+td.calendarCell {
+   border: 1px solid black;
+   width: 14%;
+   height: 100%;
+}
+
+td.today {
+width: 1.4em;
+background-color: #ccffcc;
+border: 1px solid red;
+text-align: center;
+}
+
+td.otherDay {
+width: 1.4em;
+background-color: #eeeeee;
+border: 1px solid #eeeeee;
+text-align: center;
+}
+
+td.summariesListCell {
+
+}
+
+table.dayTable {
+height: 100%;
+width: 100%;
+}

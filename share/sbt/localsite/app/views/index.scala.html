@@ -1,0 +1,96 @@
+@import helper._
+@import com.andreimikhailov.utils._
+@import com.andreimikhailov.utils.ICal._
+@import controllers._
+
+@(weeks: List[List[MyDay]],
+  sqliMap: java.util.Map[String,AnyRef],
+  markdown: String
+)(implicit messages: Messages, requestHeader: RequestHeader)
+
+
+<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
+@main("Home") {
+
+<div id="clock"> -- clock should appear here -- </div>
+@Html(markdown)
+
+<div id="msgline">
+     -- nothing to show --
+</div>
+
+<script>
+var ws = new WebSocket("@routes.HomeController.socket().webSocketURL(secure = false)");
+
+var clck = document.getElementById("clock");
+var msgline  = document.getElementById("msgline");
+
+var lastReload = (new Date()).getTime();
+
+ws.onmessage =  function( message ) {
+    var msg = JSON.parse(message.data);
+    switch(msg.type) {
+      case "datetime":
+        clck.innerHTML = msg.content;
+        break;
+      case "message":
+        msgline.innerHTML = msg.content;
+        break;
+      case "reload":
+        window.location.reload();
+        break;
+    }
+};
+
+window.onfocus = function() {
+  var t = (new Date()).getTime();
+  if ( t - lastReload > 600000 || (t.getHours() == 0 && t.getMinutes() < 10 && t - lastReload > 60000)  ) {
+    window.location.reload();
+    }
+  }   ;
+</script>
+
+ <table>
+    <tr>
+        @ICal.namesOfDaysOfWeek.map { x => <td class="weekDayName">@x</td> }
+    </tr>
+    @weeks.map { week =>
+      <tr> @week.map { day =>
+          <td class="calendarCell">
+              <table class="dayTable">
+                  <tr>
+                      <td class="@day.style">
+                         @day.dayTitle
+                      </td>
+                      <td class="summariesListCell">
+                         <ul class="summaries">
+                             @day.summaries.map { s =>
+                             <li class="summary"> @s </li> }
+                         </ul>
+                      </td>
+                  </tr>
+              </table>
+          </td> }
+      </tr>
+    }
+</table>
+
+<table>
+    <tr>
+        @sqliMap.keySet.toList.map { k =>
+        <td>
+            <form method="POST" action="/sqli/?db=@k">
+                @CSRF.formField
+                <div class="button">
+                    <button id="button_@k" type="submit">@k</button>
+                </div>
+            </form>
+        </td>
+        }
+    </tr>
+</table>
+
+<a href="/automate">automate</a>
+
+<a href="/calendar">calendar</a>
+}
