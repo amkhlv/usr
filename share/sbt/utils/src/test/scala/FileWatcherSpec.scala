@@ -15,7 +15,7 @@ import scala.concurrent.duration._
   * Created by andrei on 12/26/16.
   */
 class FileWatcherSpec extends FlatSpec with Matchers {
-  val system:ActorSystem =  ActorSystem("TestSystem")
+  val system:ActorSystem =  ActorSystem("TestFileWatcherSystem")
   case class RequestFileList()
   class MyTestActor() extends Actor {
     val files = scala.collection.mutable.SortedSet[String]()
@@ -32,7 +32,7 @@ class FileWatcherSpec extends FlatSpec with Matchers {
   println(curDir.toString)
   val fw = new FileWatcher((new java.io.File(".")).toPath,reporter)
   "FileWatcher" should "exit clean" in {
-    implicit val timeout = Timeout(10 seconds)
+    implicit val timeout = Timeout(10.seconds)
     fw.start.onComplete {
       case Failure(Stopped()) => println("OK: FileWatcher stopped")
       case _ => println("ERROR in file watcher")

@@ -10,8 +10,11 @@ logLevel := Level.Debug
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
   "org.mnode.ical4j" % "ical4j" % "2.0.0",
-  "com.typesafe.akka" % "akka-actor_2.11" % "2.4.14"
+  "com.typesafe.akka" % "akka-actor_2.11" % "2.4.14",
+  "org.scalafx" % "scalafx_2.11" % "8.0.102-R11"
 )
+
+scalacOptions += "-feature"
 
 lazy val myUtils = project
   .in(file("target/scala-2.11"))
