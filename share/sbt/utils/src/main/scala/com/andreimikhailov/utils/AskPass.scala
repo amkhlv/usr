@@ -19,6 +19,7 @@ import scalafx.beans.property.StringProperty
 import scalafx.stage.Stage
 
 class AskPass(message: String, actr: ActorRef) {
+  //  https://github.com/scalafx/ScalaFX-Tutorials/blob/master/stand-alone-dialog/src/main/scala/stand_alone_dialog/StandAloneFXDialog.scala
   // just for initialization:
   new JFXPanel()
   // Create a dialog stage and display it on JavaFX Application Thread

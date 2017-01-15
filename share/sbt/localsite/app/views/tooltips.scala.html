@@ -13,12 +13,7 @@
           <ul>
               @item.logins.map { login =>
               <li>
-                  <form method="POST" action=@("/selenium/?site=" + item.nick + "&login=" + login)>
-                  @CSRF.formField
-                  <div class="button">
-                      <button type="submit">@login</button>
-                  </div>
-                  </form>
+                  <span class="tooltip">@login <span class="tooltiptext">@item.password(login)</span></span>
               </li>
               }
           </ul>

@@ -1,7 +1,7 @@
 import javax.inject._
 
 import play.api._
-import play.api.http.HttpFilters
+import play.api.http.{DefaultHttpFilters, HttpFilters}
 import play.filters.csrf.CSRFFilter
 
 /**
@@ -16,8 +16,16 @@ import play.filters.csrf.CSRFFilter
  * @param env Basic environment settings for the current application.
  * each response.
  */
+/*@Singleton
+class Filters @Inject() (env: Environment) extends HttpFilters {
+  override def filters = Seq()
+}*/
+
 @Singleton
-class Filters @Inject() (
+class Filters @Inject() (csrfFilter: CSRFFilter)
+  extends DefaultHttpFilters(csrfFilter)
+
+/*class Filters @Inject() (
   env: Environment,
   csrfFilter: CSRFFilter) extends HttpFilters {
 
@@ -25,4 +33,4 @@ class Filters @Inject() (
     Seq(csrfFilter)
   }
 
-}
+}*/

@@ -1,6 +1,5 @@
 package controllers
 
-import java.util
 import java.util.{Calendar => JCal}
 import javax.inject._
 
@@ -8,29 +7,31 @@ import akka.actor._
 import akka.stream.Materializer
 import com.andreimikhailov.utils._
 import com.vladsch.flexmark.ast.Node
+import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.ext.tables.TablesExtension
 import play.Configuration
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.JsValue
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 import play.filters.csrf.{CSRFAddToken, CSRFCheck}
-import collection.JavaConverters._
+
+import scala.collection.JavaConverters._
+import scala.concurrent.Future
 import scala.io.Source
+import scala.sys.SystemProperties
 import scala.sys.process.Process
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(val addToken: CSRFAddToken,
-                               val checkToken: CSRFCheck,
-                               val messagesApi: MessagesApi,
+class HomeController @Inject()(val messagesApi: MessagesApi,
                                implicit val system: ActorSystem,
                                implicit val materializer: Materializer,
-                               val config: Configuration
+                               val config: Configuration,
+                               val webJarAssets: WebJarAssets
                               )
   extends Controller with I18nSupport {
   def getMarkdown: String = {
@@ -59,8 +60,18 @@ class HomeController @Inject()(val addToken: CSRFAddToken,
     }
   }
   val sqliMap : java.util.Map[String,AnyRef] = config.getConfig("application.sqlis").asMap()
-
-
+  val maybePort = {
+    val sprops = new SystemProperties()
+    sprops.get("http.port")
+  }
+  val maybeSPort = {
+    val sprops = new SystemProperties()
+    sprops.get("https.port")
+  }
+  val isSecure = maybeSPort match {
+    case Some(x) => true
+    case None => false
+  }
   val broadcastActor = system.actorOf(Props(new SocketBroadcastActor(icalFileName)), "broadcastActor")
   val launchActor = system.actorOf(LaunchActor.props(broadcastActor), "launchActor")
   val watcher = new FileWatcher(
@@ -70,20 +81,37 @@ class HomeController @Inject()(val addToken: CSRFAddToken,
     500
   )
   watcher.start
-  def index = addToken {
+  def index =
     Action { implicit request =>
-      Ok(views.html.index(getWeeks(1,2), sqliMap, getMarkdown))
+      Ok(views.html.index(getWeeks(1,2), sqliMap, getMarkdown, isSecure, webJarAssets))
     }
-  }
-  def calendar = addToken {
+  def calendar =
     Action { implicit  request =>
       Ok(views.html.calendar(getWeeks(1,12), sqliMap, getMarkdown))
     }
+  def socket = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
+    val trustedOrigin = maybeSPort match {
+      case Some(i) => "https://localhost:" + i
+      case None => maybePort match {
+        case Some(i) => "http://localhost:" + i
+        case None => "http://localhost"
+      }
+    }
+    Future.successful(request.headers.get("Origin") match {
+      case None => {
+        println("=== ORIGIN HEADER ABSENT? ===")
+        Left(Forbidden)
+      }
+      case Some(x) => if (x == trustedOrigin)  {
+        println("=== GAVE SOCKET to --->" + x + "<--- ===")
+        Right(ActorFlow.actorRef(out => MyWebSocketActor.props(out, broadcastActor)))
+      } else {
+        println("=== WRONG ORIGIN: --->" + x + "<---")
+        Left(Forbidden)
+      }
+    })
   }
-  def socket = WebSocket.accept[JsValue, JsValue] { request =>
-    ActorFlow.actorRef(out => MyWebSocketActor.props(out, broadcastActor))
-  }
-  def sqli(s:String) = checkToken {
+  def sqli(s:String) =
     Action { implicit request =>
       launchActor ! Process(
         Seq(
@@ -97,7 +125,5 @@ class HomeController @Inject()(val addToken: CSRFAddToken,
       )
       Redirect("/")
     }
-  }
-
 }
 

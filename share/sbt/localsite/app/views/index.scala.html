@@ -5,14 +5,18 @@
 
 @(weeks: List[List[MyDay]],
   sqliMap: java.util.Map[String,AnyRef],
-  markdown: String
+  markdown: String,
+  isSecure: Boolean,
+  webJarAssets: WebJarAssets
 )(implicit messages: Messages, requestHeader: RequestHeader)
 
 
-<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
 @main("Home") {
+<!-- http://www.webjars.org/documentation -->
+<script type='text/javascript' src='@routes.WebJarAssets.at(webJarAssets.locate("jquery.min.js"))'></script>
 
-<div id="clock"> -- clock should appear here -- </div>
+<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
+<div id="clock" class="timeString"> -- clock should appear here -- </div>
 @Html(markdown)
 
 <div id="msgline">
@@ -20,21 +24,17 @@
 </div>
 
 <script>
-var ws = new WebSocket("@routes.HomeController.socket().webSocketURL(secure = false)");
-
-var clck = document.getElementById("clock");
-var msgline  = document.getElementById("msgline");
-
+var ws = new WebSocket("@routes.HomeController.socket().webSocketURL(secure = isSecure)");
 var lastReload = (new Date()).getTime();
 
 ws.onmessage =  function( message ) {
     var msg = JSON.parse(message.data);
     switch(msg.type) {
       case "datetime":
-        clck.innerHTML = msg.content;
+        $("#clock").text(msg.content);
         break;
       case "message":
-        msgline.innerHTML = msg.content;
+        $("#msgline").text(msg.content);
         break;
       case "reload":
         window.location.reload();
@@ -91,6 +91,8 @@ window.onfocus = function() {
 </table>
 
 <a href="/automate">automate</a>
+
+<a href="/tooltips">show</a>
 
 <a href="/calendar">calendar</a>
 }
