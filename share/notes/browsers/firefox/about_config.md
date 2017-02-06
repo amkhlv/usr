@@ -8,3 +8,4 @@
 ## Add new value:
 
     browser.cache.disk.parent_directory = /tmp/ff-cache
+

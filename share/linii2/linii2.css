@@ -122,13 +122,13 @@
     padding: 1px;
 }
 
-#ItemLabel0 { background-color: #FFAAAA; font: Monospace 12; }
-#ItemLabel1 { background-color: #ffccaa; font: Monospace 12; }
-#ItemLabel2 { background-color: #ffffaa; font: Monospace 12; }
-#ItemLabel3 { background-color: #aaffaa; font: Monospace 12; }
-#ItemLabel4 { background-color: #aaccff; font: Monospace 12; }
-#ItemLabel5 { background-color: #bbaaff; font: Monospace 12; }
-#ItemLabel6 { background-color: #ddaaff; font: Monospace 12; }
+#ItemLabel0 { background-color: #FFAAAA; font: 12 Monospace; }
+#ItemLabel1 { background-color: #ffccaa; font: 12 Monospace; }
+#ItemLabel2 { background-color: #ffffaa; font: 12 Monospace; }
+#ItemLabel3 { background-color: #aaffaa; font: 12 Monospace; }
+#ItemLabel4 { background-color: #aaccff; font: 12 Monospace; }
+#ItemLabel5 { background-color: #bbaaff; font: 12 Monospace; }
+#ItemLabel6 { background-color: #ddaaff; font: 12 Monospace; }
 
 #GotoPrevBatchButton {
     background-color: #eeffee;
@@ -154,7 +154,7 @@
 }
 
 #TextViewPrimaryKey {
-    font: Monospace 16;
+    font: 16 Monospace;
     gtk-key-bindings: collector-textview;
 }
 
@@ -164,7 +164,7 @@
 }
 
 #TextViewColumn {
-    font: Monospace 16;
+    font: 16 Monospace;
     border-width: 2px;
     border-style: solid;
     border-color: #00F;
@@ -195,7 +195,7 @@
 /* Alert */
 
 #AlertLabel {
-    font: Monospace 32;
+    font: 32 Monospace;
     background-color: red;
     color: white;
 }

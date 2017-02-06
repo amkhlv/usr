@@ -1,20 +1,23 @@
 General comments about Sphinx
 *****************************
 
+Initialization procedure is described in `First Steps`_
+
+.. _First Steps: http://www.sphinx-doc.org/en/stable/tutorial.html
+
+
 Configuring Sphinx
 ==================
 
-In `conf.py`, must have:
+Make sure that the path to the project's Python files is added in ``conf.py`` :
 
 .. code-block:: python
 
-   add_module_names = False
+   sys.path.insert(0, os.path.abspath("./some/path"))
 
-and also:
+If using typehints, install `Typehints Extension`_
 
-.. code-block:: python
-
-   autoclass_content = 'both'
+.. _Typehints Extension: https://github.com/agronholm/sphinx-autodoc-typehints
 
 
 Docstring for classes

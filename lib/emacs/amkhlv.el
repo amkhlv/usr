@@ -214,7 +214,7 @@ To choose size, use ps-print-customize"
   )
 
 (mydef-sqli amkhlv/linii-abk            "/home/andrei/a/tech/base/addr.db"       "abk") 
-(mydef-sqli amkhlv/linii-myaddresses    "/home/andrei/alcl/tech/base/mylist.db"  "my_addresses")
+(mydef-sqli amkhlv/linii-myaddresses    "/home/andrei/a/tech/base/mylist.db"  "my_addresses")
 
 (defun amkhlv/pdfview ()
   "View the PDF file corresponding to this TeX file using pdfviewer"

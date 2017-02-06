@@ -278,7 +278,7 @@ element xml {
                     #\space)
                (let ([lines-of-plaintext
                       (with-external-command-as
-                       gpg ("gpg" "--batch" "--passphrase-fd" "0" "--decrypt" fn)
+                       gpg ("gpg" "--batch" "--yes" "--no-tty" "--passphrase-fd" "0" "--decrypt" fn)
                        (display (current-passphrase) gpg-stdin)
                        (close-output-port gpg-stdin)
                        (display (port->string gpg-stderr))

@@ -5,7 +5,7 @@ include "/usr/share/themes/Simple/gtk-2.0/gtkrc"
 
 style "default_tdpl"
 {
-  font_name="DejaVu Sans 16"
+  font_name="DejaVu Sans 14"
   GtkButton::focus-line-width = 2
   GtkButton::focus-line-pattern = "\008\001"
 }

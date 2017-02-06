@@ -6,16 +6,14 @@ package com.andreimikhailov.utils
 
 import javafx.embed.swing.JFXPanel
 import javafx.event.EventHandler
+import javafx.scene.input.{KeyCode, KeyEvent}
+import javafx.stage.WindowEvent
 
 import akka.actor.ActorRef
 
 import scalafx.application.Platform
-import scalafx.scene.control.PasswordField
 import scalafx.scene.Scene
-import javafx.scene.input.KeyEvent
-import javafx.scene.input.KeyCode
-
-import scalafx.beans.property.StringProperty
+import scalafx.scene.control.PasswordField
 import scalafx.stage.Stage
 
 class AskPass(message: String, actr: ActorRef) {
@@ -25,24 +23,31 @@ class AskPass(message: String, actr: ActorRef) {
   // Create a dialog stage and display it on JavaFX Application Thread
   Platform.runLater {
     val dialogStage = new Stage {
-      outer =>
-      title = message
-      val password = new PasswordField
-      password.setOnKeyPressed(
-        new EventHandler[KeyEvent] {
-          override def handle(t: KeyEvent) = if (t.getCode() == KeyCode.ENTER) {
-            actr ! Password(password.text())
-            outer.close()
+      outer => {
+        title = message
+        val password = new PasswordField
+        password.setOnKeyPressed(
+          new EventHandler[KeyEvent] {
+            override def handle(t: KeyEvent) = if (t.getCode() == KeyCode.ENTER) {
+              actr ! Password(password.text())
+              outer.close()
+            }
           }
+        )
+        password.setPrefWidth(300)
+        scene = new Scene {
+          root = password
         }
-      )
-      password.setPrefWidth(300)
-      scene = new Scene {
-        root = password
+        password.requestFocus()
       }
-      password.requestFocus()
     }
+    dialogStage.setOnCloseRequest(
+       new EventHandler[WindowEvent] {
+         override def handle(event: WindowEvent) = {
+           actr ! PasswordPromptClosed()
+         }
+       }
+    )
     dialogStage.showAndWait()
-    Platform.exit()
   }
 }

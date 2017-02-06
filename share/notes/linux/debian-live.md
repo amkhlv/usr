@@ -57,7 +57,7 @@ correct the `chroot` filesystem, then `lb binary` again
 
 # Useful programs
 
-    apt-get install  aptitude stow git screen btrfs-tools systemd-container ntfs-3g lshw dmidecode socat
+    apt-get install  aptitude stow git screen btrfs-tools systemd-container ntfs-3g lshw dmidecode socat cryptsetup
 
     apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket xul-ext-noscript
 

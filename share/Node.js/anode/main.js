@@ -38,11 +38,8 @@ function mkEvObj(event, derived) {
     if ("organizer" in event) a.organizer = event.organizer;
     return a;
 }
-function main(body,res) {
-    console.log("BODY was:");
-    console.log(body);
-    console.log("---");
-    var jbody = JSON.parse(body);
+
+function handleRequestInterval(body,res,jbody) {
     var rFrom = new ICAL.Time (jbody.dateFrom);
     var rUntil = new ICAL.Time (jbody.dateUntil);
     fs.readFile(config.calendar, 'utf8', function (err, data) {
@@ -71,7 +68,7 @@ function main(body,res) {
                         "minute": next.minute,
                         "second": next.second,
                         "isDate": next.isDate
-                    }
+                    };
                     var dur = event.duration;
                     next.addDuration(dur);
                     a.endDate = {
@@ -82,13 +79,37 @@ function main(body,res) {
                         "minute": next.minute,
                         "second": next.second,
                         "isDate": next.isDate
-                    }
+                    };
                     res.write(JSON.stringify(a));
                 }
-            } else continue
+            } else continue;
         }
         res.end();
     });
+}
+
+function handleEmacsClient(body,res,jbody) {
+    var filename = jbody.filename;
+    const cp = require('child_process');
+    cp.execFile('emacsclient', [filename], (error, stdout, stderr) => {
+        if (error) {
+            throw error;
+        }
+        console.log(stdout);
+    });
+}
+
+function main(body,res) {
+    console.log("BODY was:");
+    console.log(body);
+    console.log("---");
+    var jbody = JSON.parse(body);
+    if (jbody.isRequestInterval) {
+        handleRequestInterval(body,res,jbody);
+    }
+    if (jbody.isEmacsClient) {
+        handleEmacsClient(body,res,jbody);
+    }
 }
 
 server = http.createServer(function (request, response) {
