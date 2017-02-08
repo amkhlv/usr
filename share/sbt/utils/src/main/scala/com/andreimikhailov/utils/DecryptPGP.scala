@@ -17,12 +17,12 @@ class DecryptPGP(filename: String, doAskPassword: Boolean = true) {
   implicit val ec = ExecutionContext.global
   val system: ActorSystem = ActorSystem("DecryptionActorSystem")
   val dispatcher = system.actorOf(Props(new Dispatcher()), "DispatcherActor")
-  val prompt = new NestedAskPass("enter password", dispatcher)
+  val prompt = new AskPass("enter password", dispatcher)
   implicit val timeout = Timeout(30.seconds)
   private def getPassphraseAndReentryFunction(ofun: Option[() => Unit]) : (String,  () => Unit) = {
     val r: Future[Any] = dispatcher ? AskPassword()
     ofun match {
-      case None => Future { blocking {(new prompt.PassGui).main(Array())}}
+      case None => Future { blocking { prompt.main(Array()) } }
       case Some(f) =>
         println("=== calling back the dialogStage ===")
         f()

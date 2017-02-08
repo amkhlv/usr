@@ -18,8 +18,8 @@ class AskPassSpec extends FlatSpec with Matchers  {
   val inspector = system.actorOf(Props(new Dispatcher()),"TestActor")
   implicit val timeout = Timeout(15.seconds)
   val r : Future[Any] = inspector ? AskPassword()
-  val ap = new NestedAskPass("password for testing", inspector)
-  Future{ blocking {(new ap.PassGui).main(Array())}}
+  val ap = new AskPass("password for testing", inspector)
+  Future{ blocking {ap.main(Array())}}
   val p = Await.result(r, 15.seconds) match {
     case PasswordPromptClosed(Some(x), _) => x
     case PasswordPromptClosed(None, f) =>
