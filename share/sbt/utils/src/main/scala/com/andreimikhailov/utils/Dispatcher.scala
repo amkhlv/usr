@@ -11,16 +11,10 @@ class Dispatcher extends  Actor {
   override def receive = {
     case AskPassword() =>
       sendersWaitingForPassword += sender()
-    case Password(p) =>
+    case PasswordPromptClosed(ox, d) =>
       for ( s <- sendersWaitingForPassword) {
-        s ! p
-        sendersWaitingForPassword.-=(s)
-      }
-    case PasswordPromptClosed() =>
-      println("=== Password Prompt Closed ===")
-      for ( s <- sendersWaitingForPassword) {
-        println("=== notifying " + s.toString())
-        s ! PasswordPromptClosed()
+        println("=== password prompt notifying " + s.toString())
+        s ! PasswordPromptClosed(ox, d)
         sendersWaitingForPassword.-=(s)
       }
     case _ => throw  new Exception("wrong message to ASK PASS actor")
