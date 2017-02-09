@@ -21,14 +21,14 @@ class AskPassSpec extends FlatSpec with Matchers  {
   val ap = new AskPass("password for testing", inspector)
   Future{ blocking {ap.main(Array())}}
   val p = Await.result(r, 15.seconds) match {
-    case PasswordPromptClosed(Some(x), _) => x
-    case PasswordPromptClosed(None, f) =>
+    case PasswordPromptClosed(Some(x)) => x
+    case PasswordPromptClosed(None) =>
       println("=== atmospheric re-entry ! ===")
       val r1 : Future[Any] =  inspector ? AskPassword()
-      f()
+      ap.bringUp()
       Await.result(r1, 15.seconds) match {
-        case PasswordPromptClosed(Some(x1), _) => x1
-        case PasswordPromptClosed(None, f1) => "PASSWORD NOT ENTERED ON SND ATTEMPT"
+        case PasswordPromptClosed(Some(x1)) => x1
+        case PasswordPromptClosed(None) => "PASSWORD NOT ENTERED ON SND ATTEMPT"
       }
   }
   println("=== PASSWORD was: -->" + p + "<--")

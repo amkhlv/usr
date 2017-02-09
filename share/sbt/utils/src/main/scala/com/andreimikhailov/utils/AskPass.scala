@@ -12,41 +12,48 @@ import scalafx.scene.control.PasswordField
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.layout.VBox
 import scalafx.stage.{Window, WindowEvent}
-/**
-  * Created by andrei on 2/7/17.
+
+
+/** A dialog for password entry
+  * 
+  * @param message
+  * @param actr  the actor to whom the entered password will be sent wrapped in [[PasswordPromptClosed]]
   */
 class AskPass(message: String, actr: ActorRef) extends JFXApp {
+  //this is very important; after we close the window, the FX thread should continue running,
+  //so we can open the window again later:
   Platform.implicitExit = false
-  val password: PasswordField = new PasswordField {
+
+  val pwdField: PasswordField = new PasswordField {
     onKeyPressed = (event: KeyEvent) => if (event.getCode() == KeyCode.ENTER) {
-      actr ! PasswordPromptClosed(
-        Some(password.text()),
-        () => Platform.runLater {
-          password.text = ""
-          dialogStage.show()
-        })
-      val st: Window = password.getScene().getWindow()
+      actr ! PasswordPromptClosed(Some(pwdField.text()))
+      val st: Window = pwdField.getScene().getWindow()
       st.hide()
     }
   }
-  password.setPrefWidth(300)
-  val dialogStage: PrimaryStage = new PrimaryStage {
+  pwdField.setPrefWidth(300)
+
+  val mainwin: PrimaryStage = new PrimaryStage {
     title.value = message
     scene = new Scene {
       content = new VBox {
-        children = Seq(password)
+        children = Seq(pwdField)
       }
     }
-    password.requestFocus()
+    pwdField.requestFocus()
   }
-  dialogStage.onCloseRequest = (we: WindowEvent) => {
-    actr ! PasswordPromptClosed(
-      None,
-      () => Platform.runLater {
-        password.text = ""
-        dialogStage.show()
-      })
+  mainwin.onCloseRequest = (we: WindowEvent) => {
+    actr ! PasswordPromptClosed(None)
   }
+
+  /**
+    * the method to bring up again the [[mainwin]] after it has been closed
+    */
+  def bringUp() = Platform.runLater {
+    pwdField.text = ""
+    mainwin.show()
+  }
+
 }
 
 

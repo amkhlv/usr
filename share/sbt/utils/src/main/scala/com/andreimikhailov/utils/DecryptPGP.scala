@@ -10,8 +10,11 @@ import scala.annotation.tailrec
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future, blocking}
 import scala.sys.process._
-/**
-  * Created by andrei on 1/7/17.
+
+/** PGP file decryptor
+  *
+  * @param filename
+  * @param doAskPassword
   */
 class DecryptPGP(filename: String, doAskPassword: Boolean = true) {
   implicit val ec = ExecutionContext.global
@@ -19,24 +22,24 @@ class DecryptPGP(filename: String, doAskPassword: Boolean = true) {
   val dispatcher = system.actorOf(Props(new Dispatcher()), "DispatcherActor")
   val prompt = new AskPass("enter password", dispatcher)
   implicit val timeout = Timeout(30.seconds)
-  private def getPassphraseAndReentryFunction(ofun: Option[() => Unit]) : (String,  () => Unit) = {
+  private def getPassphraseAndReentryFunction(firstTime: Boolean) : String = {
     val r: Future[Any] = dispatcher ? AskPassword()
-    ofun match {
-      case None => Future { blocking { prompt.main(Array()) } }
-      case Some(f) =>
-        println("=== calling back the dialogStage ===")
-        f()
+    if (firstTime) {
+      Future { blocking {prompt.main(Array())} }
+    } else {
+      println("=== calling back the dialogStage ===")
+      prompt.bringUp()
     }
     Await.result(r, 15.seconds) match {
-      case PasswordPromptClosed(None, f) =>
+      case PasswordPromptClosed(None) =>
         println("=== asking for the passphrase again ===")
-        getPassphraseAndReentryFunction(Some(f))
-      case PasswordPromptClosed(Some(x), f) => (x, f)
+        getPassphraseAndReentryFunction(firstTime = false)
+      case PasswordPromptClosed(Some(x)) => x
     }
   }
 
-  @tailrec final def result1(opReentryFun: Option[() => Unit]): String = if (doAskPassword) {
-    val (passphrase, reentryFun) = getPassphraseAndReentryFunction(opReentryFun)
+  @tailrec private def result1(firstTime: Boolean): String = if (doAskPassword) {
+    val passphrase = getPassphraseAndReentryFunction(firstTime)
     val is = new ByteArrayInputStream(passphrase.getBytes("UTF-8"))
     val output = new ByteArrayOutputStream()
     val r =
@@ -48,11 +51,15 @@ class DecryptPGP(filename: String, doAskPassword: Boolean = true) {
       case Some(x) => x
       case None =>
         println("=== something was wrong, perhaps wrong passphrase; executing reentry ===")
-        result1(Some(reentryFun))
+        result1(false)
     }
   } else {
     Seq("gpg", "--batch", "--decrypt", filename).!!
   }
 
-  def result: String = result1(None)
+  /** conents of decrypted file
+    *
+    * @return
+    */
+  def result: String = result1(firstTime = true)
 }
