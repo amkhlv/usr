@@ -5,7 +5,7 @@ include "/usr/share/themes/Industrial/gtk-2.0/gtkrc"
 
 style "default_wmjump"
 {
-  font_name="DejaVu Sans 13"
+  font_name="DejaVu Sans 10"
   GtkButton::focus-line-width = 0
 }
 class "GtkWidget" style "default_wmjump"
@@ -63,9 +63,6 @@ bg[PRELIGHT] = "#FF9eaa"
 }
 widget "*acroread" style "mypink"
 widget "*gsview" style "mypink"
-widget "*evince" style "mypink"
-widget "*win" style "mypink"
-widget "*pdfviewer" style "mypink"
 
 # note that "gsview" was the name of the window class
 # note the asterisk * in "*gsview"; that asterisk is important !
@@ -113,8 +110,13 @@ widget "*opera" style "myblue"
 widget "*d3lphin" style "myblue"
 widget "*Thunar" style "myblue"
 widget "*evolution" style "myblue"
-widget "*midori" style "myblue"
-widget "*Chromium" style "myblue"
+
+style "chromiumblue"
+{
+bg[NORMAL]="#a3c3fa"
+bg[PRELIGHT]="#a3c3fa"
+}
+widget "*chromium" style "chromiumblue"
 
 style "myfern"
 {
@@ -141,7 +143,6 @@ fg[NORMAL] = "#000000"
 fg[PRELIGHT]="#000000"
 }
 widget "*skype" style "skype"
-widget "*Qt-subapplication" style "skype"
 
 style "alert"
 {   
@@ -173,7 +174,6 @@ widget "*rhythmbox" style "rhythmbox"
 widget "*exaile.py"  style "rhythmbox"
 widget "*vlc" style "rhythmbox"
 widget "*smplayer" style "rhythmbox"
-widget "*audacious" style "rhythmbox"
 
 
 style "mytkremind"
@@ -182,6 +182,5 @@ bg[NORMAL]="#c7c7ff"
 bg[PRELIGHT]="#c7c7ff"
 }
 widget "*tkremind" style "mytkremind"
-widget "*Gestor de tempo" style "mytkremind"
 
 # happy wmjumping!
