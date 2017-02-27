@@ -16,12 +16,9 @@
 <script type='text/javascript' src='@routes.WebJarAssets.at(webJarAssets.locate("jquery.min.js"))'></script>
 
 <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
-<div id="clock" class="timeString"> -- clock should appear here -- </div>
+<div> <span id="clock" class="timeString">--- wait ---</span> <span id="registered" class="isRegistered"></span></div>
 @Html(markdown)
 
-<div id="msgline">
-     -- nothing to show --
-</div>
 
 <script>
 var ws = new WebSocket("@routes.HomeController.socket().webSocketURL(secure = isSecure)");
@@ -33,8 +30,8 @@ ws.onmessage =  function( message ) {
       case "datetime":
         $("#clock").text(msg.content);
         break;
-      case "message":
-        $("#msgline").text(msg.content);
+      case "registered":
+        $("#registered").text("■");
         break;
       case "reload":
         window.location.reload();

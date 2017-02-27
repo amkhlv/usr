@@ -45,7 +45,7 @@ height: 100%;
 width: 100%;
 }
 
-div.timeString {
+span.timeString {
     font-family: Arial;
     font-size: 2em;
 }
@@ -96,4 +96,8 @@ div.timeString {
     visibility: visible;
     opacity: 1;
     font-size: 9px;
+}
+
+span.isRegistered {
+    color: #0f0;
 }

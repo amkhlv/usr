@@ -29,3 +29,12 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
 )
 
+libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.12"
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+libraryDependencies += "org.eclipse.jetty" % "jetty-server" % "9.4.1.v20170120"
+libraryDependencies += "org.scala-lang" % "scala-xml" % "2.11.0-M4"
+libraryDependencies += "org.eclipse.jetty" % "jetty-unixsocket" % "9.4.1.v20170120"
+libraryDependencies += "com.andreimikhailov" % "utils" % "1.0"
+libraryDependencies += "com.typesafe.akka" % "akka-actor_2.11" % "2.4.14"
+libraryDependencies += "org.scalafx" % "scalafx_2.11" % "8.0.102-R11"
+libraryDependencies += "org.mnode.ical4j" % "ical4j" % "2.0.0"

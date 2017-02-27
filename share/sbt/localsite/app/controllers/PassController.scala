@@ -6,6 +6,7 @@ package controllers
 import javax.inject._
 
 import com.andreimikhailov.utils._
+import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxProfile
 import org.openqa.selenium.firefox.internal.ProfilesIni
 import play.Configuration
@@ -13,6 +14,7 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.filters.csrf.{CSRFAddToken, CSRFCheck}
 
+import scala.concurrent.ExecutionContext
 import scala.xml.{Node, NodeSeq}
 
 
@@ -22,15 +24,24 @@ class PassController @Inject()(val addToken: CSRFAddToken,
                                val messagesApi: MessagesApi,
                                val config: Configuration
                               ) extends Controller with I18nSupport {
+  implicit val ec = ExecutionContext.global
+
   lazy val secrets = {
-    val decryptor = new DecryptPGP(config.getString("application.passwords"))
+    val decryptor = new Decryptor(Common.mainwin, config.getString("application.passwords"))
     decryptor.result
   }
-
+  case class NeitherFirefoxProfileNorChromeProfileSpecified() extends  Exception
   val profile: ProfilesIni= new ProfilesIni()
-  val myprofile: Option[FirefoxProfile] = if (config.keys.contains("application.firefoxProfile")) {
-    Some(profile.getProfile(config.getString("application.firefoxProfile")))
-  } else None
+  val myprofile: Either[FirefoxProfile,ChromeOptions] =
+    if (config.keys.contains("application.firefoxProfile")) {
+      Left(profile.getProfile(config.getString("application.firefoxProfile")))
+    } else if (config.keys.contains("application.chromeProfile")) {
+      val chromeOptions = new ChromeOptions()
+      chromeOptions.addArguments("user-data-dir=" + config.getString("application.chromeProfile"))
+      Right(chromeOptions)
+    } else {
+      throw NeitherFirefoxProfileNorChromeProfileSpecified()
+    }
   def automate =
     Action { implicit  request =>
       val x = xml.XML.loadString(secrets)

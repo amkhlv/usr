@@ -15,10 +15,9 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.libs.json.JsValue
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
-import play.filters.csrf.{CSRFAddToken, CSRFCheck}
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.io.Source
 import scala.sys.SystemProperties
 import scala.sys.process.Process
@@ -34,6 +33,11 @@ class HomeController @Inject()(val messagesApi: MessagesApi,
                                val webJarAssets: WebJarAssets
                               )
   extends Controller with I18nSupport {
+  implicit val ec = ExecutionContext.global
+  Future { blocking { (new MyJetty(config)).run() }}
+  
+
+
   def getMarkdown: String = {
     val extensions = List(TablesExtension.create()).asJavaCollection
     val parser = Parser.builder().extensions(extensions).build();

@@ -5,27 +5,24 @@ package controllers
   */
 
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
-import org.openqa.selenium.By
-import org.openqa.selenium.WebDriver
-import org.openqa.selenium.WebElement
+import org.openqa.selenium.{By, WebDriver}
+import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.openqa.selenium.firefox.{FirefoxDriver, FirefoxProfile}
-import org.openqa.selenium.firefox.internal.ProfilesIni
-import org.openqa.selenium.support.ui.ExpectedCondition
-import org.openqa.selenium.support.ui.WebDriverWait
-import play.Configuration
 
 import scala.xml.{Node, NodeSeq};
 
 
 
-class MySelenium (account: Node, sel: Node, profile: Option[FirefoxProfile])  {
-
-  val driver: WebDriver = profile match {
+class MySelenium (account: Node, sel: Node, profile: Either[FirefoxProfile,ChromeOptions])  {
+  val driver : WebDriver = profile match {
+    case Left(ff) => new FirefoxDriver(ff)
+    case Right(co) => new ChromeDriver(co)
+  }
+  /*val driver: WebDriver = profile match {
     case Some(prfl) => new FirefoxDriver(prfl)
     case None => new FirefoxDriver()
-  }
+  }*/
   driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS)
   val steps: NodeSeq = sel.\("_")
   def go = {

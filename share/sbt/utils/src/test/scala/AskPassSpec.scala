@@ -9,7 +9,7 @@ import com.andreimikhailov.utils._
 import org.scalatest._
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future, blocking}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 
 
 class AskPassSpec extends FlatSpec with Matchers  {
@@ -18,8 +18,14 @@ class AskPassSpec extends FlatSpec with Matchers  {
   val inspector = system.actorOf(Props(new Dispatcher()),"TestActor")
   implicit val timeout = Timeout(15.seconds)
   val r : Future[Any] = inspector ? AskPassword()
-  val ap = new AskPass("password for testing", inspector)
-  Future{ blocking {ap.main(Array())}}
+  val mainJFX = new MainJFX("starting")
+  Future{ blocking {mainJFX.main(Array())}}
+  Thread.sleep(3000)
+  val mainwin = mainJFX.mainwin
+ /* val ap = new AskPass(mainwin, "password for testing", inspector)
+  println("Starting AskPass")
+  ap.start()
+  println("Just started AskPass")
   val p = Await.result(r, 15.seconds) match {
     case PasswordPromptClosed(Some(x)) => x
     case PasswordPromptClosed(None) =>
@@ -31,9 +37,11 @@ class AskPassSpec extends FlatSpec with Matchers  {
         case PasswordPromptClosed(None) => "PASSWORD NOT ENTERED ON SND ATTEMPT"
       }
   }
-  println("=== PASSWORD was: -->" + p + "<--")
+  println("=== PASSWORD was: -->" + p + "<--")*/
+  val decryptor  = new Decryptor(mainwin, "test.txt.gpg", gpghome = Some("gnupg"))
+  val result = decryptor.result
   "AskPass" should "ask password" in {
-
+      result should (equal("hi"))
   }
 
 }

@@ -81,7 +81,7 @@ class SocketBroadcastActor(icalFileName: String) extends Actor {
       context.system.scheduler.scheduleOnce(
         2000.milliseconds,
         sender(),
-        InternalMessage(JsObject(Seq("type" -> JsString("message"), "content" -> JsString("registered <b>OK</b>"))))
+        InternalMessage(JsObject(Seq("type" -> JsString("registered"), "content" -> JsString("registered"))))
       )
       println(sockActors)
     case UnRegisterMe() => sockActors -= sender()

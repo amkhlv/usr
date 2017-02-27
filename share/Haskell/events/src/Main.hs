@@ -9,6 +9,7 @@ import System.IO.Streams (InputStream, OutputStream, stdout)
 import qualified System.IO.Streams as Streams
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
+import Data.Text.Encoding
 import Network.Http.Client
 import Data.Text
 import Data.List
@@ -45,7 +46,7 @@ instance ToJSON ANodeConf
 instance FromJSON ANodeConf
 
 data IntervalRequest = IntervalRequest {
-  isRequestInterval :: Bool,
+  isIntervalRequest :: Bool,
   dateFrom :: ICALDate,
   dateUntil  :: ICALDate
   } deriving (Generic, Show)
@@ -136,9 +137,9 @@ listInputStream :: InputStream BS.ByteString -> [VEvent] -> IO [VEvent]
 listInputStream i xs = do
   xm <- Streams.read i
   case xm of
-    Just x -> case (decode $ BSL.fromStrict x) of
+    Just x -> case (decode $ BSL.fromStrict (encodeUtf8 (decodeLatin1 x))) of
       Just vev -> listInputStream i (vev:xs)
-      Nothing -> (putStrLn "ERROR" >> listInputStream i xs)
+      Nothing -> (putStrLn "ERROR decoding" >> listInputStream i xs)
     Nothing -> return $ Prelude.reverse xs
 
 showEvents :: [VEvent] -> IO ()
