@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <ref name="conf"/>
+  </start>
+  <define name="conf">
+    <element name="config">
+      <element name="size">
+        <data type="integer"/>
+      </element>
+      <element name="even">
+        <attribute name="r">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="g">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="b">
+          <data type="integer"/>
+        </attribute>
+      </element>
+      <element name="odd">
+        <attribute name="r">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="g">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="b">
+          <data type="integer"/>
+        </attribute>
+      </element>
+      <element name="servers">
+        <zeroOrMore>
+          <element name="server">
+            <attribute name="URL">
+              <data type="string" datatypeLibrary=""/>
+            </attribute>
+            <element name="even">
+              <zeroOrMore>
+                <ref name="LED"/>
+              </zeroOrMore>
+            </element>
+            <element name="odd">
+              <zeroOrMore>
+                <ref name="LED"/>
+              </zeroOrMore>
+            </element>
+            <optional>
+              <element name="showIfDown">
+                <text/>
+              </element>
+            </optional>
+          </element>
+        </zeroOrMore>
+      </element>
+    </element>
+  </define>
+  <define name="LED">
+    <zeroOrMore>
+      <element name="LED">
+        <attribute name="x">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="y">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="r">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="g">
+          <data type="integer"/>
+        </attribute>
+        <attribute name="b">
+          <data type="integer"/>
+        </attribute>
+      </element>
+    </zeroOrMore>
+  </define>
+</grammar>

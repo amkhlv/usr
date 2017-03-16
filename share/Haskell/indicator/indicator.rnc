@@ -1,0 +1,31 @@
+grammar {
+   start = conf
+   conf  = element config {
+      element size { xsd:integer },
+      element even { 
+         attribute r { xsd:integer },
+         attribute g { xsd:integer },
+         attribute b { xsd:integer }
+      },
+      element odd { 
+         attribute r { xsd:integer },
+         attribute g { xsd:integer },
+         attribute b { xsd:integer }
+      },
+      element servers {
+         element server {
+            attribute URL { string },
+            element even { LED* },
+            element odd { LED* },
+            element showIfDown { text }?
+         }*
+      }
+   }
+   LED = element LED {
+      attribute x { xsd:integer },
+      attribute y { xsd:integer },
+      attribute r { xsd:integer },
+      attribute g { xsd:integer },
+      attribute b { xsd:integer }
+   }*
+}
