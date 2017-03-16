@@ -65,4 +65,8 @@ correct the `chroot` filesystem, then `lb binary` again
 
 ## Several kernels
 
-`lb binary` fails if the directory `chroot/boot/` has more than one linux kernel. Have to purge all older kernels.
+`lb binary` fails if the directory `chroot/boot/` has more than one linux kernel. Have to purge all older kernels:
+
+    dpkg --list | egrep -i --color 'linux-image|linux-headers'
+
+    apt-get --purge remove  linux-image-4.8.0-2-amd64   linux-image-4.9.0-1-amd64

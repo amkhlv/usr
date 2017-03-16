@@ -3,9 +3,9 @@ package controllers
 /**
   * Created by andrei on 1/7/17.
   */
+import java.io.ByteArrayOutputStream
 import javax.inject._
 
-import com.andreimikhailov.utils._
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxProfile
 import org.openqa.selenium.firefox.internal.ProfilesIni
@@ -14,7 +14,9 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import play.filters.csrf.{CSRFAddToken, CSRFCheck}
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext
+import scala.sys.process._
 import scala.xml.{Node, NodeSeq}
 
 
@@ -25,11 +27,15 @@ class PassController @Inject()(val addToken: CSRFAddToken,
                                val config: Configuration
                               ) extends Controller with I18nSupport {
   implicit val ec = ExecutionContext.global
-
-  lazy val secrets = {
-    val decryptor = new Decryptor(Common.mainwin, config.getString("application.passwords"))
-    decryptor.result
+  @tailrec private def getSecrets() : String = {
+    val askpasscmd = "ssh-askpass"
+    val gpgcmd = Seq("gpg", "--yes", "--no-tty", "--passphrase-fd", "0", "--decrypt", config.getString("application.passwords"))
+    val output = new ByteArrayOutputStream()
+    val r = (askpasscmd #| gpgcmd #> output).!
+    if (r>0) getSecrets() else output.toString("UTF-8")
   }
+  lazy val secrets = getSecrets()
+
   case class NeitherFirefoxProfileNorChromeProfileSpecified() extends  Exception
   val profile: ProfilesIni= new ProfilesIni()
   val myprofile: Either[FirefoxProfile,ChromeOptions] =

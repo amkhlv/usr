@@ -25,21 +25,31 @@ and change password (`passwd`)
 
 Then disconnect and connect via `ssh`
 
-Make sure `LuCI` listens on LAN only; the file `/etc/config/uhttpd` should contain:
+### Install and configure LuCI 
+
+     opkg update
+     opkg install luci
+
+The file `/etc/config/uhttpd` should contain:
 
          list listen_http '192.168.1.1:80'
      #   list listen_http '[::]:80'
          list listen_https '192.168.1.1:443'
      #   list listen_https '[::]:443'
 
+### Dropbear 
 
-The remaining setup is done via LuCI
+Authorized keys are in `/etc/dropbear/authorized_keys`
+
+Listens on LAN only `vi /etc/config/dropbear`:
+
+     config dropbear
+            option PasswordAuth 'on'
+            option RootPasswordAuth 'on'
+            option Port         '22'
+            option Interface    'lan'
 
 ## remaining setup via LuCI
-
-### Dropbear listens on LAN only:
-
-     System -> Administration -> SSH Acess ; Interface to LAN
 
 ### Change the machine name
 

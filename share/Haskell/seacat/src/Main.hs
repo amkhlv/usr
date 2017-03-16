@@ -122,7 +122,7 @@ main = execParser opts >>=
   where
     opts = info (helper <*> cloparser)
            ( fullDesc
-             <> progDesc "todolist manager"
-             <> header "use XML files to track TODOs" )
+             <> progDesc "regex finder"
+             <> header "find regexes close together" )
 
 
