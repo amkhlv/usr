@@ -10,7 +10,10 @@ Have to add a `Listen` line, for example:
 
 and an `Allow` line:
 
-    Allow 192.168.101.111
+    <Location />
+      Order allow,deny
+      Allow 192.168.101.111
+    </Location>
 
 Then restart:
 

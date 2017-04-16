@@ -8,6 +8,10 @@ Preparation
 
 (because otherwize the commans `lpr` will not work)
 
+Perhaps I also might need:
+
+    apt-get install openprinting-ppds printer-driver-all ijsgutenprint 
+
 Useful links
 ============
 
@@ -49,6 +53,14 @@ Jet Printer
 Notice that home `DeskJet` type of printer is likely to support the `ipp` protocol, e.g.:
 
     lpadmin -p hp-home -v ipp://192.168.1.153 -m drv:///hpcups.drv/hp-deskjet_2540_series.ppd -L home -E
+
+Sometimes the `lpinfo` does not report a `PPD` file, but only reports a `Directory` , for example:
+
+    gutenprint.5.2://bjc-MULTIPASS-MP250/expert Canon PIXMA MP250 - CUPS+Gutenprint v5.2.12
+
+In this case, say:
+
+    lpadmin -p canon -v 'usb://Canon/MP250%20series?serial=91586C&interface=1' -m 'gutenprint.5.2://bjc-MULTIPASS-MP250/expert' -L IFT -E
 
 USB printer
 -----------

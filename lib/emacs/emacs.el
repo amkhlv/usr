@@ -174,7 +174,17 @@
             (define-key nxml-mode-map "\C-c\C-r" 'rng-reload-schema)
             ))
 
+(defun insert-halfwidth-left-corner-bracket () (interactive) (ucs-insert #xff62)) ; "｢"
+(defun insert-halfwidth-right-corner-bracket () (interactive) (ucs-insert #xff63)) ; "｣"
+(defun insert-opening-guillemet () (interactive) (ucs-insert #x00ab)) ; "«"
+(defun insert-closing-guillemet () (interactive) (ucs-insert #x00bb)) ; "»"
 
+(add-hook 'perl6-mode-hook '(lambda () 
+                              (local-set-key (kbd "C-c ,") 'insert-halfwidth-left-corner-bracket)
+                              (local-set-key (kbd "C-c .") 'insert-halfwidth-right-corner-bracket)
+                              (local-set-key (kbd "C-c C-,") 'insert-opening-guillemet)
+                              (local-set-key (kbd "C-c C-.") 'insert-closing-guillemet)
+                              ))
 
 (add-to-list 'hs-special-modes-alist
              '(nxml-mode
@@ -522,3 +532,6 @@
 ;(package-refresh-contents)
 ;(package-install 'intero)
 (add-hook 'haskell-mode-hook 'intero-mode)
+
+;(package-install 'perl6-mode)
+

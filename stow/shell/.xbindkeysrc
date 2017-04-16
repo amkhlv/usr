@@ -51,7 +51,7 @@
     Mod4 + F6 
 
 #kb-en
-"/usr/bin/setxkbmap us"
+"/usr/bin/setxkbmap -layout us -variant altgr-intl -option nodeadkeys"
     m:0x40 + c:74
     Mod4 + F8 
 

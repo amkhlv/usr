@@ -4,6 +4,8 @@ __author__ = "Andrei Mikhailov"
 __copyright__ = "Copyright 2014, Andrei Mikhailov"
 __license__ = "GPL"
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GObject
 import sqlite3
 import sys
@@ -12,6 +14,7 @@ import yaml
 import functools
 import xml.sax.saxutils
 import subprocess
+
 
 class Parameters:
     """

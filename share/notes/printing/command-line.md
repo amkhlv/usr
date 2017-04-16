@@ -1,3 +1,8 @@
+Installation
+============
+
+    apt-get install  ijsgutenprint 
+
 
 Printer statistics
 ==================

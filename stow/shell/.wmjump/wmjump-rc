@@ -117,6 +117,7 @@ bg[NORMAL]="#a3c3fa"
 bg[PRELIGHT]="#a3c3fa"
 }
 widget "*chromium" style "chromiumblue"
+widget "*google-chrome" style "chromiumblue"
 
 style "myfern"
 {

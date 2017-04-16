@@ -21,6 +21,10 @@ Immediately after flushing:
 
       telnet 192.168.1.1
 
+**or sometimes**:
+
+      ssh 192.168.1.1
+
 and change password (`passwd`)
 
 Then disconnect and connect via `ssh`
@@ -112,6 +116,10 @@ For example, the command below will push some of the configuration files into th
 The **resulting images** are in `bin/ar71xx/`
 
 To **clean up** temporary build files and generated images, use the `make clean` command. 
+
+# Flushing from the command line
+
+     cat openwrt-ar71xx-generic-tl-wr740n-v5-squashfs-factory.bin | ssh 192.168.1.1 "mtd -r write - firmware"
 
 # Dynamic DNS
 

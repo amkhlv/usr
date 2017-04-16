@@ -1,6 +1,6 @@
 
 #MainWindow {
-    background-color: #F00;
+    background-color: #B00;
 }
 
 /* Bindings */
@@ -12,17 +12,17 @@
 
 }
 #CommanderTop {
-    padding: 7px;
-    margin: 7px;
+    /*padding: 2px;
+    margin: 2px;*/
     border-style: solid;
-    border-width: 4px;
+    border-width: 2px;
     border-color: #0FF;
 }
 
-#CommanderTop:focused {
+#CommanderTop:focus {
     border-style: solid;
-    border-width: 4px;
-    border-color: #F0F;
+    border-width: 2px;
+    border-color: #FFF;
 }
 
 
@@ -37,7 +37,7 @@
     bind "Escape" { "focus-to-commander" () };
 }
 #CommandLine {
-    gtk-key-bindings: command-line;
+    -gtk-key-bindings: command-line;
 }
 
 @binding-set commander-window {
@@ -47,7 +47,7 @@
     bind "colon" { "request-for-commandline" () };
 }
 #CommanderWindow {
-    gtk-key-bindings: commander-window;
+    -gtk-key-bindings: commander-window;
 }
 
 #CommanderTogglesBox {
@@ -87,21 +87,21 @@
     bind "Escape" { "focus-to-commander" () };
 }
 #Results {
-    padding: 7px;
-    margin: 7px;
+    padding: 2px;
+    margin: 2px;
     border-style: solid;
-    border-width: 4px;
+    border-width: 2px;
     border-color: #0FF;
-    gtk-key-bindings: results;
+    -gtk-key-bindings: results;
 }
-#Results:focused {
+#Results:focus {
     border-style: solid;
-    border-width: 4px;
+    border-width: 2px;
     border-color: #F0F;
 }
 
 #ResultsTopHBox {
-    gtk-key-bindings: results;
+    -gtk-key-bindings: results;
 }
 
 #ResultsNumberLabel {
@@ -122,13 +122,13 @@
     padding: 1px;
 }
 
-#ItemLabel0 { background-color: #FFAAAA; font: 12 Monospace; }
-#ItemLabel1 { background-color: #ffccaa; font: 12 Monospace; }
-#ItemLabel2 { background-color: #ffffaa; font: 12 Monospace; }
-#ItemLabel3 { background-color: #aaffaa; font: 12 Monospace; }
-#ItemLabel4 { background-color: #aaccff; font: 12 Monospace; }
-#ItemLabel5 { background-color: #bbaaff; font: 12 Monospace; }
-#ItemLabel6 { background-color: #ddaaff; font: 12 Monospace; }
+#ItemLabel0 { background-color: #FFAAAA; font: 12pt Monospace; }
+#ItemLabel1 { background-color: #ffccaa; font: 12pt Monospace; }
+#ItemLabel2 { background-color: #ffffaa; font: 12pt Monospace; }
+#ItemLabel3 { background-color: #aaffaa; font: 12pt Monospace; }
+#ItemLabel4 { background-color: #aaccff; font: 12pt Monospace; }
+#ItemLabel5 { background-color: #bbaaff; font: 12pt Monospace; }
+#ItemLabel6 { background-color: #ddaaff; font: 12pt Monospace; }
 
 #GotoPrevBatchButton {
     background-color: #eeffee;
@@ -154,8 +154,8 @@
 }
 
 #TextViewPrimaryKey {
-    font: 16 Monospace;
-    gtk-key-bindings: collector-textview;
+    font: 16pt Monospace;
+    -gtk-key-bindings: collector-textview;
 }
 
 #TextViewPrimaryKeyScrollWin {
@@ -164,11 +164,11 @@
 }
 
 #TextViewColumn {
-    font: 16 Monospace;
+    font: 16pt Monospace;
     border-width: 2px;
     border-style: solid;
     border-color: #00F;
-    gtk-key-bindings: collector-textview;
+    -gtk-key-bindings: collector-textview;
 }
 
 #TextViewColumnScrollWin {
@@ -195,7 +195,7 @@
 /* Alert */
 
 #AlertLabel {
-    font: 32 Monospace;
+    font: 32pt Monospace;
     background-color: red;
     color: white;
 }
