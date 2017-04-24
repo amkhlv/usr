@@ -20,7 +20,17 @@ but `virt-manager` will automatically set such permission when the `qemu` is sta
 Virsh shell
 ===========
 
-By the way saying `virsh` opens a nice administrative shell with many useful commands.
+By the way saying `virsh` opens a nice administrative shell with many useful commands, in particular:
+
+     start MACHINENAME
+     net-start isolated
+
+Start viewer from the command line 
+==================================
+
+    virt-viewer MACHINENAME
+
+Use a floating window, because fullscreen leads to rescaling.
 
 Setup video
 ===========
