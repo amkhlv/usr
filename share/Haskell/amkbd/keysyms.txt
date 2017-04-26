@@ -566,7 +566,7 @@ Cyrillic_U_macron		0x68f
 Cyrillic_u_macron		0x69f		
 Serbian_dje		0x6a1		
 Macedonia_gje		0x6a2		
-Cyrillic_io		0x6a3		
+Cyrillic_io		0x6a3		ё
 Ukrainian_ie		0x6a4		Ukranian_je is a deprecated synonym
 Macedonia_dse		0x6a5		
 Ukrainian_i		0x6a6		Ukranian_i is a deprecated synonym
@@ -582,7 +582,7 @@ Cyrillic_dzhe		0x6af		Serbian_dze is a deprecated synonym
 numerosign		0x6b0		
 Serbian_DJE		0x6b1		
 Macedonia_GJE		0x6b2		
-Cyrillic_IO		0x6b3		
+Cyrillic_IO		0x6b3		Ё
 Ukrainian_IE		0x6b4		Ukranian_JE is a deprecated synonym
 Macedonia_DSE		0x6b5		
 Ukrainian_I		0x6b6		Ukranian_I is a deprecated synonym

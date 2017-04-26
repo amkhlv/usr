@@ -2,7 +2,7 @@
 
 This is to auto-type some text.
 
-The list of symbols `keysyms.txt` is taken [from here](http://wiki.linuxquestions.org/wiki/List_of_Keysyms_Recognised_by_Xmodmap).
+The list of symbols `keysyms.txt` is taken [from here](http://wiki.linuxquestions.org/wiki/List_of_Keysyms_Recognised_by_Xmodmap) but with added Cyrillic ё 
 
 It __should be copied to__ `/usr/local/lib/amkhlv/`
 

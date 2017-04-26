@@ -1,7 +1,5 @@
 module Main where
 
-import Control.Concurrent
-import GHC.IO.Handle.FD 
 import System.IO
 import qualified Data.List.Split as DLS
 import Text.ParserCombinators.Parsec
@@ -20,48 +18,49 @@ cloparser :: OA.Parser Clops
 cloparser = Clops
   <$> OA.switch (OA.short 't' <> OA.help "Testing")
 
-
-keyName :: String -> Parser String
-keyName xs = try (choice [alphaNum, (oneOf "_")] >>= (\x -> keyName (x:xs))) <|> return (Prelude.reverse xs)
+trm :: String -> String
+trm x = unpack (strip $ pack x)
 
 keyTableRow :: Parser (Maybe (Char,String))
-keyTableRow = do
-  nm <- keyName ""
-  spaces
-  many1 alphaNum
-  cs <- manyTill anyChar (try newline)
-  case (unpack (strip (pack cs))) of
-    [c]   -> return (Just (c,nm))
-    x:xs  -> case (Prelude.head (unpack (strip (pack xs)))) of
-      ';' -> return (Just (x,nm)) -- some lines have comments
-      _   -> return Nothing
-    _     -> return Nothing
+keyTableRow = 
+  try
+  ( do 
+    nm <- many1 $ choice [alphaNum, (oneOf "_")]
+    spaces
+    string "0x"
+    many1 alphaNum
+    cs <- manyTill anyChar (try newline)
+    case (trm cs) of
+      [c]   -> return $ Just (c,nm)
+      x:xs  -> case Prelude.head (trm xs) of
+        ';' -> return $ Just (x,nm) -- some lines have comments
+        _   -> return Nothing
+      _     -> return Nothing
+  )
+  <|> (manyTill anyChar (try newline) >> return Nothing)
 
 keyTable :: (Map Char String) -> Parser (Map Char String)
-keyTable m = try (
-  do
-    p <- keyTableRow
-    case p of
-      Nothing     -> keyTable m
-      Just (c,nm) -> keyTable (insert c nm m)
-  ) <|> return m
+keyTable m =
+  ( keyTableRow >>= maybe (keyTable m) (\(c,nm) -> keyTable (insert c nm m)) )
+  <|> return m
 
 xdtArg :: String -> (Map Char String) -> String
 xdtArg xs m = do
   x <- xs
   case x of
-    ' ' -> " space"
-    '\n' -> " Return"
-    y   -> case Data.Map.lookup y m of
-      Just ks -> ' ':ks
-      Nothing -> [' ', y]
+    ' '  -> " space"
+    '\b' -> " BackSpace"
+    '\n' -> " Linefeed"
+    '\r' -> " Return"
+    '\t' -> " Tab"
+    y    -> maybe [' ', y] (' ':) (Data.Map.lookup y m)
 
 execStr :: String -> Bool -> IO ()
 execStr xs isTesting = do
   let p = if isTesting then (SP.proc "cat" []) else (SP.proc "xdotool" ["-"])
   (Just hin, _ , _, procHandle) <- SP.createProcess p {SP.std_in = SP.CreatePipe}
   hPutStr hin xs
-  hFlush hin
+  hPutStr hin "\n"
   hClose hin
 
 myOptParser = OA.info (OA.helper <*> cloparser)
@@ -75,6 +74,8 @@ main = do
   s <- getContents  -- read text from stdin
   kstbl <- readFile "/usr/local/lib/amkhlv/keysyms.txt"
   case (parse (keyTable Data.Map.empty) "" kstbl) of
-    Left _  -> putStrLn "ERROR"
-    Right m -> execStr ("key" ++ xdtArg s m) (testing clops)
+    Left err  -> putStrLn $ "ERROR: " ++ show err
+    Right m   -> do
+      if (testing clops) then putStrLn (show m) else return ()
+      execStr ("key --delay 100" ++ xdtArg s m) (testing clops)
 
