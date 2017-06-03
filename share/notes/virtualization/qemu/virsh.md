@@ -28,9 +28,7 @@ By the way saying `virsh` opens a nice administrative shell with many useful com
 Start viewer from the command line 
 ==================================
 
-    virt-viewer MACHINENAME
-
-Use a floating window, because fullscreen leads to rescaling.
+See [writeup on virt-viewer](virt-viewer.md)
 
 Setup video
 ===========

@@ -14,7 +14,7 @@ import           Text.ParserCombinators.Parsec
 import           Text.ParserCombinators.Parsec.Error
 import           Data.List
 import           Data.List.NonEmpty (NonEmpty)
-
+import           Data.Maybe
 
 data SExp = Id String
           | Sym String
@@ -109,10 +109,10 @@ mirror c =
   let punctA = "->+="
       punctB = "-<+="
   in
-    case find (c ==) punctA of
-      Just c' -> Just c'
-      Nothing -> case find (c ==) punctB of
-        Just c' -> Just c'
+    case findIndex (c ==) punctA of
+      Just n -> Just (punctB !! n)
+      Nothing -> case findIndex (c ==) punctB of
+        Just n -> Just (punctA !! n)
         Nothing -> Nothing
 
 getStop :: String -> Parser String

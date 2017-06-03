@@ -113,8 +113,8 @@ widget "*evolution" style "myblue"
 
 style "chromiumblue"
 {
-bg[NORMAL]="#a3c3fa"
-bg[PRELIGHT]="#a3c3fa"
+bg[NORMAL]="#d0e2f1"
+bg[PRELIGHT]="#d0e2f1"
 }
 widget "*chromium" style "chromiumblue"
 widget "*google-chrome" style "chromiumblue"
