@@ -1,4 +1,0 @@
-#!/bin/bash
-
-sleep 0.2
-wmctrl -r :ACTIVE: "$*"

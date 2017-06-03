@@ -1,1 +1,0 @@
-/home/andrei/usr/lib/python/amkhlv_mail.py

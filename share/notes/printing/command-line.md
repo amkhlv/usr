@@ -11,6 +11,13 @@ Printer statistics
     lpstat -t
 
 
+Un-Pause
+========
+
+If the printer is stuck __paused__ :
+
+    cupsenable <PRINTER_NAME>
+
 
 Current jobs
 ============
