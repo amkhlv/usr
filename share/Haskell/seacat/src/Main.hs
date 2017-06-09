@@ -13,7 +13,8 @@ import Control.Exception
 import System.Console.ANSI
 import System.IO
 import System.IO.Error
-import Text.Regex.PCRE
+import Data.Text.ICU.Regex
+import Data.Text.Foreign
 import qualified Data.ByteString.Char8 as C
 
 data Clops = Clops
@@ -26,12 +27,31 @@ cloparser = Clops
   <$> optional ( option auto ( short 'n' <> metavar "LINES" <> help "Maximal number of lines between occurence of patterns"))
   <*> (many $ argument str (metavar "REGEX"))
 
-getMatchesInLine :: Clops -> String -> [(String, [(MatchOffset, MatchLength)])]
-getMatchesInLine clps x = [(r, [m Data.Array.! 0  |  m <- (matchAll (prepRegex r) x)])
-                          | r <- regexen clps]
+type MatchOffset = I16
+type MatchLength = I16
 
-cycleInput :: Clops -> Map String Int -> LimitedList String -> IO ()
-cycleInput clps rgmap prevLines = do
+findAllRICU :: Regex -> [(MatchOffset, MatchLength)] -> IO [(MatchOffset, MatchLength)]
+findAllRICU ricu acc = do
+  b <- findNext ricu
+  case b of
+    True -> do
+      s <- start_ ricu 0
+      e <- end_   ricu 0
+      findAllRICU ricu ((s, e - s) : acc)
+    False -> return $ reverse acc
+
+getMatchesInLine :: Values -> String -> IO [(String, [(MatchOffset, MatchLength)])]
+getMatchesInLine vls x =
+  sequence [
+  do
+    ricu <- fromJust $ Data.Map.lookup r (rgxs vls)
+    setText ricu (pack x)
+    allmatches <- findAllRICU ricu []
+    return (r, allmatches)
+  | r <- regexen (clps vls)]  
+
+cycleInput :: Values -> Vars -> IO ()
+cycleInput vls vrs = do
   line <- try (hGetLine stdin)
   case line of
     Left e -> 
@@ -39,21 +59,28 @@ cycleInput clps rgmap prevLines = do
       then return ()
       else ioError e
     Right ln -> do
-      let matches = getMatchesInLine clps ln
+      let iomatches = getMatchesInLine vls ln
+      matches <- iomatches
       let newrgs = [(fst rm) | rm <- matches, length (snd rm) > 0]
-      let newrgmap = mapWithKey (\r -> if (elem r newrgs) then (\n -> 0) else (\n -> n + 1)) rgmap
-      newPrevLines <- case (lineInterval clps) of
-                        Nothing -> -- like "grep regex" (just print lines matching all)
-                          if getAll $ mconcat [All $ (elem x newrgs) | x <- (regexen clps)]
-                          then printLine matches ln >> return zeroLL
-                          else return zeroLL
-                        Just n ->
-                          if getAll $ mconcat [All $ (fromJust $ Data.Map.lookup x newrgmap) <= n  | x <- (regexen clps)]
-                          then dumpLL prevLines >> putStr "•" >> printLine matches ln >> return (emptyLL n)
-                          else return (appendLL ln prevLines)
-      cycleInput clps newrgmap newPrevLines
+      let newrgmap = mapWithKey (\r -> if (elem r newrgs) then (\n -> 0) else (\n -> n + 1)) (rgxMap vrs)
+      (newLprev, newPrevLines) <- case (lineInterval (clps vls)) of
+        Nothing -> -- like "grep regex" (just print lines matching all)
+          if getAll $ mconcat [All $ (elem x newrgs) | x <- (regexen (clps vls))]
+          then printLine iomatches ln >> return (curLn vrs + 1, zeroLL)
+          else return (prevRelLn vrs, zeroLL)
+        Just n ->
+          if getAll $ mconcat [All $ (fromJust $ Data.Map.lookup x newrgmap) <= n  | x <- (regexen (clps vls))]
+          then do
+            let prefix = if (isFull $ prevLns vrs)
+                  then Just $ show (curLn vrs + 1) ++ " ━━━━━━━━━━━━━━━━ " ++ show (curLn vrs - prevRelLn vrs) ++ " ━━━━━━━━━━━━━━━━"
+                  else Nothing
+              in dumpLL vls prefix (prevLns vrs)
+            printLine iomatches ln
+            return (curLn vrs + 1, emptyLL n)
+          else return (prevRelLn vrs, appendLL ln $ prevLns vrs)
+      seq newPrevLines $ cycleInput vls (Vars (curLn vrs + 1) newLprev newrgmap newPrevLines)
 
-printWithMarks :: [Int] -> [Int] -> Int -> String -> String -> IO ()
+printWithMarks :: [I16] -> [I16] -> I16 -> String -> String -> IO ()
 printWithMarks begs ends ind ""   acc =  putStrLn acc >> setSGR [Reset]
 printWithMarks begs ends ind rest acc =
   let begsOnLeft = length [ b | b <- begs , b < ind ]
@@ -83,46 +110,51 @@ printWithMarks begs ends ind rest acc =
       else
         printWithMarks begs ends (ind + 1) (tail rest) (acc ++ [head rest])
 
-prepRegex :: String -> Regex
-prepRegex x = makeRegex (C.pack x)
-
-printLine :: [(String, [(MatchOffset, MatchLength)])] -> String -> IO ()
-printLine mas x =
-  let mStarts = join [ [ (fst m)
-                       | m <- (snd ms) ]
-                     | ms <- mas ]
+printLine :: IO[(String, [(MatchOffset, MatchLength)])] -> String -> IO ()
+printLine iomas x = do
+  mas <- iomas
+  let mStarts = join [   [ (fst m) | m <- (snd ms) ]   |   ms <- mas   ]
       -- this is actually the next position after last in match :
-      mEnds   = join [ [ (fst m) + (snd m) 
-                       | m <- (snd ms) ]
-                     | ms <- mas ]
-  in
-    printWithMarks mStarts mEnds 0 x "" 
+      mEnds   = join [   [ (fst m) + (snd m)   | m <- (snd ms) ]   |   ms <- mas   ]
+  printWithMarks mStarts mEnds 0 x "" 
 
-data LimitedList a = LimitedList { limit :: Int , contents :: [a] }
+data LimitedList a = LimitedList { limit :: Int , contents :: ![a] }
 appendLL :: a -> LimitedList a -> LimitedList a
 appendLL x (LimitedList 0 xs) = LimitedList 0 []
 appendLL x (LimitedList lim xs) =
-  if ((length xs) < lim)
-  then LimitedList lim $ xs ++ [x]
-  else LimitedList lim $ (tail xs) ++ [x]
-dumpLL :: LimitedList String -> IO ()
-dumpLL xs = sequence_ [ putStrLn x | x <- contents xs ]
+  let newxs = if  (length xs < lim)  then  xs ++ [x]  else  let txs = tail xs in txs `seq` txs ++ [x]
+  in LimitedList lim newxs
+dumpLL :: Values -> Maybe String -> LimitedList String -> IO ()
+dumpLL vls mprefix xs = do
+  maybe (return ()) putStrLn mprefix
+  sequence_ [ printLine (getMatchesInLine vls x) x | x <- contents xs ]
 emptyLL :: Int -> LimitedList a
 emptyLL n = LimitedList n []
 zeroLL = LimitedList 0 []
+isNotEmpty :: LimitedList a -> Bool
+isNotEmpty x = not $ Data.Foldable.null (contents x)
+isFull :: LimitedList a -> Bool
+isFull (LimitedList lim cs) = (length cs) == lim
+
+data Vars =
+  Vars { curLn :: Int , prevRelLn :: Int , rgxMap :: Map String Int , prevLns :: LimitedList String }
+
+data Values = Values { clps :: Clops , rgxs :: Map String (IO Regex) }
 
 main :: IO ()
-main = execParser opts >>=
-  (\clps ->
-     cycleInput
-     clps
-     (Data.Map.fromList [(r , 2 + (fromMaybe 0 (lineInterval clps)))
-                        | r <- regexen clps])
-     (emptyLL $ fromMaybe 0 (lineInterval clps)))
-  where
-    opts = info (helper <*> cloparser)
+main = do
+  let opts = info (helper <*> cloparser)
            ( fullDesc
              <> progDesc "regex finder"
              <> header "find regexes close together" )
-
-
+  clps <- execParser opts
+  let initialVars = Vars {
+        curLn = 0 ,
+        prevRelLn = 0 ,
+        rgxMap = Data.Map.fromList [(r , 2 + (fromMaybe 0 (lineInterval clps)))
+                                   | r <- regexen clps] ,
+        prevLns = emptyLL $ fromMaybe 0 (lineInterval clps)
+        }
+  let mainValues =
+        Values clps $ Data.Map.fromList [ (r, regex [CaseInsensitive] (pack r)) | r <- regexen clps]
+  cycleInput mainValues initialVars

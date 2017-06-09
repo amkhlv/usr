@@ -23,6 +23,6 @@ executable seacat
                      , containers
                      , transformers
                      , monad-loops
-                     , regex-pcre
                      , bytestring
                      , array
+                     , text-icu
