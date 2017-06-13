@@ -7,3 +7,5 @@ database:
   #
   #   database: "_env:SQLITE_DATABASE:linii_test.sqlite3"
   database: linii_test.sqlite3
+
+auth-dummy-login: true

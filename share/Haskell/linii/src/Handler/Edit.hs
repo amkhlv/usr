@@ -1,3 +1,10 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+
+
+
+
 module Handler.Edit where
 
 import Import
@@ -18,7 +25,7 @@ getEditR i = do
       defaultLayout $ do
         setTitle "EditAbkEntry"
         $(widgetFile "edit")
-    Nothing -> defaultLayout [whamlet|ERROR in getEditR|]
+    Nothing -> defaultLayout $(widgetFile "error-in-edit-get")
 
 postEditR :: Int64 -> Handler Html
 postEditR i = do
@@ -32,7 +39,7 @@ postEditR i = do
           _ -> liftIO $ putStrLn "ERROR: entry to be deleted is absent"
         _ <- runDB $ insert (a1toAddress res)
         getHomeR
-      _ -> defaultLayout [whamlet|ERROR in form submission|]
+      _ -> defaultLayout $(widgetFile "error-in-edit-post")
 
 
 data Foo = Foo{ x :: Text } deriving Show
@@ -68,5 +75,4 @@ postDeleteR i = do
           Just a -> runDB $ delete (entityKey a)
           _ -> liftIO $ putStrLn "ERROR: entry to be deleted is absent"
         getHomeR
-      _ -> defaultLayout [whamlet|ERROR in form submission|]
-
+      _ -> defaultLayout $(widgetFile "error-in-edit-post")

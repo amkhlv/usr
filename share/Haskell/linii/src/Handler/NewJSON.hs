@@ -1,9 +1,17 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ViewPatterns #-}
+
 module Handler.NewJSON where
 
 import           Import
 import qualified Data.Aeson as A
 import qualified Data.Vector as V
 import           System.Process
+import           Data.IOData
 
 getNewJSONR :: Handler Html
 getNewJSONR = do
@@ -37,10 +45,8 @@ postNewJSONR = do
           Just t -> t
           Nothing -> "======= could not parse ======="
         putStrLn "---  END DEBUG  ---"
-      defaultLayout [whamlet|<p>TODO|]
-    _ -> defaultLayout
-          [whamlet|<p>Something wrong, no file upload|]
-
+      defaultLayout $(widgetFile "todo")
+    _ -> defaultLayout $(widgetFile "error-no-upload")
 
 convertVCFtoJSON :: [ByteString] -> IO (Handle, Handle, ProcessHandle, [A.Value])
 convertVCFtoJSON vcf = do
@@ -51,9 +57,9 @@ convertVCFtoJSON vcf = do
     std_in = CreatePipe,
     std_out = CreatePipe,
     std_err = CreatePipe}
-  sequence_ (map (hPutStrLn hin) vcf)
+  sequence_ (map (Data.IOData.hPutStrLn hin) vcf)
   hClose hin
-  x <- hGetContents hout
+  x <- Data.IOData.hGetContents hout
   let objs = case (A.decode x :: Maybe A.Value) of
         Just (A.Array v) -> V.toList v
         _ -> []
@@ -76,9 +82,8 @@ postNewVCFR = do
       liftIO $ do
         hClose hout
         hClose herr
-      defaultLayout [whamlet|<p>TODO|]
-    _ -> defaultLayout
-          [whamlet|<p>Something wrong, no file upload|]
+      defaultLayout $(widgetFile "todo")
+    _ -> defaultLayout $(widgetFile "error-no-upload")
 
 uploadJSONForm :: Html -> MForm Handler (FormResult FileInfo, Widget)
 uploadJSONForm = renderDivs $ fileAFormReq "JSON file"

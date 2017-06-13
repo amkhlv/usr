@@ -3,7 +3,10 @@ h1 {
     margin-bottom: 30px
 }
 
-
+a {
+    color: #0925f3;
+	text-decoration: none;
+}
 
 [class*="col-md-3"] {
   padding-top: 15px;

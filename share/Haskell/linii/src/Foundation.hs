@@ -1,9 +1,20 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ViewPatterns #-}
+
 module Foundation where
 
 import Import.NoFoundation
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
+
+-- Used only when in "auth-dummy-login" setting is enabled.
+import Yesod.Auth.Dummy
+
 import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
@@ -22,6 +33,16 @@ data App = App
     , appHttpManager :: Manager
     , appLogger      :: Logger
     }
+
+data MenuItem = MenuItem
+    { menuItemLabel :: Text
+    , menuItemRoute :: Route App
+    , menuItemAccessCallback :: Bool
+    }
+
+data MenuTypes
+    = NavbarLeft MenuItem
+    | NavbarRight MenuItem
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -69,6 +90,37 @@ instance Yesod App where
         master <- getYesod
         mmsg <- getMessage
 
+        muser <- maybeAuthPair
+        mcurrentRoute <- getCurrentRoute
+
+        -- Get the breadcrumbs, as defined in the YesodBreadcrumbs instance.
+        (title, parents) <- breadcrumbs
+
+        -- Define the menu items of the header.
+        let menuItems =
+                [ NavbarLeft $ MenuItem
+                    { menuItemLabel = "Home"
+                    , menuItemRoute = HomeR
+                    , menuItemAccessCallback = True
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Login(to be implemented)"
+                    , menuItemRoute = AuthR LoginR
+                    , menuItemAccessCallback = isNothing muser
+                    }
+                , NavbarRight $ MenuItem
+                    { menuItemLabel = "Logout"
+                    , menuItemRoute = AuthR LogoutR
+                    , menuItemAccessCallback = isJust muser
+                    }
+                ]
+
+        let navbarLeftMenuItems = [x | NavbarLeft x <- menuItems]
+        let navbarRightMenuItems = [x | NavbarRight x <- menuItems]
+
+        let navbarLeftFilteredMenuItems = [x | x <- navbarLeftMenuItems, menuItemAccessCallback x]
+        let navbarRightFilteredMenuItems = [x | x <- navbarRightMenuItems, menuItemAccessCallback x]
+
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -85,10 +137,19 @@ instance Yesod App where
 
     -- Routes not requiring authentication.
     isAuthorized (AuthR _) _ = return Authorized
+    isAuthorized HomeR _ = return Authorized
     isAuthorized FaviconR _ = return Authorized
     isAuthorized RobotsR _ = return Authorized
-    -- Default to Authorized for now.
-    isAuthorized _ _ = return Authorized
+    isAuthorized (StaticR _) _ = return Authorized
+    isAuthorized (EditR _) _ = return Authorized
+    isAuthorized NewR _ = return Authorized
+    isAuthorized NewJSONR _ = return Authorized
+    isAuthorized (DeleteR _) _ = return Authorized
+    isAuthorized NewVCFR _ = return Authorized
+    isAuthorized (VCardR _) _ = return Authorized
+
+    --isAuthorized (EditR _) _ = isAuthenticated
+    --isAuthorized NewR _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -117,6 +178,22 @@ instance Yesod App where
             || level == LevelError
 
     makeLogger = return . appLogger
+
+    -- Provide proper Bootstrap styling for default displays, like
+    -- error pages
+    defaultMessageWidget title body = $(widgetFile "default-message-widget")
+
+-- Define breadcrumbs.
+instance YesodBreadcrumbs App where
+  breadcrumb HomeR = return ("Home", Nothing)
+  breadcrumb (AuthR _) = return ("Login", Just HomeR)
+  breadcrumb (EditR _) = return ("Edit", Just HomeR)
+  breadcrumb NewR = return ("New", Just HomeR)
+  breadcrumb NewJSONR = return ("NewJSON", Just HomeR)
+  breadcrumb (DeleteR _) = return ("Delete", Just HomeR)
+  breadcrumb NewVCFR = return ("NewVCF", Just HomeR)
+  breadcrumb (VCardR _) = return ("NewVcard", Just HomeR)
+  breadcrumb  _ = return ("home", Nothing)
 
 -- How to run database actions.
 instance YesodPersist App where
@@ -147,9 +224,19 @@ instance YesodAuth App where
                 }
 
     -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins _ = [authOpenId Claimed []]
+    authPlugins app = [authOpenId Claimed []] ++ extraAuthPlugins
+        -- Enable authDummy login if enabled.
+        where extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
 
     authHttpManager = getHttpManager
+
+-- | Access function to determine if a user is logged in.
+isAuthenticated :: Handler AuthResult
+isAuthenticated = do
+    muid <- maybeAuthId
+    return $ case muid of
+        Nothing -> Unauthorized "You must login to access this page"
+        Just _ -> Authorized
 
 instance YesodAuthPersist App
 

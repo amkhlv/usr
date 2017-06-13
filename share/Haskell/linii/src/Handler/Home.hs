@@ -1,3 +1,8 @@
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Handler.Home where
@@ -10,8 +15,8 @@ import           Database.Persist.Sql (toSqlKey)
 import qualified Data.ByteString.Lazy as DBSL
 import qualified Data.Aeson as A
 import           System.Process
-import Handler.Utils
-
+import           Handler.Utils
+import           Data.IOData
 
 conduit :: Text -> Maybe Text -> ConduitM (Entity Address) (Entity Address) (ReaderT SqlBackend (HandlerT App IO)) ()
 conduit lastname firstname =
@@ -58,7 +63,7 @@ convertJSONtoVCF jsn = do
     std_err = CreatePipe}
   hPutStrLn hin jsn
   hClose hin
-  x <- hGetContents hout
+  x <- Data.IOData.hGetContents hout
   return (hout, herr, procHandle, x)
 
 vCardContentType :: ByteString
@@ -95,8 +100,8 @@ addressToXAddr (Address lastname firstname datecollected email workphone homepho
   let ftel u = onlyTels (telSplit u) in
   let feml u = onlyEmls (emlSplit u) in
   XAddr {
-    last = lastname,
-    first = firstname,
+    Handler.Home.last = lastname,
+    Handler.Home.first = firstname,
     email = fmap feml email,
     workphone = fmap ftel workphone,
     homephone = fmap ftel homephone,

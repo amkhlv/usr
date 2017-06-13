@@ -1,5 +1,6 @@
 module Handler.Utils where
 
+import Prelude()
 import Import
 import Text.Regex.PCRE
 import Data.Text (split)
@@ -25,7 +26,7 @@ isTel :: Text -> Bool
 isTel x =
   let y = unpack x :: String in
   let z = C.pack "([a-z]|[A-Z])" :: ByteString in
-  not ((y =~ z :: Bool) || x == "")
+  not ((y =~ z :: Bool) || x == pack "")
 
 isEml :: Text -> Bool
 isEml x = case find (== '@') x of
@@ -38,13 +39,13 @@ chunksToTelItems [W txt] acc = reverse $ (if (isTel txt) then Tel txt else NoTel
 chunksToTelItems ((W x):(Delim c):(W y):cs) acc =
   case ((isTel x) , (isTel y)) of
     (True, True) -> if (elem c weakDelims) then
-                      chunksToTelItems ((W (x ++ "-" ++ y)):cs) acc
+                      chunksToTelItems ((W (x ++ pack "-" ++ y)):cs) acc
                     else
                       chunksToTelItems ((W y):cs) ((NoTel $ singleton c):(Tel x):acc)
     (True, False) -> chunksToTelItems ((W y):cs) ((NoTel $ singleton c):(Tel x):acc)
     (False, True) -> chunksToTelItems ((W y):cs) ((NoTel $ x ++ (singleton c)):acc)
     (False, False) -> chunksToTelItems ((W (x ++ (singleton c) ++ y)):cs) acc
-chunksToTelItems _ acc = (NoTel "--PARSING ERROR--"):(reverse acc)
+chunksToTelItems _ acc = (NoTel $ pack "--PARSING ERROR--"):(reverse acc)
 
 telSplit :: Text -> [TelItem]
 telSplit x = chunksToTelItems  (foldM splitChuCha (W x) (strongDelims ++ weakDelims)) []
@@ -56,7 +57,7 @@ chunksToEmlItems ((W x):(Delim c):(W y):cs) acc =
   case ((isEml x) , (isEml y)) of
     (False, False) -> chunksToEmlItems ((W (x ++ (singleton c) ++ y)):cs) acc
     (b, _) -> chunksToEmlItems ((W y):cs) ((NoEml $ singleton c):(if b then Eml x else NoEml x):acc)
-chunksToEmlItems _ acc = (NoEml "--PARSING ERROR--"):(reverse acc)
+chunksToEmlItems _ acc = (NoEml $ pack "--PARSING ERROR--"):(reverse acc)
 
 emlSplit :: Text -> [EmlItem]
 emlSplit x = chunksToEmlItems  (foldM splitChuCha (W x) (strongDelims ++ weakDelims)) []
