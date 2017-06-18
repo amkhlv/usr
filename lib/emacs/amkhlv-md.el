@@ -6,7 +6,7 @@
 	 (fnout (replace-regexp-in-string "md$" "html" fn)))
     (save-buffer)
 ;    (shell-command (concat "echo '<meta charset=\"utf-8\">' >" fnout))
-    (shell-command (concat "amkhlv_md2html.py " fn " > " fnout))))
+    (shell-command (concat "amkhlv-md2html.sh " fn " > " fnout))))
 
 (defun markdown-view-html ()
   (interactive)

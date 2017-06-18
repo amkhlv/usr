@@ -44,7 +44,7 @@ lines. __Check /etc/fstab after doing pamusb-conf__!
         password required       pam_deny.so
         session  required       pam_deny.so
 
-- Proceed to [pam-auth-update](pam-auth-update.html)
+- Proceed to [pam-auth-update](pam-auth-update.md)
 
 # Repairing one-time pads
 

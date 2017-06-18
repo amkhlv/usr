@@ -1,6 +1,6 @@
 # Downgrade from `unstable` to `testing`
 
-In `/etc/apt/sources.list` put the `testing` lines [as I explain here](testing.html) 
+In `/etc/apt/sources.list` put the `testing` lines [as I explain here](testing.md) 
 
 Also, create the file `/etc/apt/preferences` and put the following lines in it:
 

@@ -164,6 +164,10 @@
 
 (add-hook 'scheme-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-hook 'markdown-mode-hook '(lambda () 
+                                 (local-set-key (kbd "C-c ,") 'insert-halfwidth-left-corner-bracket)
+                                 (local-set-key (kbd "C-c .") 'insert-halfwidth-right-corner-bracket)
+                                 (local-set-key (kbd "C-c C-,") 'insert-opening-guillemet)
+                                 (local-set-key (kbd "C-c C-.") 'insert-closing-guillemet)
                                  (local-set-key (kbd "C-c C-c") 'markdown-to-html)
                                  (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
 

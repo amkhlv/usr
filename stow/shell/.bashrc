@@ -114,6 +114,7 @@ export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$
 export MAIL=/var/mail/andrei
 export MAILCHECK=30
 export XDG_RUNTIME_DIR="/run/user/$UID"
+export PERL6LIB="$HOME/a/Perl6"
 
 source ~/.andrei
 source /etc/bash_completion

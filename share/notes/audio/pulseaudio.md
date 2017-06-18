@@ -86,7 +86,7 @@ On `MachineB` (client):
     socat TCP-LISTEN:4000,fork,range=127.0.0.1/32 UNIX-CONNECT:/run/user/1000/pulse/native
 
 (__notice that__ the range restriction `xxx.xxx.xxx.xxx/32` imposes a restriction on the __remote__ address __from where__ comes the connection;
-this particular example  is very confusing because it creates the [remote port forwarding](../server/ssh.html) which is __incoming tunnel__)
+this particular example  is very confusing because it creates the [remote port forwarding](../server/ssh.md) which is __incoming tunnel__)
 
 On `MachineA` (server):
 

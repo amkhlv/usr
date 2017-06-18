@@ -8,4 +8,4 @@ Convert VDI to QCOW2
 Mount QCOW2
 ===========
 
-Same as [VDI](../virtualbox/mount-vdi.html)
+Same as [VDI](../virtualbox/mount-vdi.md)

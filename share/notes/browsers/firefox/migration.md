@@ -7,7 +7,7 @@ Navigate to `about:support`
 About.config
 ============
 
-[My writeup](about_config.html)
+[My writeup](about_config.md)
 
 Bookmarks
 =========
