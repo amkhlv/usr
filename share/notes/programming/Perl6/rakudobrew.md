@@ -7,7 +7,7 @@ Then prepend `~/.rakudobrew/bin` to `PATH`, and:
 
     rakudobrew build moar
     rakudobrew build zef
-    zef install Task::Star
+    zef install p6doc
 
 Sometimes need to run:
 
@@ -16,6 +16,11 @@ Sometimes need to run:
 after installation: `rehash` [looks for new executables](https://www.iinteractive.com/notebook/2015/06/02/rakudobrew.html) 
 in your current Rakudo installation, and creates shims for them in the Rakudobrew bin path.
 
+Documentation
+=============
+
+There is `p6doc` executable in `~/.rakudobrew/bin/`
+
 Upgrading
 =========
 
@@ -23,9 +28,5 @@ Upgrading
 
     rakudobrew build moar
 
-Docs (p6doc)
-============
-
-Installing `Task::Star` installs also `p6doc` which after `rakudobrew rehash` gets on the `PATH`.
 
 

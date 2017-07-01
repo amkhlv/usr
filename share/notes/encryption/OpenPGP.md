@@ -1,3 +1,10 @@
+View keys
+=========
+
+    gpg --list-keys --keyid-format long
+    
+    gpg --list-secret-keys --keyid-format long
+
 Create new secret key
 =====================
 
@@ -26,7 +33,9 @@ and at the prompt say `passwd`
 View key parameters
 -------------------
 
-    gpg --list-packets ~/.gnupg/secring.gpg
+    gpg --list-packets ~/.gnupg/pubring.gpg
+
+(notice that `secring.gpg` is [not functional anymore](https://www.gnupg.org/faq/whats-new-in-2.1.html) )
 
 Numbers of algorithms are available here: [RFC-4880 Section 3.7](http://tools.ietf.org/html/rfc4880#section-3.7)
 

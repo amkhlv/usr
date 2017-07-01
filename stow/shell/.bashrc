@@ -105,7 +105,7 @@ fi
 export TERM=screen-256color
 
 xset b 15 6000 15
-setxkbmap -option "ctrl:nocaps"
+setxkbmap -option "caps:none"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 export PYTHONPATH=/home/andrei/usr/lib/python/
