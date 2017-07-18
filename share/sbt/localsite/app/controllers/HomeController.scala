@@ -46,6 +46,14 @@ class HomeController @Inject()(val messagesApi: MessagesApi,
     val renderer = HtmlRenderer.builder().extensions(extensions).build();
     return renderer.render(document);
   }
+  def getMarkdownForCalendar: String  = {
+    val extensions = List(TablesExtension.create()).asJavaCollection
+    val parser = Parser.builder().extensions(extensions).build();
+    val mdown: String = Source.fromFile(config.getString("application.calmd")).getLines.mkString("\n")
+    val document: Node = parser.parse(mdown)
+    val renderer = HtmlRenderer.builder().extensions(extensions).build();
+    return renderer.render(document);
+  }
   val icalFile  = new java.io.File(config.getString("application.ics"))
   val icalDir = icalFile.getParentFile.toPath
   val icalFileName : String = icalFile.toPath.getFileName.toString
@@ -91,7 +99,7 @@ class HomeController @Inject()(val messagesApi: MessagesApi,
     }
   def calendar =
     Action { implicit  request =>
-      Ok(views.html.calendar(getWeeks(1,12), sqliMap, getMarkdown))
+      Ok(views.html.calendar(getWeeks(1,12), sqliMap, getMarkdownForCalendar))
     }
   def socket = WebSocket.acceptOrResult[JsValue, JsValue] { request =>
     val trustedOrigin = maybeSPort match {

@@ -10,7 +10,7 @@
 
 <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
 @main("Calendar") {
-
+@Html(markdown)
 <table>
     @for(i <- 0 to weeks.length - 1) {
       @if((i > 0) && (i < weeks.length - 1) && (weeks(i-1)(6).month != weeks(i)(6).month)) {

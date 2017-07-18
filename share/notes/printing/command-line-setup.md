@@ -76,3 +76,8 @@ Test
 
     lpr -P myprintername /usr/share/cups/data/default-testpage.pdf
 
+Remove printer
+==============
+
+    lpadmin -x myprintername
+
