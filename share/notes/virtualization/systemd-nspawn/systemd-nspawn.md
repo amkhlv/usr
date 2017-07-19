@@ -85,13 +85,14 @@ Sample systemd unit
 
 With some insight from [here](https://github.com/LudicLinux/LudicLinux.github.io/blob/master/_posts/2017-06-27-Nspawn-Steam-Container.md)
 
+
     [Unit]
     Description=Container Arado
     Documentation=man:systemd-nspawn(1)
 
     [Service]
     DeviceAllow=/dev/dri rw
-    ExecStart=/usr/bin/systemd-nspawn --machine Arado  --keep-unit --boot --link-journal=no --directory=/var/lib/container/Arado  --network-veth --bind=/tmp/.X11-unix:/root/x11 --bind=/dev/dri:/dev/dri --bind=/dev/shm:/dev/shm --bind=/run/user/1000/pulse:/run/user/host/pulse
+    ExecStart=/usr/bin/systemd-nspawn --machine Arado  --keep-unit --boot --link-journal=no --directory=/var/lib/container/Arado  --network-veth --bind-ro=/home/andrei/.Xauthority --bind=/tmp/.X11-unix:/root/x11 --bind=/dev/dri:/dev/dri --bind=/dev/shm:/dev/shm --bind=/run/user/1000/pulse:/run/user/host/pulse 
     KillMode=mixed
     Type=notify
     RestartForceExitStatus=133
@@ -99,6 +100,7 @@ With some insight from [here](https://github.com/LudicLinux/LudicLinux.github.io
 
     [Install]
     WantedBy=multi-user.target
+
 
 We are binding `/tmp/.X11-unix/` to `/root/x11` instead of `/tmp/.X11-unix/` , just to work around a [systemd bug](https://github.com/systemd/systemd/issues/4789);
 we then need to `/bin/mount -o bind /root/x11 /tmp/.X11-unix` inside the running container.
