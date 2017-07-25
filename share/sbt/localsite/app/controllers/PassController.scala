@@ -28,7 +28,7 @@ class PassController @Inject()(val addToken: CSRFAddToken,
                               ) extends Controller with I18nSupport {
   implicit val ec = ExecutionContext.global
   @tailrec private def getSecrets() : String = {
-    val askpasscmd = "ssh-askpass"
+    val askpasscmd = Process(Seq("ssh-askpass"), None, ("DISPLAY", config.getString("application.display")))
     val gpgcmd = Seq("gpg", "--yes", "--no-tty", "--passphrase-fd", "0", "--decrypt", config.getString("application.passwords"))
     val output = new ByteArrayOutputStream()
     val r = (askpasscmd #| gpgcmd #> output).!
