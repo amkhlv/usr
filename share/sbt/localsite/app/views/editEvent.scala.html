@@ -1,0 +1,38 @@
+@import helper._
+@import com.andreimikhailov.utils._
+@import com.andreimikhailov.utils.ICal._
+@import controllers._
+
+@(uid: String, mev: MyEvent, evForm: Form[EventFormData])(implicit messages: Messages, requestHeader: RequestHeader)
+
+
+@main("edit event") {
+<table>
+    <tr>
+        <th>summary</th><td>@mev.summary</td>
+    </tr>
+    @{mev.location match {
+       case Some(x) => { Html(s"""<tr><th>location</th><td> $x </td></tr>""") }
+       case None => ""
+      }}
+    @{mev.description match {
+       case Some(x) => {Html(s"""<tr><th>description</th><td> $x </td></tr>""") }
+       case None => ""
+      }}
+    @{mev.timezone match {
+       case Some(x) => { Html(s"""<tr><th>timezone</th><td> $x </td></tr>""") }
+       case None => ""
+      }}
+</table>
+@helper.form(action = routes.HomeController.editEventPOST()) {
+  @CSRF.formField
+  <input type="hidden" name="uid" value='@uid' >
+  @helper.inputText(evForm("summary"))
+  @helper.inputText(evForm("start"))
+  @helper.inputText(evForm("end"))
+  @helper.inputText(evForm("location"))
+  @helper.inputText(evForm("description"))
+  <button type="submit">submit</button>
+}
+
+}

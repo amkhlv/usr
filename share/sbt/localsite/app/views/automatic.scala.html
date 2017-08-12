@@ -5,7 +5,7 @@
 @(items: List[MyPassItem])(implicit messages: Messages, requestHeader: RequestHeader)
 
 
-<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
+<link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
 @main("Home") {
 <ul>
     @items.map { item =>

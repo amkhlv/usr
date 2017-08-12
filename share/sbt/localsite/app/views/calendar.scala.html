@@ -4,11 +4,13 @@
 @import controllers._
 
 @(weeks: List[List[MyDay]],
-  sqliMap: java.util.Map[String,AnyRef],
+  sqliMap: Map[String, String],
   markdown: String
 )(implicit messages: Messages, requestHeader: RequestHeader)
 
-<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
+<link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
+
+
 @main("Calendar") {
 @Html(markdown)
 <table>
@@ -23,7 +25,7 @@
               <table class="dayTable">
                   <tr>
                       <td class="@day.style">
-                         @day.dayTitle
+                          <a href="/@day.yyyy_mm_dd">@day.dayTitle</a>
                       </td>
                       <td class="summariesListCell">
                          <ul class="summaries">

@@ -44,7 +44,7 @@ object ICalSpec {
 class ICalSpec extends FlatSpec with Matchers {
   import ICalSpec._
   "ICal" should "correctly find events in a given range" in {
-    myICal.eventsInRange(ICal.jDate(2016,11,1,0,0),ICal.jDate(2016,12,1,0,0)) should have length 5
+    myICal.eventsInRange(ICal.jDate(2016,11,1,0,0),ICal.jDate(2016,12,1,0,0)) should have length 6
   }
   it should "have right number of components" in {
     calendar.getComponents() should have length 2

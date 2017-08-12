@@ -7,7 +7,7 @@ package controllers
 import java.io.{File, InputStream}
 import java.time.{Instant, LocalDateTime, ZoneId}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import play.Configuration
+import play.api.Configuration
 import com.andreimikhailov.utils._
 import org.eclipse.jetty.server.handler.AbstractHandler
 import org.eclipse.jetty.server.{Request, Server}
@@ -98,8 +98,8 @@ class Handler(ical: ICal) extends AbstractHandler {
 
 class MyJetty(config: Configuration) {
 
-  val ical = ICal.iCalFromFile(new File(config.getString("application.ics")))
-  val UDS = new File(config.getString("application.UDS"))
+  val ical = ICal.iCalFromFile(new File(config.get[String]("application.ics")))
+  val UDS = new File(config.get[String]("application.UDS"))
 
   def run() = {
     UDS.delete()

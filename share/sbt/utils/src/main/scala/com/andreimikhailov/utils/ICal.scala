@@ -7,15 +7,14 @@ package com.andreimikhailov.utils
 import java.io.FileInputStream
 import java.util.{Collection, GregorianCalendar, Calendar => JCal}
 
-import scala.collection.JavaConversions._
 import com.andreimikhailov.utils.ICal.JDate
 import net.fortuna.ical4j.data._
-import net.fortuna.ical4j.model._
 import net.fortuna.ical4j.filter._
-import net.fortuna.ical4j.model.component.VEvent
-import net.fortuna.ical4j.model.property.{Comment, DtStart}
+import net.fortuna.ical4j.model._
+import net.fortuna.ical4j.model.component.{CalendarComponent, VEvent}
+import net.fortuna.ical4j.model.property.{CalScale, ProdId, Uid, Version}
 
-
+import scala.collection.JavaConversions._
 import scala.collection.mutable;
 
 /**
@@ -33,14 +32,14 @@ object ICal {
   val gJC: JCal = new GregorianCalendar()
   def iCalFromFile(f: java.io.File) : ICal = {
     val builder = new CalendarBuilder()
-    val calendar = builder.build(new FileInputStream((f)))
+    val calendar: Calendar = builder.build(new FileInputStream((f)))
     return  new ICal(calendar)
   }
   def jDate(year:Int, month:Int, day:Int, hour:Int, minute:Int): JDate = {
     val jc = new java.util.GregorianCalendar()
     jc.set(JCal.YEAR, year)
     jc.set(JCal.MONTH, month - 1)
-    jc.set(JCal.DAY_OF_MONTH, day - 1)
+    jc.set(JCal.DAY_OF_MONTH, day)
     jc.set(JCal.HOUR_OF_DAY, hour)
     jc.set(JCal.MINUTE, minute)
     jc.set(JCal.SECOND, 0)
@@ -86,23 +85,23 @@ object ICal {
   }
   val namesOfDaysOfWeek: List[String] =  getNamesOfDaysOfWeek(JCal.LONG)
   val namesShortOfDaysOfWeek: List[String] = getNamesOfDaysOfWeek(JCal.SHORT)
-
+  def getUID(vev: VEvent): String = vev.getProperties().getProperty(Property.UID).getValue()
 }
 
 /**
   * a helper to process ical files
   * @constructor
-  * @param clin  ICalendar to process
+  * @param calendar  ICalendar to process
   */
-class ICal(clin: Calendar) {
+class ICal(val calendar: Calendar) {
+  def getMatches(clcs: Collection[Any], rls: Array[Rule[Any]]): Collection[Any] = {
+      val filter = new Filter(rls, Filter.MATCH_ALL)
+      return filter.filter(clcs)
+    }
   def eventsInRange(start: JDate, end: JDate): List[UnfoldedEvent] = {
     val period: Period = new Period(new DateTime(start), new DateTime(end))
-    def getMs(clcs: Collection[Any], rls: Array[Rule[Any]]): Collection[Any] = {
-      val filter = new Filter(rls, Filter.MATCH_ALL)
-      return filter.filter(clcs).asInstanceOf[Collection[Any]]
-    }
-    val ms = getMs(
-      clin.getComponents.asInstanceOf[Collection[Any]],
+    val ms = getMatches(
+      calendar.getComponents.asInstanceOf[Collection[Any]],
       Array(new PeriodRule(period)).asInstanceOf[Array[Rule[Any]]]
     )
     var mm: mutable.MutableList[UnfoldedEvent] = mutable.MutableList()
@@ -120,6 +119,49 @@ class ICal(clin: Calendar) {
       case _ => ()
     }
     return mm.toList.sortWith((x,y) => x.start.before(y.start))
+  }
+  def eventWithUID(uid: String): Option[VEvent] = {
+    val myUIDRule = new HasPropertyRule(new Uid(uid))
+    val ms = getMatches(
+      calendar.getComponents.asInstanceOf[Collection[Any]],
+      Array(myUIDRule).asInstanceOf[Array[Rule[Any]]]
+    )
+    ms.headOption.flatMap(_ match { case v: VEvent => Some(v) case _ => None })
+  }
+  def updateEvent(uid: String, newvev: VEvent): Calendar = {
+    val cs = calendar.getComponents.asInstanceOf[Collection[Any]]
+    val newcs = new ComponentList[CalendarComponent]().asInstanceOf[Collection[Any]]
+    for (c <- cs) {
+       if (c.isInstanceOf[VEvent]) {
+         val v = c.asInstanceOf[VEvent]
+         if (v.getUid.getValue == uid) {
+           newcs.add(newvev)
+         } else { newcs.add(v) }
+       }
+    }
+    val a = new Calendar(newcs.asInstanceOf[ComponentList[CalendarComponent]])
+    a.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"))
+    a.getProperties().add(Version.VERSION_2_0)
+    a.getProperties().add(CalScale.GREGORIAN)
+    a
+  }
+  def deleteEvent(uid: String): Calendar = {
+    val cs = calendar.getComponents.asInstanceOf[Collection[Any]]
+    val newcs = new ComponentList[CalendarComponent]().asInstanceOf[Collection[Any]]
+    for (c <- cs) {
+       if (c.isInstanceOf[VEvent]) {
+         val v = c.asInstanceOf[VEvent]
+         if (v.getUid.getValue != uid) newcs.add(v) 
+       }
+    }
+    val a = new Calendar(newcs.asInstanceOf[ComponentList[CalendarComponent]])
+    a.getProperties().add(new ProdId("-//Ben Fortuna//iCal4j 1.0//EN"))
+    a.getProperties().add(Version.VERSION_2_0)
+    a.getProperties().add(CalScale.GREGORIAN)
+    a
+  }
+  def insertNewEventInPlace(newvev: VEvent) = {
+    calendar.getComponents.add(newvev)
   }
 
 }

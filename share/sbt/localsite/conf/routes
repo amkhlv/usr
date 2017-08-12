@@ -11,9 +11,17 @@ GET     /message                    controllers.AsyncController.message
 POST    /sqli/                      controllers.HomeController.sqli(db)
 GET     /ws                         controllers.HomeController.socket
 GET     /calendar                   controllers.HomeController.calendar
+GET     /editevent/                 controllers.HomeController.editEventGET(uid)
+POST    /editevent/                 controllers.HomeController.editEventPOST
+GET     /newevent/                  controllers.HomeController.newEventGET(t)
+POST    /newevent/                  controllers.HomeController.newEventPOST
+GET     /delevent/                  controllers.HomeController.delEventGET(uid)
+POST    /delevent/                  controllers.HomeController.delEventPOST
 GET     /automate                   controllers.PassController.automate
 GET     /tooltips                   controllers.PassController.tooltips
 POST    /selenium/                  controllers.PassController.doSelenium(site,login)
+GET     /$y<20[0-9][0-9]>-$m<[0-9][0-9]>-$d<[0-9][0-9]>     controllers.HomeController.day(y:Int,m:Int,d:Int)
+GET     /$y<20[0-9][0-9]>-$m<[0-9][0-9]>                    controllers.HomeController.monthGET(y:Int,m:Int)
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
-GET     /webjars/*file                    controllers.WebJarAssets.at(file)
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+->          /webjars                webjars.Routes

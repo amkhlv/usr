@@ -1,9 +1,23 @@
-Installation
+Dependencies
 ============
+
+Compile time
+------------
+
+Need to have `sbt` [installed](http://www.scala-sbt.org/0.13/docs/Installing-sbt-on-Linux.html)
+
+Runtime
+-------
+
+    apt-get install zenity
 
 The `geckodriver` should be downloaded from [here](https://github.com/mozilla/geckodriver/releases) and copied to the location path
 which is configured by the system parameter `-Dwebdriver.gecko.driver=...`
 
+Building
+========
+
+    sbt stage
 
 Configuration
 =============
@@ -39,4 +53,13 @@ Systemd
     Environment=DISPLAY=localhost:10.0
     ExecStart=/home/andrei/usr/share/sbt/localsite/target/universal/stage/bin/localsite -Dconfig.file=/home/andrei/.config/amkhlv/localsite.conf -Dhttp.port=disabled -Dhttps.port=%i -Dhttp.address=127.0.0.1 -Dpidfile.path=/tmp/amkhlv-localsite.pid -Dwebdriver.gecko.driver=/usr/local/lib/geckodriver
     PIDFile=/tmp/amkhlv-localsite.pid
+
+Calendar functions
+------------------
+
+Repetition rules can be inserted by hand. Examples:
+
+    RRULE:FREQ=DAILY;INTERVAL=7
+    RRULE:FREQ=WEEKLY;COUNT=4;BYDAY=MO
+    RRULE:FREQ=MONTHLY;COUNT=12;BYDAY=TH
 

@@ -4,19 +4,20 @@
 @import controllers._
 
 @(weeks: List[List[MyDay]],
-  sqliMap: java.util.Map[String,AnyRef],
+  sqliMap: Map[String,String],
   markdown: String,
   isSecure: Boolean,
-  webJarAssets: WebJarAssets
+  webJarsUtil: org.webjars.play.WebJarsUtil
 )(implicit messages: Messages, requestHeader: RequestHeader)
 
 
 @main("Home") {
 <!-- http://www.webjars.org/documentation -->
-<script type='text/javascript' src='@routes.WebJarAssets.at(webJarAssets.locate("jquery.min.js"))'></script>
 
-<link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")">
+<link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
 <div> <span id="clock" class="timeString">--- wait ---</span> <span id="registered" class="isRegistered"></span></div>
+@Html(webJarsUtil.script("jquery.min.js"))
+
 @Html(markdown)
 
 
@@ -57,7 +58,7 @@ window.onfocus = function() {
               <table class="dayTable">
                   <tr>
                       <td class="@day.style">
-                         @day.dayTitle
+                         <a href="/@day.yyyy_mm_dd">@day.dayTitle</a>
                       </td>
                       <td class="summariesListCell">
                          <ul class="summaries">
@@ -74,7 +75,7 @@ window.onfocus = function() {
 
 <table>
     <tr>
-        @sqliMap.keySet.toList.map { k =>
+        @sqliMap.keys.map { k =>
         <td>
             <form method="POST" action="/sqli/?db=@k">
                 @CSRF.formField

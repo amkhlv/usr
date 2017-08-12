@@ -1,0 +1,22 @@
+@import helper._
+@import com.andreimikhailov.utils._
+@import com.andreimikhailov.utils.ICal._
+@import controllers._
+
+@(evForm: Form[EventFormData])(implicit messages: Messages, requestHeader: RequestHeader)
+
+
+@main("new event") {
+
+@helper.form(action = routes.HomeController.newEventPOST()) {
+  @CSRF.formField
+  <input type="hidden" name="uid" value='@evForm.data("uid")'>
+  @helper.inputText(evForm("summary"))
+  @helper.inputText(evForm("start"))
+  @helper.inputText(evForm("end"))
+  @helper.inputText(evForm("location"))
+  @helper.inputText(evForm("description"))
+  <button type="submit">submit</button>
+}
+
+}
