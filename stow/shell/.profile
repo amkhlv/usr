@@ -18,3 +18,5 @@ fi
 
 
 setxkbmap -option "ctrl:nocaps"
+
+

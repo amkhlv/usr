@@ -1,6 +1,22 @@
 
 <a name="sectionTagsAndLinksWithin"></a>
 
+Links to section within document
+================================
+
+As explained [here](https://stackoverflow.com/questions/2822089/how-to-link-to-part-of-the-same-document-in-markdown):
+
+    # Foo
+
+    See [Foo](#foo)
+
+Note: just one `#` for all heading sizes, no space between `#` and anchor name, anchor tag names must be lowercase, and delimited by dashes if multi-word, _e.g._:
+
+    [click on this link](#my-multi-word-header)
+
+    ### My Multi Word Header
+
+
 Tags and links within document
 ==============================
 

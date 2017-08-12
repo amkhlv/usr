@@ -18,3 +18,4 @@ export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$
 setxkbmap -option "ctrl:nocaps"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
+

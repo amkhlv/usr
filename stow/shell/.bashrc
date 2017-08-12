@@ -109,7 +109,7 @@ setxkbmap -option "caps:none"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 export PYTHONPATH=/home/andrei/usr/lib/python/
-export PATH="$HOME/.rakudobrew/bin:$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin:$HOME/.local/bin"
+export PATH="$HOME/.rakudobrew/bin:$HOME/.local/bin:$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin"
 export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$HOME/usr/local/share/man"
 export MAIL=/var/mail/andrei
 export MAILCHECK=30
@@ -132,5 +132,4 @@ events -n 3
 #         echo "---- TODO: -------------"
 #         echo "$TDLIST"
 # fi
-
 
