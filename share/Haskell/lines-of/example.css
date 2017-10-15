@@ -1,0 +1,49 @@
+/* common */
+
+.commander-top {
+    /*padding: 2px;
+    margin: 2px;*/
+    border-style: solid;
+    border-width: 2px;
+    border-color: #0FF;
+}
+
+.line-entry {
+    font: 15pt Monospace;
+}
+
+.linii-button-colname {
+    padding-left:  3px;
+    padding-right: 3px;
+}
+
+.linii-label-colname {
+    font: bold 16pt Monospace;
+}
+
+.linii-button-value {
+    padding-left:  3px;
+    padding-right: 3px;
+}
+
+.linii-label-value {
+    background-color: #9AD9D2;
+    font: 13pt Monospace;
+}
+
+
+/* individual columns */
+
+
+
+.linii-label-col-nick {
+    background-color: #FFAAAA;
+}
+.linii-label-col-name {
+    background-color: #AAFFAA;
+}
+
+
+
+
+

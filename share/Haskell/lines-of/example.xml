@@ -1,0 +1,9 @@
+<table>
+  <cssfile>example.css</cssfile>
+  <dbfile>test.db</dbfile>
+  <tablename>test</tablename>
+  <columns>
+    <column name="nick" width="10" nlines="1"/>
+    <column name="name" width="20" nlines="3"/>
+  </columns>
+</table>
