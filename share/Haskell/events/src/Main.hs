@@ -7,6 +7,8 @@ module Main where
 import GHC.Generics
 import System.IO.Streams (InputStream, OutputStream, stdout)
 import qualified System.IO.Streams as Streams
+import System.IO.Streams.Network
+import qualified System.IO.Streams.Combinators as SIOSC
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import Data.Text.Encoding
@@ -18,6 +20,7 @@ import Data.Aeson
 import Data.Array
 import Data.Time
 import Options.Applicative
+import Data.Semigroup ((<>))
 import qualified Blaze.ByteString.Builder.ByteString as BBBB
 import Text.Regex.PCRE
 import qualified Data.ByteString.Char8 as C
@@ -133,14 +136,13 @@ showVEvent x = do
   if (isDerived x) then putStr " DRV " else return ()
   putStrLn "\n"
 
-listInputStream :: InputStream BS.ByteString -> [VEvent] -> IO [VEvent]
-listInputStream i xs = do
-  xm <- Streams.read i
-  case xm of
-    Just x -> case (decode $ BSL.fromStrict (encodeUtf8 (decodeLatin1 x))) of
-      Just vev -> listInputStream i (vev:xs)
-      Nothing -> (putStrLn "ERROR decoding" >> listInputStream i xs)
-    Nothing -> return $ Prelude.reverse xs
+listInputStream :: InputStream BS.ByteString -> IO [VEvent]
+listInputStream i = do
+  x <- SIOSC.fold C.append C.empty i
+  case (decode $ BSL.fromStrict (encodeUtf8 (decodeLatin1 x))) of
+    Just vevs -> return vevs
+    Nothing -> error $ "ERROR decoding --> " ++ (unpack $ decodeLatin1 x)
+
 
 showEvents :: [VEvent] -> IO ()
 showEvents evs = sequence_ [showVEvent ev | ev <- evs]
@@ -170,7 +172,7 @@ processEvents anconf ya ma da yb mb db = do
   receiveResponse c (\p i -> do
                         putStrLn ""
                         -- putStrLn $ show p
-                        evs <- listInputStream i [] 
+                        evs <- listInputStream i
                         showEvents $ sortOn
                           (\ev -> case (startDate ev) of
                                     Nothing -> toInteger(64*32*32*16) * toInteger(4096)

@@ -7,12 +7,14 @@ package controllers
 import java.io.{File, InputStream}
 import java.time.{Instant, LocalDateTime, ZoneId}
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import play.api.Configuration
+
 import com.andreimikhailov.utils._
 import org.eclipse.jetty.server.handler.AbstractHandler
 import org.eclipse.jetty.server.{Request, Server}
 import org.eclipse.jetty.unixsocket.UnixSocketConnector
+import play.api.Configuration
 import play.api.libs.json.{JsValue, Json}
+
 import scala.sys.process._
 
 object EmacsClientLauncher {
@@ -20,7 +22,29 @@ object EmacsClientLauncher {
     Seq("emacsclient", filepath).run
 }
 
-class Handler(ical: ICal) extends AbstractHandler {
+class XDGOpenLauncher(config:Configuration) {
+  def zenityEntry = Process(
+        Seq(
+          "/usr/bin/zenity",
+          "--entry",
+          "--title", "xdg-open",
+          "--text",  "xdg-open: " + "m" * 100
+        ),
+        None,
+        ("DISPLAY", config.get[String]("application.display")),
+        ("XAUTHORITY", config.get[String]("application.xauthority"))
+      )
+  def getURL: String = zenityEntry.!!.stripLineEnd
+  def xdgProc(url: String) = Process(
+    Seq("xdg-open", url),
+    None,
+    ("DISPLAY", config.get[String]("application.display")),
+    ("XAUTHORITY", config.get[String]("application.xauthority"))
+  )
+  def launch = try { xdgProc(getURL).run() } catch { case ex => () }
+}
+
+class Handler(ical: ICal, config: Configuration) extends AbstractHandler {
   var html = <h1>Something, innit</h1>
 
   override def handle(target: String,
@@ -50,37 +74,40 @@ class Handler(ical: ICal) extends AbstractHandler {
         )
         val unfEvents = ical.eventsInRange(startDate, untilDate)
         httpRes.setStatus(HttpServletResponse.SC_OK)
-        for (ev <- unfEvents) yield {
-          val instant0 : Instant = ev.start.toInstant()
-          val instant1 : Instant = ev.end.toInstant()
-          val clndr0 = LocalDateTime.ofInstant(instant0, ZoneId.systemDefault())
-          val clndr1 = LocalDateTime.ofInstant(instant1, ZoneId.systemDefault())
-          val jsOut = Json.obj(
-            "summary" -> ev.summary,
-            "startDate" -> Json.obj(
-              "year" -> clndr0.getYear(),
-              "month" -> clndr0.getMonthValue(),
-              "day"   -> clndr0.getDayOfMonth(),
-              "hour" -> clndr0.getHour(),
-              "minute" -> clndr0.getMinute(),
-              "second" -> clndr0.getSecond(),
-              "isDate" -> false
-            ),
-            "endDate" -> Json.obj(
-              "year" -> clndr1.getYear(),
-              "month" -> clndr1.getMonthValue(),
-              "day"   -> clndr1.getDayOfMonth(),
-              "hour" -> clndr1.getHour(),
-              "minute" -> clndr1.getMinute(),
-              "second" -> clndr1.getSecond(),
-              "isDate" -> false
-            ),
-            "isRecurring" -> false,
-            "isDerived" -> false
-          )
-          outWriter.write(Json.stringify(jsOut))
-          outWriter.flush()
-        }
+        val result = Json.stringify(Json.toJson(
+          for (ev <- unfEvents) yield {
+            val instant0 : Instant = ev.start.toInstant()
+            val instant1 : Instant = ev.end.toInstant()
+            val clndr0 = LocalDateTime.ofInstant(instant0, ZoneId.systemDefault())
+            val clndr1 = LocalDateTime.ofInstant(instant1, ZoneId.systemDefault())
+            val jsOut = Json.obj(
+              "summary" -> ev.summary,
+              "startDate" -> Json.obj(
+                "year" -> clndr0.getYear(),
+                "month" -> clndr0.getMonthValue(),
+                "day"   -> clndr0.getDayOfMonth(),
+                "hour" -> clndr0.getHour(),
+                "minute" -> clndr0.getMinute(),
+                "second" -> clndr0.getSecond(),
+                "isDate" -> false
+              ),
+              "endDate" -> Json.obj(
+                "year" -> clndr1.getYear(),
+                "month" -> clndr1.getMonthValue(),
+                "day"   -> clndr1.getDayOfMonth(),
+                "hour" -> clndr1.getHour(),
+                "minute" -> clndr1.getMinute(),
+                "second" -> clndr1.getSecond(),
+                "isDate" -> false
+              ),
+              "isRecurring" -> false,
+              "isDerived" -> false
+            )
+            jsOut
+          }
+        ))
+        outWriter.write(result)
+        outWriter.flush()
       case _ => ()
     }
     (js \ "isEmacsClient").asOpt[Boolean] match {
@@ -88,6 +115,13 @@ class Handler(ical: ICal) extends AbstractHandler {
         println("=== handling EmacsClient ===")
         httpRes.setStatus(HttpServletResponse.SC_OK)
         EmacsClientLauncher.launch((js \ "filename").as[String])
+      case _ => ()
+    }
+    (js \ "isXDGopen").asOpt[Boolean] match {
+      case Some(true) =>
+        println("=== handling XDG-open request ===")
+        httpRes.setStatus(HttpServletResponse.SC_OK)
+        (new XDGOpenLauncher(config)).launch
       case _ => ()
     }
     req.setHandled(true)
@@ -108,7 +142,7 @@ class MyJetty(config: Configuration) {
     connector.setAcceptQueueSize(128);
     connector.setUnixSocket(UDS.getAbsolutePath);
     server.addConnector(connector);
-    server.setHandler(new Handler(ical))
+    server.setHandler(new Handler(ical, config))
     server.start
   }
 
