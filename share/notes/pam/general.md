@@ -1,3 +1,23 @@
+Manuals
+=======
+
+[All](http://www.linux-pam.org/Linux-PAM-html/)
+
+Description of PAM modules
+--------------------------
+
+[here](http://www.linux-pam.org/Linux-PAM-html/sag-module-reference.html)
+
+In particular:
+
+1. [pam_unix](http://www.linux-pam.org/Linux-PAM-html/sag-pam_unix.html) is the traditional password authentication
+
+2. [pam_script](https://linux.die.net/man/5/pam_script)
+
+3. [pam_permit](http://www.linux-pam.org/Linux-PAM-html/sag-pam_permit.html) is promiscous 
+
+4. [pam_deny](http://www.linux-pam.org/Linux-PAM-html/sag-pam_deny.html) is locking-out
+
 
 Configuration files in /etc/pam.d
 =================================

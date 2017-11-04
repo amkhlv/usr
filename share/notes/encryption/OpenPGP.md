@@ -74,3 +74,23 @@ The decryption syntax is the same as it was in the asymmetric case:
 
     gpg -d -o /dev/shm/cryptex mo/cryptex.gpg
 
+GPG 2.1
+=======
+
+Pinentry
+--------
+
+In all my applications I pass password to `gpg` on its `stdin`, _i.e._ `gpg` is invoked like this:
+
+    gpg --batch --passphrase-fd 0   blah-blah-blah
+
+For this to work, the folder `~/.gnupg` should contain the file `gpg-agent.conf` with single line:
+
+    allow-loopback-pinentry
+
+Also, the file `gpg.conf` should have a line:
+
+    pinentry-mode loopback
+
+(Otherwise, `gpg` will invoke some kind of a GUI prompt which I cant figure out.)
+

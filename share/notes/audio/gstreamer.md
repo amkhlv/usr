@@ -1,8 +1,15 @@
+# My Python scripts
+
+My [Python scripts](github.com/amkhlv/usr/blob/master/bin/amkhlv_gstpipe.py) use the following libraries:
+
+    apt-get install gir1.2-gst-plugins-base-1.0 gir1.2-gst-plugins-bad-1.0 gir1.2-gstreamer-1.0 gstreamer1.0-pulseaudio gstreamer1.0-fluendo-mp3 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly
+
+
 # From microphone to headphones on local host
 
 To get `gst-launch` we have to install:
 
-    aptitude install gstreamer-tools
+    aptitude install gstreamer-tools 
 
 Simplest test with `pulserc`:
 

@@ -1,4 +1,10 @@
 
+# Building
+
+    apt-get install libgtkd-3-dev
+
+    stack install gtk2hs-buildtools
+
 # Installation
 
 The `rng` file `indicator.rng` should be copied to `~/.config/amkhlv/`

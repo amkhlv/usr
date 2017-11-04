@@ -50,3 +50,16 @@ the virtual machine is started, and the corresponding `-D` after every virtual m
 [along these lines](https://wiki.libvirt.org/page/Networking#Forwarding_Incoming_Connections)
 
 
+Static IP addresses
+===================
+
+In `virsh` shell, say `net-edit default` and then:
+
+    <ip address='192.168.122.1' netmask='255.255.255.0'>
+      <dhcp>
+        <range start='192.168.122.2' end='192.168.122.254'/>
+        <host mac='aa:bb:cc:dd:ee:ff name='example' ip='192.168.122.201'/>
+      </dhcp>
+    </ip>
+
+and then `net-destroy default` and `net-start default`

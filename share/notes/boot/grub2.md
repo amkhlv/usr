@@ -13,6 +13,24 @@ The first thing to do is:
 
 This causes long output to scroll nicely.
 
+Then execute:
+
+    ls
+
+This will list all devices, like `(hd0,msdos1)`. To list files on specific device:
+
+    ls (hd0,msdos1)/
+
+Then:
+
+    set root=(hd0,msdos1)
+
+To boot:
+
+    linux /boot/vmlinuz-... root=/dev/sda...
+    initrd /boot/initrd.img-...
+    boot
+
 To find boot partitions/devices:
 
     search -f /boot/grub/*

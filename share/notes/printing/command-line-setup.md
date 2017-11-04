@@ -20,9 +20,7 @@ An excellent writeup can be found [here](http://blog.tremily.us/posts/Adding_a_n
 Hewlett-Packard
 ===============
 
-To install more `PPD` files for HP printers, install:
-
-    aptitude install hplip
+HP is special, because it has a special tool `hplip`; see [my writeup](HPLIP.md)
 
 
 Finding INFO about printer

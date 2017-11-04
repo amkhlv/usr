@@ -102,3 +102,74 @@ I think it authenticates with a cookie. The file:
 
 should be __same on client and server__
 
+
+CLI
+===
+
+Main commands
+-------------
+
+The main command is `pacmd` ; the most useful subcommands to start with are:
+
+    pacmd help
+
+and
+
+    pacmd dump
+
+The second one, `pacmd dump`, is very nice: it prints a list of lines which need to be input (prefixed with `pacmd`) to arrive at the current state.
+For example `set-sink-volume alsa_output.pci-0000_00_1f.3.analog-stereo 0xdeae` is achieved by executing:
+
+    pacmd set-sink-volume alsa_output.pci-0000_00_1f.3.analog-stereo 0xdeae
+
+Moving sources and sinks
+------------------------
+
+Suppose that I have some application running (like `Firefox`) and I want to transfer its audio output stream over Internet.
+
+I execute [amkhlv_gstpipe.py](../../../bin/amkhlv_gstpipe.py) to establish a `gstreamer` pipe to some remote location.
+The entry of this pipe is linked to some `pulseaudio` output, which outputs audio from some source. To figure out what
+is this source output, execute:
+
+    pacmd list-source-outputs
+
+As far as I understand, this actually __lists pairs__ `(source-output,client)`. In particular, `amkhlv_gstpipe.py` is listed,
+let us say, under `index: 4`:
+
+    index: 4
+        ...
+        properties:
+                media.name = "Record Stream"
+                application.name = "amkhlv_gstpipe.py"
+
+In fact, I can separately list clients:
+
+    pacmd list-clients
+
+This would list all clients, __index__-ed by a number, one of them will have `application.name = "amkhlv_gstpipe.py"` --- this is my pipe.
+Now, returning to `list-source-outputs`, by looking at the output I can figure out that it receives from, for example, 
+`source: 1 <alsa_input.pci-0000_00_1f.3.analog-stereo>`     (which is actually a microphone, as we can see from the word ``input'').
+This means that, at the moment, the remote machine is listening to our microphone... 
+
+Instead, I want to feed it the output from the running `Firefox` (maybe YouTube...). So, I look again at the output of `list-source-outputs`,
+and I see that it includes some `source: 0 <alsa_output.pci-0000_00_1f.3.analog-stereo.monitor>` . This is, actually, the ``monitor''
+(a side channel) of the audio card output. So, I have to move __4__ from __1__ to __0__ :
+
+    pacmd move-source-output 4 0
+
+And, if I want to move it back to the microphone, I execute:
+
+    pacmd move-source-output 4 1
+
+Similarly, there are commands `list-sink-inputs` and `move-sink-input`.
+
+The __GUI__ for all this is `pavucontrol`
+
+Virtual sound card
+------------------
+
+    modprobe snd-aloop
+
+creates a virtual sound card called `Loopback 1`
+
+

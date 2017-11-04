@@ -73,6 +73,7 @@ Then `gvim eraseme.txt` and in `gvim`:
 
      :%!xxd
 
+__do not__ override the first three bytes!
 
 ### Setup wireless
 

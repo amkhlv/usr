@@ -35,3 +35,16 @@ Basic Example
     OnlyShowIn=GNOME;XFCE;LXDE;
     X-GNOME-Autostart-enabled=true
 
+Disabling system default items
+------------------------------
+
+They are all in `/etc/xdg/autostart/`.
+
+Instead of editing them, override by putting a file with the same name in `~/.config/autostart/`.
+
+For example, to disable `blueman`, put  `blueman.desktop` into `~/.config/autostart/` consisting of just two lines:
+
+    [Desktop Entry]
+    Hidden=true
+
+(They will remain on the GUI config menu, but get unchecked)
