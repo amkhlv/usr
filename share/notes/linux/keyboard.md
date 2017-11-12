@@ -1,3 +1,8 @@
+XKB
+===
+
+See [the writeup by Иван Паскаль](http://pascal.tsu.ru/other/xkb/setup.html).
+
 How to Find keycode or keysym of a Key
 ======================================
 
@@ -5,6 +10,28 @@ How to Find keycode or keysym of a Key
 
 setxkbmap
 =========
+
+It can "dry-run" by passing the `-print` option:
+
+    setxkbmap   -layout us   -variant altgr-intl   -option nodeadkeys   -print
+
+outputs:
+
+    xkb_keymap {
+            xkb_keycodes  { include "evdev+aliases(qwerty)" };
+            xkb_types     { include "complete"      };
+            xkb_compat    { include "complete"      };
+            xkb_symbols   { include "pc+us(altgr-intl)+inet(evdev)+capslock(none)+ctrl(nocaps)"     };
+            xkb_geometry  { include "pc(pc104)"     };
+    };
+
+This means that the following files are loaded, all rel.to `/usr/share/X11/xkb/` :
+
+1. `keycodes/evdev` and the part `xkb_keycodes "querty" {...}` of `keycodes/aliases`
+
+2. `types/complete`
+
+3. _etc._
 
 To view the current config
 --------------------------
@@ -20,6 +47,7 @@ To list all possible options
 ----------------------------
 
     cat /usr/share/X11/xkb/rules/base.lst
+
 
 
 Generate PDF of keyboard layout

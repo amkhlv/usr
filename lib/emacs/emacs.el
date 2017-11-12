@@ -4,11 +4,8 @@
 
 (setq w32-lwindow-modifier 'super) ; Left Windows key
 
-
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
-
-(when (fboundp 'electric-indent-mode) (electric-indent-mode -1))
 
 (setq line-number-mode t) 
 (setq column-number-mode t)
@@ -20,7 +17,6 @@
 (set-face-font 'menu "Terminus-12")
 (transient-mark-mode 1)
 (scroll-bar-mode -1)
-;;(menu-bar-mode -1)
 (tool-bar-mode 0)
 (add-to-list 'load-path "~/usr/lib/emacs/")
 (add-to-list 'load-path "~/a/git/yasnippet")
@@ -36,36 +32,10 @@
 ;(require 'amkhlv-mail)
 ;(require 'amkhlv-html)
 
-;(add-to-list 'load-path "~/usr/lib/emacs/color-theme-solarized/")
-;(require 'color-theme-solarized)
-
-(setq my-original-display-mm-alist '((t 410 . 257)))
-;; (setq my-original-display-mm-alist (list (cons t (cons (display-mm-width) (display-mm-height)))))
-;; --- I commented out because for some reason does not determine correctly...
-
-;; This is to repair the runaway/too-big minibuffer:
-;; (set-frame-parameter nil 'fullscreen 'fullboth)
-
-;; Customize buffer switching:
-(iswitchb-mode 1)
-(defun myswitch () (interactive) 
-  (if (get-buffer "*Buffer List*") 
-      (bury-buffer "*Buffer List*")) 
-  (iswitchb-buffer)
-  )
-(global-set-key "\C-x\C-b" 'buffer-menu)
-(global-set-key "\C-xb" 'myswitch)
+(ido-mode 'buffers)
 
 ;; Assign hippie-expand:
 (global-set-key "\M- " 'hippie-expand)
-
-(defun fake-stdin-slurp (filename)
-  "Emulate stdin slurp using emacsclient hack"
-  (switch-to-buffer (generate-new-buffer "*stdin*"))
-  (insert-file filename)
-  (end-of-buffer))
-
-(defun ainsert-bar () (interactive) (ucs-insert #x2502))
 
 (defun toggle-fullscreen ()
   "Toggle full screen on X11"
@@ -92,8 +62,7 @@
             (local-set-key (kbd "<s-mouse-2>") (quote xsel))))
 
 (add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
-(add-hook 'enriched-mode-hook '(lambda () (use-hard-newlines -1)))
-;; this is because I do not want hard newlines in enriched mode --Andrei
+
 (add-hook 'TeX-mode-hook '(lambda () (TeX-PDF-mode 1)))
 (add-hook 'TeX-mode-hook '(lambda () (TeX-fold-mode 1)))
 (add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c C-t") 'hide-body)))
@@ -102,44 +71,13 @@
 (add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c p") 'outline-previous-heading)))
 (add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
 (add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c d") 'tex-insert-date)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c v") 'ainsert-bar)))
 (add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c j") 'amkhlv/jumplabel)))
 (add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c u") 'mytex/jumphref)))
-(add-hook 'dired-mode-hook 
-  '(lambda () (local-set-key (kbd "C-c h") 'my-org-dired-update)))
-(add-hook 'hack-local-variables-hook
-          '(lambda () 
-             (if (boundp 'andrei) 
-                 (let ((b (buffer-name)))
-                   (if (and 
-                        (or (equal andrei 'LaTeX) (equal andrei 'XeLaTeX) (equal andrei 'LuaLaTeX))
-                        (equal nil (string-match "_region_.*\.tex" b)))
-                       (progn 
-                         (switch-to-buffer b) 
-                         (if (equal andrei 'XeLaTeX)
-                             (progn 
-                               (setq TeX-engine 'xetex)
-                               )
-                           (if (equal andrei 'LuaLaTeX)
-                               (progn
-                                 (switch-to-buffer b)
-                                 (setq TeX-engine 'luatex)
-                                 ;; (preview-buffer)
-                                 ;; (switch-to-buffer b)
-                                 ;; (delete-other-windows)
-                                 )))))))))
+(setq TeX-outline-extra '(("\\\\section" 2)))
 (add-hook 'message-mode-hook 'mail-abbrevs-setup)
 (add-hook 'pod-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'mypod-compile)))
 (add-hook 'pod-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'mypod-view)))
 (add-outline 'pod-mode-hook)
-
-(add-hook 'html-mode-hook '(lambda () (outline-minor-mode 1)
-			    (local-set-key (kbd "C-c m") 'myhtml-mathml)
-			    )
-	  )
-(add-hook 'html-mode-hook '(lambda () (local-set-key (kbd "C-c s") 'myhtml-insert-svg)))
-(add-hook 'html-mode-hook '(lambda () (local-set-key (kbd "C-c u") 'myhtml-uninsert-svg)))
-
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-s") 'amkhlv/scribble/compile-htmls)))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
@@ -164,13 +102,8 @@
 
 (add-hook 'scheme-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-hook 'markdown-mode-hook '(lambda () 
-                                 (local-set-key (kbd "C-c ,") 'insert-halfwidth-left-corner-bracket)
-                                 (local-set-key (kbd "C-c .") 'insert-halfwidth-right-corner-bracket)
-                                 (local-set-key (kbd "C-c C-,") 'insert-opening-guillemet)
-                                 (local-set-key (kbd "C-c C-.") 'insert-closing-guillemet)
                                  (local-set-key (kbd "C-c C-c") 'markdown-to-html)
                                  (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
-
 
 (add-hook 'nxml-mode-hook
           (lambda()
@@ -182,7 +115,6 @@
 (defun insert-halfwidth-right-corner-bracket () (interactive) (ucs-insert #xff63)) ; "ï½£"
 (defun insert-opening-guillemet () (interactive) (ucs-insert #x00ab)) ; "Â«"
 (defun insert-closing-guillemet () (interactive) (ucs-insert #x00bb)) ; "Â»"
-
 (add-hook 'perl6-mode-hook '(lambda () 
                               (local-set-key (kbd "C-c ,") 'insert-halfwidth-left-corner-bracket)
                               (local-set-key (kbd "C-c .") 'insert-halfwidth-right-corner-bracket)
@@ -197,20 +129,6 @@
                "<!--"
                nxml-forward-element
                nil))
-
-
-
-
-(setq TeX-outline-extra
-      '(("\\\\section" 2)))
-
-(defun aext (prog-name) (interactive "swith which program: ")
-  (let* (
-	 (browse-url-generic-args (cdr (split-string prog-name " " t)))
-	 (browse-url-generic-program (car (split-string prog-name " " t)))
-	 )
-    (browse-url-generic (thing-at-point 'filename)))) 
-
 
 (defun maximize-tex-window ()
 (interactive)
@@ -232,6 +150,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(inhibit-startup-screen t)
  '(LaTeX-indent-level 3)
  '(TeX-PDF-mode t)
  '(TeX-command-list
@@ -294,7 +213,6 @@
  '(TeX-save-query nil)
  '(browse-url-browser-function (quote browse-url-firefox))
  '(calendar-mark-diary-entries-flag t)
- '(display-mm-dimensions-alist my-original-display-mm-alist)
  '(fill-column 75)
  '(font-latex-user-keyword-classes
    (quote
@@ -344,7 +262,6 @@
        (:line-width 2 :color "red" :style released-button)
        :background "yellow" :foreground "black")
       command))))
- '(inhibit-startup-screen t)
  '(ispell-local-dictionary-alist
    (quote
     (("brasileiro" "[A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[^A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[']" nil nil nil iso-8859-1))))
@@ -356,10 +273,9 @@
     (:foreground default :background default :scale 1.3 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
                  ("begin" "$1" "$" "$$" "\\(" "\\["))))
  '(package-archives
-   (quote
-    (("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.org/packages/") 
-     ("MELPA" . "http://melpa.milkbox.net/packages/"))))
+   '(
+     ("melpa-stable" . "https://stable.melpa.org/packages/")
+     ))
  '(preview-LaTeX-command
    (quote
     ("%`%l --jobname=%s \"\\nonstopmode\\nofiles\\PassOptionsToPackage{"
@@ -378,14 +294,7 @@
  '(ps-font-size (quote (12 . 12)))
  '(quack-fontify-style (quote plt))
  '(quack-pretty-lambda-p t)
- '(quack-programs
-   (quote
-    ("racket" "bigloo" "csi" "csi -hygienic" "gosh" "gsi" "gsi ~~/syntax-case.scm -" "guile" "kawa" "mit-scheme" "mred -z" "mzscheme" "mzscheme -il r6rs" "mzscheme -il typed-scheme" "mzscheme -M errortrace" "mzscheme3m" "mzschemecgc" "rs" "scheme" "scheme48" "scsh" "sisc" "stklos" "sxi")))
- '(safe-local-variable-values
-   (quote
-    ((andrei . XeLaTeX)
-     (andrei . LaTeX)
-     (andrei . LuaLaTeX))))
+ '(quack-programs (quote ("racket" "guile" )))
  '(tab-stop-list (quote (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))))
 
 (custom-set-faces
@@ -405,7 +314,6 @@
  '(font-latex-sectioning-4-face ((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "lightgreen" :weight bold :height 0.9))))
  '(font-latex-sectioning-5-face ((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "NavajoWhite1" :weight bold :height 0.8))))
  '(font-latex-verbatim-face ((((class color) (background dark)) (:inherit fixed-pitch :foreground "burlywood" :height 0.9))))
- '(font-lock-comment-face ((t (:foreground "chocolate1"))))
  '(font-lock-doc-string-face ((t (:foreground "chartreuse1"))))
  '(font-lock-string-face ((t (:foreground "LightGoldenrod2"))))
  '(fricas-algebra ((t (:background "gainsboro" :foreground "black"))))
@@ -420,23 +328,21 @@
  '(pod-mode-head4-text-face ((t (:inherit pod-mode-command-text-face :height 1.0))))
  '(scribble-link-text-face ((t (:foreground "lightblue" :underline t)))))
 
-
+(set-face-attribute 'font-lock-comment-face nil :background nil :foreground "dark orange")
 
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
 (setq auto-mode-alist
-  (append 
-   '(("\\.rkt\\'" . scheme-mode) ("\\.md\\'" . markdown-mode))
-   auto-mode-alist))
-
+      (append 
+       '(("\\.rkt\\'" . scheme-mode) ("\\.md\\'" . markdown-mode) ("\\.rnc\\'" . rnc-mode))
+       auto-mode-alist))
 
 ;;Changing resolution for formulas:
 ;;Note that display-mm-dimensions-alist uses the general ``dotted pair notation'' 
 ;; which is exlpained here:
 ;;http://www.gnu.org/software/emacs/elisp/html_node/Dotted-Pair-Notation.html#Dotted-Pair-Notation
 ;;In dotted pair notation, the list â€˜(1 2 3)â€™ is written as â€˜(1 . (2 . (3 . nil)))â€™
-
 (defun zoomin ()
   (interactive)
   (let* (
@@ -451,7 +357,6 @@
     (format " %d x %d " new-x-mm new-y-mm)
     )
   )
-
 (defun zoomout ()
   (interactive)
   (let* (
@@ -466,76 +371,19 @@
     (format " %d x %d " new-x-mm new-y-mm)
     )
   )
-
 (defun zoom0 ()
   (interactive)
   (setq display-mm-dimensions-alist my-original-display-mm-alist)
   )
 
-
 (require 'yasnippet) ;; not yasnippet-bundle
-(setq yas-snippet-dirs
-     '("~/usr/lib/emacs/snippets"))
+(setq yas-snippet-dirs '("~/usr/lib/emacs/snippets"))
 (yas-global-mode 1)
-
-
-
-
-(defun mycompile-yasnippet-bundle ()
-  "This is to recompile the yasnippet tree; use after modify the snippets directory tree"
-  (interactive)
-  (yas/compile-bundle 
-   "/usr/share/emacs/site-lisp/yasnippet/yasnippet.el" 
-   "~/usr/lib/emacs/ys-bundle.el" 
-   (list "~/usr/lib/emacs/snippets")
-   nil
-   "~/usr/lib/emacs/dropdown-list.el"
-   )
-  (require 'ys-bundle)
-  )
-
 (require 'scribble)
-;(require 
-; 'scribble 
-; (replace-regexp-in-string 
-;  "\n$" 
-;  "" 
-;  (shell-command-to-string 
-;   "find ~/.racket/planet/300/ -type f -path '*/cache/neil/scribble-emacs.plt/*/scribble.el' | head -n1 "
-;  )))
-
 (require 'quack)
 (require 'epa-file)
-(epa-file-enable)
 (setenv "GPG_AGENT_INFO" nil)
-
-;; Create Cyrillic-CP1251 Language Environment menu item
-(set-language-info-alist
- "Cyrillic-CP1251" `((charset cyrillic-iso8859-5)
-		   (coding-system cp1251)
-		   (coding-priority cp1251)
-		   (input-method . "cyrillic-jcuken")
-		   (features cyril-util)
-		   (unibyte-display . cp1251)
-		   (sample-text . "Russian (ÀãááÚØÙ)    ·ÔàÐÒáâÒãÙâÕ!")
-		   (documentation . "Support for Cyrillic CP1251."))
- '("Cyrillic"))
-
-(require 'org-install)
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(setq org-log-done t)
-(setq org-agenda-files (list "~/a/org/"))
-
 (autoload 'rnc-mode "rnc-mode")
-(add-to-list 'auto-mode-alist '("\\.rnc\\'" . rnc-mode))
-
-; Uncomment lines below to install Intero:
-; ========================================
 (require 'package)
 (package-initialize t)
-;(package-refresh-contents)
-;(package-install 'intero)
 (add-hook 'haskell-mode-hook 'intero-mode)
-
-;(package-install 'perl6-mode)
-

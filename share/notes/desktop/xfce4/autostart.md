@@ -8,18 +8,7 @@ Autostarted applications are listed as `.desktop` files in `~/.config/autostart/
 Format of .desktop files
 ========================
 
-Specifications and manuals
---------------------------
-
-[Specifications](https://specifications.freedesktop.org/desktop-entry-spec/latest/)
-
-[Arch](https://wiki.archlinux.org/index.php/Desktop_entries)
-
-
-Validation
-----------
-
-    desktop-file-validate  amkhlv-xfce4-start.desktop
+See [my writeup](../XDG/desktop-entries.md)
 
 Basic Example
 -------------

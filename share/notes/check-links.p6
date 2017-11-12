@@ -1,6 +1,6 @@
 use File::Find;
 
-my $mdrx = rx｢\[(  <-[ \] ]>+  )\]\(<!before .+\:\/\/> ( <-[ \) ]>+ )\.md(\#.*)?\)｣ ;
+my $mdrx = rx｢\[(  <-[ \] ]>+  )\]\(<!before <alpha>+ '://'> ( <-[ \) ]>+ )\.md(\#.*)?\)｣ ;
 
 my @traverse = find(dir => ".", type => 'file', name => /.+\.md$/) ;
 

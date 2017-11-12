@@ -4,12 +4,12 @@
 # https://adnanalamkhan.wordpress.com/2015/03/01/using-gstreamer-1-0-with-python/
 
 
-# aptitude install   gstreamer1.0-pulseaudio  gstreamer1.0-plugins-ugly
+# aptitude install  python3-gst-1.0  gstreamer1.0-pulseaudio  gstreamer1.0-plugins-ugly
 
 
 import gi
 gi.require_version('Gst', '1.0')
-from gi.repository import GObject,Gtk
+from gi.repository import GObject
 from gi.repository import Gst as gst
 import json
 import argparse
@@ -43,7 +43,7 @@ if __name__ == '__main__' :
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter,
         description='run a GStreamer pipe',
-        epilog="""example of JSON:\n [["filesrc", {"location": "/path/to/file.mp3"}],\n  ["mad", {}],\n  ["audioconvert", {}],\n  ["pulsesink", {}]]"""
+        epilog="""example of JSON:\n [["filesrc", {"location": "/path/to/file.mp3"}],\n  ["mad", {}],\n  ["audioconvert", {}],\n  ["pulsesink", {}]]\n apt-get install  gstreamer1.0-pulseaudio  gstreamer1.0-plugins-ugly"""
     )
     parser.add_argument('json_conf_file', help="location of JSON configuration file")
     args = parser.parse_args()

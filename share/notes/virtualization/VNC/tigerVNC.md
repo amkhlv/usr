@@ -11,8 +11,8 @@ On server
 
     aptitude install tigervnc-standalone-server
 
-Use
-===
+Server
+======
 
 Setup of server
 ---------------
@@ -24,17 +24,33 @@ Execute:
 This lets to choose a password, which is saved into `~/.vnc/passwd` (in a slightly obfuscated form...)
 
 The file `~/.vnc/xstartup` contains a sequence of commands which are executed immediately after the start of the tiger's  Xserver.
-(Essentially, `xinitrc`)
+(Essentially, `xinitrc`). 
+
+The file `~/.vnc/config` contains a list of flags of the command `Xvnc`.
+
+Foreign layout problems
+-----------------------
+
+<a name="cyrillic"></a>
+
+__For cyrillic to function correctly__, as explained [here](https://www.linux.org.ru/forum/general/12531593),
+the file `~/.vnc/xstartup` should contain the line:
+
+    setxkbmap -layout us -print | sed -e 's,\+inet[^+"]*,,' | xkbcomp - $DISPLAY
+
+See also [here](https://github.com/TigerVNC/tigervnc/issues/93) and [here](https://github.com/TigerVNC/tigervnc/issues/339),
+and [my writeup](cyrillic.md), and eventually [Иван Паскаль](http://pascal.tsu.ru/other/xkb/setup.html).
 
 Launching server
 ----------------
 
     vncserver -localhost yes :9
 
---- this puts `VNC` on `DISPLAY=:9` only listening on `localhost:5909` (need to `ssh -L` it from the client)
+--- this puts `VNC` on `DISPLAY=:9` only listening on `localhost:5909`
 
-Viewing as client
------------------
+
+Client
+======
 
 As root:
 
@@ -53,13 +69,12 @@ Misc
 Keyboard layout switching
 -------------------------
 
-is done __on the client side__
+is done __on the client side__ (but probably would not hurt to `setxkbmap -layout ...` on the server side, too, just to make sure to load keysims)
 
 Clipboard
 ---------
 
 Need to have running `vncconfig --nowin` on the server side, in order to share clipboard.
-
 
 DPI
 ---

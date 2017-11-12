@@ -3,6 +3,11 @@
 #lang racket
 
 #|
+
+
+aptitude install  xvkbd  xdotool
+
+
 The single command line argument is the name of the encrypted XML file;
 it defaults to "passwords.gpg". The contents are of the form:
 <xml>
