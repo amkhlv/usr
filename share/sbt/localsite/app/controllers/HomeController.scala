@@ -1,5 +1,6 @@
 package controllers
 
+import java.io.FileWriter
 import java.text.SimpleDateFormat
 import java.util.{Calendar => JCal}
 import javax.inject._
@@ -11,8 +12,10 @@ import com.vladsch.flexmark.ast.Node
 import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
+import net.fortuna.ical4j.data.CalendarOutputter
 import net.fortuna.ical4j.model.component.VEvent
-import net.fortuna.ical4j.model.property.DtStart
+import net.fortuna.ical4j.model.property.{DtStamp, DtStart, Uid, _}
+import net.fortuna.ical4j.model.{DateTime, PropertyList}
 import play.api.Configuration
 import play.api.data.Forms._
 import play.api.data._
@@ -21,12 +24,12 @@ import play.api.libs.json.JsValue
 import play.api.libs.streams.ActorFlow
 import play.api.mvc._
 
-import scala.util.Random
 import scala.collection.JavaConverters._
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, blocking}
 import scala.io.Source
 import scala.sys.SystemProperties
-import scala.sys.process.Process
+import scala.util.{Random, Success}
 /**
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
@@ -37,10 +40,11 @@ class HomeController @Inject()(
                                implicit val system: ActorSystem,
                                implicit val materializer: Materializer,
                                val config: Configuration,
+                               val common: Common,
                                val webJarsUtil: org.webjars.play.WebJarsUtil
                               )
   extends AbstractController(cc) with I18nSupport {
-  implicit val ec = ExecutionContext.global
+  
   Future { blocking { (new MyJetty(config)).run() }}
   
   def getMarkdown: String = {
@@ -59,11 +63,8 @@ class HomeController @Inject()(
     val renderer = HtmlRenderer.builder().extensions(extensions).build();
     return renderer.render(document);
   }
-  val icalFile  = new java.io.File(config.get[String]("application.ics"))
-  val icalDir = icalFile.getParentFile.toPath
-  val icalFileName : String = icalFile.toPath.getFileName.toString
   def getWeeksForDate(back: Int, forw: Int, dt: java.util.Date): List[List[MyDay]] = {
-    val ical = ICal.iCalFromFile(icalFile)
+    val ical = ICal.iCalFromFile(common.icalFile)
     val evs = ical.eventsInRange(
       ICal.weekShiftBy(-(back + 1), ICal.getThisDayOfWeekFor(dt, 1)),
       ICal.weekShiftBy(forw + 1, ICal.getThisDayOfWeekFor(dt, 1))
@@ -77,17 +78,17 @@ class HomeController @Inject()(
   }
   def getWeeks(back: Int, forw: Int): List[List[MyDay]] = getWeeksForDate(back, forw, JCal.getInstance().getTime)
   def getDay(y:Int, m:Int, d:Int) = {
-    val ical = ICal.iCalFromFile(icalFile)
+    val ical = ICal.iCalFromFile(common.icalFile)
     val dt = ICal.jDate(y,m,d,0,0)
     val evs = ical.eventsInRange(MyDay.dayStart(dt).getTime(), MyDay.dayEnd(dt).getTime())
     val day = new MyDay(dt, evs)
     day
   }
   def getEventByUID(uid: String): Option[VEvent] = {
-    val ical = ICal.iCalFromFile(icalFile)
+    val ical = ICal.iCalFromFile(common.icalFile)
     ical.eventWithUID(uid)
   }
-  val sqliMap : Map[String,String] = config.get[Map[String,String]]("application.sqlis")
+
   val maybePort = {
     val sprops = new SystemProperties()
     sprops.get("http.port")
@@ -100,23 +101,24 @@ class HomeController @Inject()(
     case Some(x) => true
     case None => false
   }
-  val broadcastActor = system.actorOf(Props(new SocketBroadcastActor(icalFileName)), "broadcastActor")
-  val launchActor = system.actorOf(LaunchActor.props(broadcastActor), "launchActor")
-  val calendarUpdateActor = system.actorOf(Props(new CalendarUpdateActor(config)), "calendarUpdateActor")
+
+  //val calendarUpdateActor = system.actorOf(Props(new CalendarUpdateActor(config, mainWinActor)), "calendarUpdateActor")
   val watcher = new FileWatcher(
-    icalDir,
-    broadcastActor,
-    {nm => (nm == icalFileName)},
+    common.icalDir,
+    common.broadcastActor,
+    {nm => (nm == common.icalFileName)},
     500
   )
   watcher.start
   def index =
     Action { implicit request =>
-      Ok(views.html.index(getWeeks(1,2), sqliMap, getMarkdown, isSecure, webJarsUtil))
+      println("Index Request")
+      common.mainWinActor ! CheckMainWin
+      Ok(views.html.index(getWeeks(1,2),  getMarkdown, isSecure, webJarsUtil))
     }
   def calendar =
     Action { implicit  request =>
-      Ok(views.html.calendar(getWeeks(1,12), sqliMap, getMarkdownForCalendar))
+      Ok(views.html.calendar(getWeeks(1,12),  getMarkdownForCalendar))
     }
   def day(y:Int, m:Int, d:Int) = Action {
     implicit request => {
@@ -135,6 +137,7 @@ class HomeController @Inject()(
       ))
     }
   }
+
   val editEventForm = Form(
     mapping(
       "uid"     -> text,
@@ -173,7 +176,27 @@ class HomeController @Inject()(
         val date8601 = """(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)""".r
         validData.start match {
           case date8601(yyyy,mm,dd,hour,min,sec) => {
-            calendarUpdateActor ! UpdateEvent(icalFile, validData.uid, validData)
+            //calendarUpdateActor ! UpdateEvent(icalFile, validData.uid, validData)
+            val tok = common.rnd.nextString(16)
+            GUI.askForApproval("allow ICal event update?", tok, common.mainWinActor) onComplete {
+              case Success(true) => {
+                val ical = ICal.iCalFromFile(common.icalFile)
+                val newprops = new PropertyList()
+                newprops.add(new Uid(validData.uid))
+                newprops.add(new DtStamp(new DateTime()))
+                newprops.add(new Summary(validData.summary))
+                newprops.add(new DtStart(validData.start))
+                newprops.add(new DtEnd(validData.end))
+                if (validData.description != "") newprops.add(new Description(validData.description))
+                if (validData.location != "") newprops.add(new Location(validData.location))
+                val newvev = new VEvent(newprops)
+                val newcal = ical.updateEvent(validData.uid, newvev)
+                val outputter = new CalendarOutputter(true)
+                outputter.output(newcal, new FileWriter(common.icalFile))
+              }
+              case Success(false) =>  common.mainWinActor ! ShowWarning("ICal update not authorized !")
+              case _ => common.mainWinActor ! ShowWarning("ICal authorization request did not go through!")
+            }
             Redirect("/" + yyyy + "-" + mm + "-" + dd)
           }
         }
@@ -198,7 +221,18 @@ class HomeController @Inject()(
         BadRequest(views.html.error("bad form data"))
       },
       validData => {
-        calendarUpdateActor ! DelEvent(icalFile, validData.uid)
+        //calendarUpdateActor ! DelEvent(icalFile, validData.uid)
+        val tok = common.rnd.nextString(16)
+        GUI.askForApproval("allow to delete event?", tok, common.mainWinActor) onComplete {
+          case Success(true) => {
+            val ical = ICal.iCalFromFile(common.icalFile)
+            val newcal = ical.deleteEvent(validData.uid)
+            val outputter = new CalendarOutputter(true)
+            outputter.output(newcal, new FileWriter(common.icalFile))
+          }
+          case Success(false) => common.mainWinActor ! ShowWarning("ICal deletion not authorized !")
+          case _ => common.mainWinActor ! ShowWarning("ICal authorization request did not go through !")
+        }
         Redirect("/")
       }
     )
@@ -226,7 +260,27 @@ class HomeController @Inject()(
         val date8601 = """(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)""".r
         validData.start match {
           case date8601(yyyy,mm,dd,hour,min,sec) => {
-            calendarUpdateActor ! NewEvent(icalFile, validData)
+            //calendarUpdateActor ! NewEvent(icalFile, validData)
+            val tok = common.rnd.nextString(16)
+            GUI.askForApproval("allow new ICal event?", tok, common.mainWinActor) onComplete {
+              case Success(true) => {
+                val ical = ICal.iCalFromFile(common.icalFile)
+                val newprops = new PropertyList()
+                newprops.add(new Uid(validData.uid))
+                newprops.add(new DtStamp(new DateTime()))
+                newprops.add(new Summary(validData.summary))
+                newprops.add(new DtStart(validData.start))
+                newprops.add(new DtEnd(validData.end))
+                if (validData.description != "") newprops.add(new Description(validData.description))
+                if (validData.location != "") newprops.add(new Location(validData.location))
+                val newvev = new VEvent(newprops)
+                ical.insertNewEventInPlace(newvev)
+                val outputter = new CalendarOutputter(true)
+                outputter.output(ical.calendar, new FileWriter(common.icalFile))
+              }
+              case Success(false) => { common.mainWinActor ! ShowWarning("ICal update not authorized !") }
+              case _ => common.mainWinActor ! ShowWarning("authorization request did not go through !")
+            }
             Redirect("/" + yyyy + "-" + mm + "-" + dd)
           }
         }
@@ -248,27 +302,12 @@ class HomeController @Inject()(
       }
       case Some(x) => if (x == trustedOrigin)  {
         println("=== GAVE SOCKET to --->" + x + "<--- ===")
-        Right(ActorFlow.actorRef(out => MyWebSocketActor.props(out, broadcastActor)))
+        Right(ActorFlow.actorRef(out => MyWebSocketActor.props(out, common.broadcastActor)))
       } else {
         println("=== WRONG ORIGIN: --->" + x + "<---")
         Left(Forbidden)
       }
     })
   }
-  def sqli(s:String) =
-    Action { implicit request =>
-      launchActor ! Process(
-        Seq(
-          "/home/andrei/bin/linii2",
-          "-y",
-          sqliMap(s)
-        ),
-        None,
-        ("DISPLAY", config.get[String]("application.display")),
-        ("XAUTHORITY", config.get[String]("application.xauthority"))
-      )
-      Redirect("/")
-    }
-
 }
 

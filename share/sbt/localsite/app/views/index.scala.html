@@ -4,12 +4,10 @@
 @import controllers._
 
 @(weeks: List[List[MyDay]],
-  sqliMap: Map[String,String],
   markdown: String,
   isSecure: Boolean,
   webJarsUtil: org.webjars.play.WebJarsUtil
 )(implicit messages: Messages, requestHeader: RequestHeader)
-
 
 @main("Home") {
 <!-- http://www.webjars.org/documentation -->
@@ -19,7 +17,6 @@
 @Html(webJarsUtil.script("jquery.min.js"))
 
 @Html(markdown)
-
 
 <script>
 var ws = new WebSocket("@routes.HomeController.socket().webSocketURL(secure = isSecure)");
@@ -71,21 +68,6 @@ window.onfocus = function() {
           </td> }
       </tr>
     }
-</table>
-
-<table>
-    <tr>
-        @sqliMap.keys.map { k =>
-        <td>
-            <form method="POST" action="/sqli/?db=@k">
-                @CSRF.formField
-                <div class="button">
-                    <button id="button_@k" type="submit">@k</button>
-                </div>
-            </form>
-        </td>
-        }
-    </tr>
 </table>
 
 <a href="/automate">automate</a>

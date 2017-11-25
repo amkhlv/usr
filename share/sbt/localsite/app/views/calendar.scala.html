@@ -3,13 +3,9 @@
 @import com.andreimikhailov.utils.ICal._
 @import controllers._
 
-@(weeks: List[List[MyDay]],
-  sqliMap: Map[String, String],
-  markdown: String
-)(implicit messages: Messages, requestHeader: RequestHeader)
+@(weeks: List[List[MyDay]], markdown: String)(implicit messages: Messages, requestHeader: RequestHeader)
 
 <link rel="stylesheet" href="@routes.Assets.at("stylesheets/main.css")">
-
 
 @main("Calendar") {
 @Html(markdown)

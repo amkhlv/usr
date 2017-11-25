@@ -3,35 +3,42 @@ package controllers
 /**
   * Created by andrei on 1/7/17.
   */
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 import javax.inject._
 
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxProfile
 import org.openqa.selenium.firefox.internal.ProfilesIni
-import play.Configuration
-import play.api.i18n.{I18nSupport, MessagesApi}
+import play.api.Configuration
+import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.filters.csrf.{CSRFAddToken, CSRFCheck}
 
 import scala.annotation.tailrec
-import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext}
 import scala.sys.process._
 import scala.xml.{Node, NodeSeq}
 
-
 @Singleton
-class PassController @Inject()(val addToken: CSRFAddToken,
+class PassController @Inject()(cc: ControllerComponents,
+                               val addToken: CSRFAddToken,
                                val checkToken: CSRFCheck,
-                               val messagesApi: MessagesApi,
-                               val config: Configuration
-                              ) extends Controller with I18nSupport {
+                               val config: Configuration,
+                               val common: Common
+                              ) extends AbstractController(cc) with I18nSupport {
   implicit val ec = ExecutionContext.global
   @tailrec private def getSecrets() : String = {
-    val askpasscmd = Process(Seq("ssh-askpass"), None, ("DISPLAY", config.getString("application.display")))
-    val gpgcmd = Seq("gpg", "--yes", "--no-tty", "--passphrase-fd", "0", "--decrypt", config.getString("application.passwords"))
+    //val askpasscmd = Process(Seq("ssh-askpass"), None, ("DISPLAY", config.getString("application.display")))
+    val passphrase = {
+      val pp = GUI.askPassphrase(common.mainWinActor)
+      Await.result(pp,60.seconds)
+    }
+    val is = new ByteArrayInputStream(passphrase.getBytes("UTF-8"))
+    val pwds = config.get[String]("application.passwords")
     val output = new ByteArrayOutputStream()
-    val r = (askpasscmd #| gpgcmd #> output).!
+    val decr: ProcessBuilder = Seq("gpg", "--yes", "--no-tty", "--passphrase-fd", "0", "--decrypt", pwds)
+    val r: Int = ((decr #< is) #> output).!
     if (r>0) getSecrets() else output.toString("UTF-8")
   }
   lazy val secrets = getSecrets()
@@ -40,7 +47,7 @@ class PassController @Inject()(val addToken: CSRFAddToken,
   val profile: ProfilesIni= new ProfilesIni()
   val myprofile: Either[FirefoxProfile,ChromeOptions] =
     if (config.keys.contains("application.firefoxProfile")) {
-      Left(profile.getProfile(config.getString("application.firefoxProfile")))
+      Left(profile.getProfile(config.get[String]("application.firefoxProfile")))
     } else if (config.keys.contains("application.chromeProfile")) {
       val chromeOptions = new ChromeOptions()
       chromeOptions.addArguments("user-data-dir=" + config.getString("application.chromeProfile"))

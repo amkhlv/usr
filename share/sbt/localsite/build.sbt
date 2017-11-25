@@ -23,6 +23,7 @@ libraryDependencies ++= Seq(
   "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.0.1",
   "org.webjars" %% "webjars-play" % "2.6.1",
   "org.webjars" % "jquery" % "3.1.1-1",
+  "org.scalafx" % "scalafx_2.11" % "8.0.144-R12",
   jdbc,
   cache,
   ws,
