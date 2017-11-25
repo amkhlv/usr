@@ -24,7 +24,24 @@ Execute:
 This lets to choose a password, which is saved into `~/.vnc/passwd` (in a slightly obfuscated form...)
 
 The file `~/.vnc/xstartup` contains a sequence of commands which are executed immediately after the start of the tiger's  Xserver.
-(Essentially, `xinitrc`). 
+(Essentially, `xinitrc`). Mine is:
+
+    #!/bin/sh
+
+    xfwm4 &
+    xfce4-panel &
+    xrdb -merge /etc/X11/app-defaults/XTerm
+    xrdb -merge /etc/X11/app-defaults/XTerm-color
+    xrdb -merge /home/andrei/.Xdefaults
+    export PULSE_SERVER=/run/user/host/pulse/native
+
+    setxkbmap -layout us -print | sed -e 's,\+inet[^+"]*,,' | xkbcomp - $DISPLAY
+
+    uxterm &
+
+    monthly &
+
+    indicator /home/andrei/.config/amkhlv/indicator.xml &
 
 The file `~/.vnc/config` contains a list of flags of the command `Xvnc`.
 

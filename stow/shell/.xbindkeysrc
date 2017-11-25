@@ -57,13 +57,13 @@
 
 #wmjump
 "/usr/bin/wmjump --rich"
-    m:0x8 + c:45
-    Alt + k 
+    m:0x40 + c:45
+    Mod4 + k 
 
 #wmjump-current
 "wmjump --rich --current"
-    m:0x8 + c:44
-    Alt + j 
+    m:0x40 + c:44
+    Mod4 + j 
 
 #td-pl
 "/home/andrei/bin/td.pl /home/andrei/a/list.txt"
@@ -88,11 +88,6 @@
 "/home/andrei/usr/bin/amkhlv-mousebutton.sh 9"
    b:9
 
-#Remark
-"/home/andrei/usr/bin/amkhlv-mousebutton.sh 8"
-    m:0x0 + c:90
-    KP_Insert 
-
 #insert-text
 "/usr/local/lib/amkhlv/xvkbd-trigger.sh"
     m:0x40 + c:55
@@ -112,6 +107,11 @@
 "/usr/local/lib/amkhlv/open-scribble.sh"
     m:0x40 + c:39
     Mod4 + s 
+
+#my-xdg-open
+"/usr/local/lib/amkhlv/my-xdg-open.sh"
+    m:0x40 + c:53
+    Mod4 + x 
 
 #
 # End of xbindkeys configuration

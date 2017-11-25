@@ -43,3 +43,10 @@ or
 
     /data/lineageos_updates/
 
+Connecting over network
+=======================
+
+This is useful when running [Android x86](http://www.android-x86.org) in QEMU.
+Just execute, at the very beginning:
+
+    adb connect 192.168.xxx.x
