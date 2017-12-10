@@ -31,7 +31,7 @@ class PassController @Inject()(cc: ControllerComponents,
   @tailrec private def getSecrets() : String = {
     //val askpasscmd = Process(Seq("ssh-askpass"), None, ("DISPLAY", config.getString("application.display")))
     val passphrase = {
-      val pp = GUI.askPassphrase(common.mainWinActor)
+      val pp = common.gui.askPassphrase()
       Await.result(pp,60.seconds)
     }
     val is = new ByteArrayInputStream(passphrase.getBytes("UTF-8"))

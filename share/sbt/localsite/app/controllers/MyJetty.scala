@@ -22,30 +22,7 @@ object EmacsClientLauncher {
     Seq("emacsclient", filepath).run
 }
 
-class XDGOpenLauncher(config:Configuration) {
-  def zenityEntry = Process(
-        Seq(
-          "/usr/bin/zenity",
-          "--entry",
-          "--title", "xdg-open",
-          "--text",  "xdg-open: " + "m" * 100
-        ),
-        None,
-        ("DISPLAY", config.get[String]("application.display")),
-        ("XAUTHORITY", config.get[String]("application.xauthority"))
-      )
-  def getURL: String = zenityEntry.!!.stripLineEnd
-  def xdgProc(url: String) = Process(
-    Seq("xdg-open", url),
-    None,
-    ("DISPLAY", config.get[String]("application.display")),
-    ("XAUTHORITY", config.get[String]("application.xauthority"))
-  )
-  def launch = try { xdgProc(getURL).run() } catch { case ex => () }
-}
-
 class Handler(ical: ICal, config: Configuration) extends AbstractHandler {
-  var html = <h1>Something, innit</h1>
 
   override def handle(target: String,
                       req: Request,
@@ -110,20 +87,6 @@ class Handler(ical: ICal, config: Configuration) extends AbstractHandler {
         outWriter.flush()
       case _ => ()
     }
-    (js \ "isEmacsClient").asOpt[Boolean] match {
-      case Some(true) =>
-        println("=== handling EmacsClient ===")
-        httpRes.setStatus(HttpServletResponse.SC_OK)
-        EmacsClientLauncher.launch((js \ "filename").as[String])
-      case _ => ()
-    }
-    (js \ "isXDGopen").asOpt[Boolean] match {
-      case Some(true) =>
-        println("=== handling XDG-open request ===")
-        httpRes.setStatus(HttpServletResponse.SC_OK)
-        (new XDGOpenLauncher(config)).launch
-      case _ => ()
-    }
     req.setHandled(true)
     outWriter.close()
   }
@@ -145,5 +108,4 @@ class MyJetty(config: Configuration) {
     server.setHandler(new Handler(ical, config))
     server.start
   }
-
 }

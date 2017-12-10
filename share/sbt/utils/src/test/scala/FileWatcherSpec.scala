@@ -3,13 +3,13 @@ import java.io.{BufferedWriter, FileWriter}
 import akka.actor.{Actor, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import org.scalatest._
 import com.andreimikhailov.utils._
+import org.scalatest._
+
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Success, Try}
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
+import scala.util.{Failure, Success}
 
 /**
   * Created by andrei on 12/26/16.

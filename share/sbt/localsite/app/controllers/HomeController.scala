@@ -113,7 +113,7 @@ class HomeController @Inject()(
   def index =
     Action { implicit request =>
       println("Index Request")
-      common.mainWinActor ! CheckMainWin
+      common.gui.checkMainWin()
       Ok(views.html.index(getWeeks(1,2),  getMarkdown, isSecure, webJarsUtil))
     }
   def calendar =
@@ -177,8 +177,7 @@ class HomeController @Inject()(
         validData.start match {
           case date8601(yyyy,mm,dd,hour,min,sec) => {
             //calendarUpdateActor ! UpdateEvent(icalFile, validData.uid, validData)
-            val tok = common.rnd.nextString(16)
-            GUI.askForApproval("allow ICal event update?", tok, common.mainWinActor) onComplete {
+            common.gui.askForApproval("allow ICal event update?") onComplete {
               case Success(true) => {
                 val ical = ICal.iCalFromFile(common.icalFile)
                 val newprops = new PropertyList()
@@ -194,8 +193,8 @@ class HomeController @Inject()(
                 val outputter = new CalendarOutputter(true)
                 outputter.output(newcal, new FileWriter(common.icalFile))
               }
-              case Success(false) =>  common.mainWinActor ! ShowWarning("ICal update not authorized !")
-              case _ => common.mainWinActor ! ShowWarning("ICal authorization request did not go through!")
+              case Success(false) =>  common.gui.warn("ICal update not authorized !")
+              case _ => common.gui.warn("ICal authorization request did not go through!")
             }
             Redirect("/" + yyyy + "-" + mm + "-" + dd)
           }
@@ -222,16 +221,15 @@ class HomeController @Inject()(
       },
       validData => {
         //calendarUpdateActor ! DelEvent(icalFile, validData.uid)
-        val tok = common.rnd.nextString(16)
-        GUI.askForApproval("allow to delete event?", tok, common.mainWinActor) onComplete {
+        common.gui.askForApproval("allow to delete event?") onComplete {
           case Success(true) => {
             val ical = ICal.iCalFromFile(common.icalFile)
             val newcal = ical.deleteEvent(validData.uid)
             val outputter = new CalendarOutputter(true)
             outputter.output(newcal, new FileWriter(common.icalFile))
           }
-          case Success(false) => common.mainWinActor ! ShowWarning("ICal deletion not authorized !")
-          case _ => common.mainWinActor ! ShowWarning("ICal authorization request did not go through !")
+          case Success(false) => common.gui.warn("ICal deletion not authorized !")
+          case _ => common.gui.warn("ICal authorization request did not go through !")
         }
         Redirect("/")
       }
@@ -261,8 +259,7 @@ class HomeController @Inject()(
         validData.start match {
           case date8601(yyyy,mm,dd,hour,min,sec) => {
             //calendarUpdateActor ! NewEvent(icalFile, validData)
-            val tok = common.rnd.nextString(16)
-            GUI.askForApproval("allow new ICal event?", tok, common.mainWinActor) onComplete {
+            common.gui.askForApproval("allow new ICal event?") onComplete {
               case Success(true) => {
                 val ical = ICal.iCalFromFile(common.icalFile)
                 val newprops = new PropertyList()
@@ -278,8 +275,8 @@ class HomeController @Inject()(
                 val outputter = new CalendarOutputter(true)
                 outputter.output(ical.calendar, new FileWriter(common.icalFile))
               }
-              case Success(false) => { common.mainWinActor ! ShowWarning("ICal update not authorized !") }
-              case _ => common.mainWinActor ! ShowWarning("authorization request did not go through !")
+              case Success(false) => { common.gui.warn("ICal update not authorized !") }
+              case _ => common.gui.warn("authorization request did not go through !")
             }
             Redirect("/" + yyyy + "-" + mm + "-" + dd)
           }
