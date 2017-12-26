@@ -11,8 +11,6 @@ ApplicationWindow {
     title: qsTr("localsite warning")
 
     signal putStr(string msg)
-    signal killThread()
-    onClosing: function() { if (control.dismiss == 0)  killThread(); }
     onAfterRendering: function() {width = box.width; height = box.height;}
 
     Item {

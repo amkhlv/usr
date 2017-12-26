@@ -11,8 +11,6 @@ ApplicationWindow {
 
     id: mainwin
     signal putStr(string msg)
-    signal killThread()
-    onClosing: function() { if (control.dismiss == 0)  killThread(); }
     onAfterRendering: function () {width = clmn.width ; height = clmn.height }
 
     Item {

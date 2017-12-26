@@ -7,7 +7,6 @@ Adding routes to our new table
 ==============================
 
     ip route add default via 10.8.0.5 dev tap0  table viahome
-    ip route add 10.8.0.0/24 dev tap0 table viahome
 
     ip route flush cache
 
