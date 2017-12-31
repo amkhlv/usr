@@ -1,3 +1,10 @@
+Starting new project
+====================
+
+    stack new my-project --resolver lts-9.20
+
+Then edit `project.yaml` , __do not edit__ the `my-project.cabal` file (it is auto-generated)
+
 Installing personal package globally
 ====================================
 
