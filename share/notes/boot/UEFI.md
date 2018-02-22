@@ -101,3 +101,7 @@ __Before running file system commands__ such as cd or ls, you need to change the
 5. `time [hh:mm[:ss]] [-tz tz] [-d dl]` Displays or sets the current time for the system.
 
 6. `reset -s` does __shutdown__ ; `reset -c` does cold reboot ; `reset -w` does warm reboot
+
+### Any .efi executable can be called
+
+just by typing its name and pressing `ENTER`. For example `EFI/BOOT/bootx64.efi` will just boot the operating system.

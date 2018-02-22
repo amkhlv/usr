@@ -21,6 +21,19 @@ This will list all devices, like `(hd0,msdos1)`. To list files on specific devic
 
     ls (hd0,msdos1)/
 
+The NORMAL shortcut
+-------------------
+
+    set root=(hd0,msdos1)
+    set prefix=(hd0,msdos1)/boot/grub
+    insmod normal
+    normal
+
+This should bring the menu.
+
+Long way
+--------
+
 Then:
 
     set root=(hd0,msdos1)

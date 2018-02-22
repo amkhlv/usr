@@ -36,7 +36,8 @@ On each client and server generate key
 
 This will create the key, and also generate the request. The `.req` file should be `scp`-ed to the CA machine.
 
-Also, while we are on that machine, generate the DH key:
+Only on the server, generate the DH key
+---------------------------------------
 
     ./easyrsa gen-dh
 

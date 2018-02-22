@@ -9,7 +9,7 @@ Good
 Unclear
 -------
 
-`AS...` (_e.g._ F3)
+`AS2105` (_e.g._ F3) --- seems to disconnect after some time...
 
 Bad
 ---

@@ -22,6 +22,14 @@ A tentative `fstab` file is created as follows:
 
     block detect > /etc/config/fstab
 
+Then edit `/etc/config/fstab` and:
+
+1. set the mount point to: `/overlay` 
+
+2. can use `label` instead of `uuid` 
+
+3. set `enabled` to 1
+
 Mounting at boot time should be enabled:
 
     /etc/init.d/fstab enable

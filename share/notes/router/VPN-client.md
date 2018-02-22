@@ -30,14 +30,14 @@ In `/etc/config/network` should be lines:
 In `/etc/config/firewall` :
 
     config zone
-            option name 'myvpn'
+            option name 'myvpnzone'
             option input 'ACCEPT'
             option output 'ACCEPT'
             option forward 'ACCEPT'
             option network 'myvpn'
 
     config forwarding
-            option src 'myvpn'
+            option src 'myvpnzone'
             option dest 'wan'
 
 This should be enough for routing to happen.

@@ -1,12 +1,9 @@
-# DHCP problems
+Assign static DHCP to a device
+==============================
 
-`OpenWRT` uses the lightweight DHCP client called `udhcpc` which is not very good. 
-The problem comes when there is a parasitic DHCP server sending DHCP NAK. 
+In `/etc/config/hdcp` :
 
-I managed to install the actual `dhclient` 
-
-Then, to overcome the NAK problem, do the following:
-
-    ifconfig br-wan down
-    ifconfig br-wan up
-    dhclient br-wan
+    config 'host'
+        option 'name' 'myphone'
+        option 'ip'   '192.168.1.100'
+        option 'mac'  '00:11:22:33:44:55'

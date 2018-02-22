@@ -2,7 +2,7 @@
 
 #lang racket
 (require racket/cmdline 
-         (planet amkhlv/truques/terminal))
+         truques/terminal)
 
 (define off "\e[0m")
 
