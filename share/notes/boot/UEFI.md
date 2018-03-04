@@ -59,6 +59,16 @@ Now __unmount__ the `EFI` partition.
 Maybe I need to run `refind-install --usedefault /dev/sdxY` again after that; I am not sure...
 
 
+Autodetected kernels
+====================
+
+rEFInd also autodetects kernels and presents them to the menu. When pressed on such a menu item, the kernel is loaded "directly",
+_i.e._ as a EFI binary. But how to pass kernel parameters? Create a file `refind_linux.conf` in the same folder as the kernel-to-be-autodetected.
+The file [should contain lines](https://wiki.archlinux.org/index.php/REFInd) like this:
+
+    "Boot using default options"     "root=UUID=XXXXXXXX ro quiet"
+
+
 REFInd addons
 =============
 
