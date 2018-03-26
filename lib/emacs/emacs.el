@@ -384,6 +384,17 @@
 (require 'epa-file)
 (setenv "GPG_AGENT_INFO" nil)
 (autoload 'rnc-mode "rnc-mode")
+
 (require 'package)
-(package-initialize t)
+(add-to-list
+  'package-archives
+  '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+;; (package-refresh-contents)
+
+;; Install Intero
+(package-install 'intero)
 (add-hook 'haskell-mode-hook 'intero-mode)
+
+
+

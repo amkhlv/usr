@@ -19,3 +19,5 @@ setxkbmap -option "ctrl:nocaps"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 
+
+export PATH="$HOME/.cargo/bin:$PATH"
