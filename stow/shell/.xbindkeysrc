@@ -76,7 +76,7 @@
     Mod4 + y 
 
 #gmrun
-"/usr/local/bin/amkhlv-gmrun.sh"
+"/home/andrei/usr/bin/amkhlv-gmrun.sh"
     m:0x8 + c:68
     Alt + F2 
 
@@ -109,7 +109,7 @@
     Mod4 + s 
 
 #my-xdg-open
-"/usr/local/lib/amkhlv/my-xdg-open.sh"
+"/home/andrei/usr/bin/amkhlv_xdg-open.py"
     m:0x40 + c:53
     Mod4 + x 
 

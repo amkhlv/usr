@@ -48,6 +48,6 @@ as advised [here](http://serverfault.com/questions/434064/correct-way-to-move-kv
 1. Copy the VM's disks from on the src host to the same dir on the destination host
 
 2. On the source host run `virsh dumpxml VMNAME > domxml.xml` and copy this xml to the destination host. Also
-have to do this with networks: `virsh net-dump NETWORKNAME > networkname.xml`.
+have to do this with networks: `virsh net-dumpxml NETWORKNAME > networkname.xml`.
 
 3. On the destination host run `virsh define domxml.xml` and `virsh net-define networkname.xml`
