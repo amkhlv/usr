@@ -32,4 +32,6 @@ Then:
 
     iscsiadm  -m node  --targetname "iqn.2007-01.org.debian.foobar:example" --portal "192.168.0.1:3260" --login
 
+    systemctl restart iscsid
+
 This should appear as `/dev/sdx`
