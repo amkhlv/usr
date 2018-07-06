@@ -1,5 +1,7 @@
 #include "DHT.h"
 
+//#include "MemoryFree.h"
+
 DHT dht;
 
 const int humLED = 6; 
@@ -13,6 +15,7 @@ void setup()
   pinMode(humLED, OUTPUT);
   analogWrite(humLED, brightness);
   dht.setup(humDATA); // data pin 
+  //Serial.begin(9600);
 }
 
 void adjust(int newbrightness, int t) 
@@ -28,7 +31,9 @@ void adjust(int newbrightness, int t)
 void loop()
 { 
   delay(timeInterval);
+  //Serial.print("humidity=");
   int hum = dht.getHumidity();
+  //Serial.println(hum);
   if (hum < 50) { 
     brightness = min(255, 3.5 * (100 - hum)); 
     analogWrite(humLED, brightness); 
@@ -42,4 +47,6 @@ void loop()
   if (hum >= 60) { adjust(6, 60); delay(360); }
   if (hum >= 65) { adjust(3, 80); delay(720); }
   if (hum >= 70) { digitalWrite(humLED, LOW); brightness = 0; }
+  //Serial.print("freeMemory()=");
+  //Serial.println(freeMemory());
 }

@@ -38,3 +38,7 @@ Using GNU screen for testring
 
 The transmission is keystroke-by-keystroke, no need to press `Enter`.
 
+USB to serial adapter
+=====================
+
+Green wire should go to the RX of Arduino, and white to the TX for Arduino.

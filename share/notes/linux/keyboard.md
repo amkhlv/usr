@@ -57,3 +57,24 @@ Generate PDF of keyboard layout
 
 Notice that `-ll 3` means `AltGr` pressed
 
+Chattering (repeating keys, дробление) keyboard
+===============================================
+
+    ~/.config/xfce4/xfconf/xfce-perchannel-xml/accessibility.xml 
+
+should contain:
+
+
+    <?xml version="1.0" encoding="UTF-8"?>
+
+    <channel name="accessibility" version="1.0">
+      <property name="BounceKeys" type="bool" value="true">
+        <property name="Delay" type="int" value="30"/>
+      </property>
+    </channel>
+
+In terms of `xfconf` :
+
+    xfconf-query -c accessibility -p /BounceKeys -s true
+    xfconf-query -c accessibility -p /BounceKeys/Delay -s 30
+

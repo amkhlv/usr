@@ -1,6 +1,6 @@
 int incomingByte = 0;
 
-int greenLED = 9;
+int greenLED = 3;
 int greenDim = 3;
 int greenBright = 200;
 

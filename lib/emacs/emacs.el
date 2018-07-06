@@ -335,7 +335,12 @@
 
 (setq auto-mode-alist
       (append 
-       '(("\\.rkt\\'" . scheme-mode) ("\\.md\\'" . markdown-mode) ("\\.rnc\\'" . rnc-mode))
+       '(
+         ("\\.rkt\\'" . scheme-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.rnc\\'" . rnc-mode)
+         ("\\.pdq\\'" . nxml-mode)
+         )
        auto-mode-alist))
 
 ;;Changing resolution for formulas:
@@ -395,6 +400,5 @@
 ;; Install Intero
 (package-install 'intero)
 (add-hook 'haskell-mode-hook 'intero-mode)
-
 
 
