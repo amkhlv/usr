@@ -1,0 +1,9 @@
+[package]
+name = "amkhlv-sync-alarm"
+version = "0.1.0"
+authors = ["andrei"]
+
+[dependencies]
+rppal = "0.7"
+quick-xml = "0.12.1"
+clap = "2.32.0"

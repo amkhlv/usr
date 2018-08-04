@@ -1,0 +1,8 @@
+[package]
+name = "gpio-pi"
+version = "0.1.0"
+authors = ["andrei"]
+
+[dependencies]
+rppal = "0.7"
+clap = "2.32.0"

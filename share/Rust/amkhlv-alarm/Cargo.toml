@@ -1,0 +1,10 @@
+[package]
+name = "amkhlv-alarm"
+version = "0.1.0"
+authors = ["andrei"]
+
+[dependencies]
+rocket = "0.3.14"
+rocket_codegen = "0.3.14"
+rppal = "0.7"
+quick-xml = "0.12.1"
