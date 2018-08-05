@@ -55,14 +55,13 @@ And for server request:
     ./easyrsa sign-req server MYNICKNAME
 
 
-Generate secret Hash-based Message Authentication Code (HMAC)
--------------------------------------------------------------
+Using --tls-auth
+----------------
 
-This is unrelated `EasyRSA`; should be done on each client and server:
+This is unrelated to `EasyRSA`; should be done on __some__ machine and resulted `ta.key` shared:
 
-    openvpn --genkey --secret /root/easy-rsa/keys/ta.key
+    openvpn --genkey --secret ta.key
 
-This will be used to add an additional HMAC signature to all SSL/TLS handshake packets.
 
 Summary
 -------

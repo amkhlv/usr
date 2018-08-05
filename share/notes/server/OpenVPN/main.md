@@ -34,6 +34,10 @@ Then the server is started by:
 
     systemctl start openvpn-server@NAME.service
 
+The recommended __network topology__ is `subnet` :
+
+    topology subnet
+
 ## Configuration of the client
 
 __Sample__ configuration file (Comments are preceded with '#' or ';' ) :
@@ -46,49 +50,35 @@ Then the server is started by:
 
     systemctl start openvpn-client@NAME.service
 
-# Routing all traffic on a client through the server
+### Renaming TUN/TAP interfaces
 
-## On the client
+In `server.conf`, replace `dev tun` with two lines:
 
-add a line:
+    dev myDevName-tun
+    dev-type tun
 
-    redirect-gateway def1
+# CCD files
 
-to the client configuration file
+The name of the CCD file should be the `CommonName` of the client's certificate.
 
-## On the server
+Sample CCD file consists of one line (remember that we choosen __network topology__ to be __subnet__ ):
 
-    iptables -t nat -I POSTROUTING -o venet0 -s 10.8.0.0/24 -j MASQUERADE
-    iptables -I FORWARD -i tun0 -o venet0 -s 10.8.0.0/24 -m conntrack --ctstate NEW -j ACCEPT
-    iptables -I FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    ifconfig-push 192.168.88.113 255.255.255.0
 
+# Routing
 
-# Static IP addresses
+If we want to route to a subnet of one of the clients, we have to communicate to `OpenVPN` on which client that subnet is.
+This is done by the `iroute` line in the CCD file. For example, if a CCD file of a client has a line:
 
-Remember that in my server configuration file I have a line:
+    iroute 192.168.9.0 255.255.255.0
 
-    client-config-dir ccd
+then `OpenVPN` will know that the subnet `192.168.9.0/24` is available on that client. We can route to it on __another client__,
+by putting into another client's CCD file:
 
-This means that I have to setup a directory `/etc/openvpn/ccd/` (\`\`client configuration directory''):
+    push "route 192.168.9.0 255.255.255.0 192.168.88.113"
 
-    mkdir /etc/openvpn/ccd
-
-Remember that when we created the client certifiates, we were asked for __Common Name__ (`CN`)
-Here it goes:
-
-    vi /etc/openvpn/ccd/CommonName
-
-(where `CommonName` is that Common Name!) Inside that file should be:
-
-    ifconfig-push 192.168.88.113 192.168.88.112
-
-(Here `192.168.88.113` is the IP address I want for my client CommonName, and `192.168.88.112` is the peer interface address.)
-
-# Running OpenVPN
-
-On the client, go to `/etc/openvpn` and say:
-
-    openvpn servername.conf
+where `192.168.88.113` is that VPN address of that first client (which has the subnet `192.168.9.0/24`; dont forget to
+enable `net.ipv4.ip_forward=1` in `/etc/sysctl.conf` there, and also `MASQEURADE` in `*nat`'s `POSTROUTING` and `ACCEPT` in `*filter`'s `FORWARD` in its `iptables`).
 
 ## Viewing the VPN status
 
@@ -97,9 +87,4 @@ On the server:
     tail -f -n40 /etc/openvpn/openvpn-status.log
 
 --- this shows the number of connected hosts _etc._
-
-# No /dev/net/tun
-
-    mkdir /dev/net
-    mknod /dev/net/tun c 10 200
 
