@@ -118,7 +118,7 @@ class HomeController @Inject()(
     }
   def calendar =
     Action { implicit  request =>
-      Ok(views.html.calendar(getWeeks(1,12),  getMarkdownForCalendar))
+      Ok(views.html.calendar(getWeeks(1,16),  getMarkdownForCalendar))
     }
   def day(y:Int, m:Int, d:Int) = Action {
     implicit request => {

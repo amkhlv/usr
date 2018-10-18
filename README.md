@@ -4,7 +4,7 @@ Introduction
 
 This is a collection of various scripts (which are probably only useful for myself) and [notes on Linux](share/notes)
 
-    aptitude install stow emacs gmrun xbindkeys racket screen vim-gtk emacs-goodies-el xfonts-terminus python3-markdown xautomation xsel
+    aptitude install stow emacs gmrun xbindkeys racket screen vim-gtk emacs-goodies-el elpa-markdown-mode xfonts-terminus python3-markdown xautomation xsel
 
 My `emacs` configuration uses `yasnippet` which should be setup like this:
 
@@ -12,10 +12,15 @@ My `emacs` configuration uses `yasnippet` which should be setup like this:
     cd ~/a/git
     git clone https://github.com/capitaomorte/yasnippet
 
+The file `scribble.el` should be downloaded
+from [www.neilvandyke.org](https://www.neilvandyke.org/scribble-emacs/)
+and put into `lib/emacs/`
+
+
 Legal
 =====
 
-Copyright 2012,2013 Andrei Mikhailov
+Copyright 2012--2018 Andrei Mikhailov
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

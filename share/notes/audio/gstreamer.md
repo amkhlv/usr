@@ -77,3 +77,11 @@ Listening:
     gst-launch-0.10 -v udpsrc uri=udp://N.N.N.N:8888 caps='application/x-rtp' ! rtppcmudepay ! mulawdec  ! pulsesink
 
 
+# Video
+
+Excellent introduction is [available here](http://z25.org/static/_rd_/videostreaming_intro_plab/)
+
+There is usually __substantial delay__ in starting application (creating an impression that it does not work)
+
+    aptitude install gstreamer1.0-libav
+
