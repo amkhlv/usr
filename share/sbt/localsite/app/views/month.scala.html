@@ -37,7 +37,7 @@ ws.onmessage =  function( message ) {
 </script>
 
 
-<table>
+<table class="calTable">
     <tr>@ICal.namesOfDaysOfWeek.map { x => <td class="weekDayName">@x</td> }</tr>
     @for(i <- weeks.indices) {
       @if( i < 2 || weeks(i-1)(0).month == weeks(i)(0).month) {

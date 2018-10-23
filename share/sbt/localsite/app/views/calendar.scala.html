@@ -9,7 +9,7 @@
 
 @main("Calendar") {
 @Html(markdown)
-<table>
+<table class="calTable" id="calendarMainTable">
     @for(i <- 0 to weeks.length - 1) {
       @if((i > 0) && (i < weeks.length - 1) && (weeks(i-1)(6).month != weeks(i)(6).month)) {
         <tr><th colspan="7">@weeks(i+1)(6).month</th></tr>

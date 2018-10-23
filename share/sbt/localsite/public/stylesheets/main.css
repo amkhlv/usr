@@ -40,9 +40,16 @@ td.summariesListCell {
 
 }
 
+table.calTable {
+    width: 100%;
+}
+
+#calendarMainTable .calendarCell {
+    height: 2cm;
+}
 table.dayTable {
-height: 100%;
-width: 100%;
+    height: 100%;
+    width: 100%;
 }
 
 span.timeString {
