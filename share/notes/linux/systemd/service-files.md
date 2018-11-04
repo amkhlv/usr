@@ -18,3 +18,12 @@ The `service` type of unit has also a `[Service]` section. It is documented in:
 
     man systemd.service
 
+
+Service section
+===============
+
+
+    RemainAfterExit=
+
+        Takes a boolean value that specifies whether the service shall be considered active even when all its processes exited. Defaults to no.
+
