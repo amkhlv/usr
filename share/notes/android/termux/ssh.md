@@ -20,3 +20,7 @@ To stop:
 
     pkill ssh
 
+Keep phone awake !
+==================
+
+`Termux` over `ssh` is very slow when phone is sleeping.

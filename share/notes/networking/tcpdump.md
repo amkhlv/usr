@@ -3,6 +3,13 @@ General format
 
     tcpdump -i eth0 <expression>
 
+Examples
+========
+
+    tcpdump   -i lo   udp
+    
+    tcpdump   -i lo udp port 80
+
 General syntax of expressions
 =============================
 

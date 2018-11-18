@@ -25,7 +25,6 @@ libraryDependencies ++= Seq(
   "org.webjars" % "jquery" % "3.1.1-1",
   "org.scalafx" % "scalafx_2.11" % "8.0.144-R12",
   jdbc,
-  cache,
   ws,
   filters,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test

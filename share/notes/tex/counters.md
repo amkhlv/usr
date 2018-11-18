@@ -11,8 +11,8 @@ Setup a counter
 Increment a counter
 -------------------
 
-    \refstepcounter{Conjectures}
-    \noindent{\bf Conjecture \arabic{Conjectures}\label{ConjectureAboutX}: 
+    {\refstepcounter{Conjectures}\label{ConjectureAboutX}}
+    \noindent{\bf Conjecture \arabic{Conjectures}: }
 
 
 Refer to a counter

@@ -22,3 +22,12 @@ Then:
     make upload
 
 The user should be in the `dialout` group.
+
+How to press the button
+=======================
+
+`Mini Pro` has a small "reset"-type button. When uploading:
+
+1. press it and keep it pressed
+2. type `make upload` and press `Enter`, 
+3. release the reset button after 1 second
