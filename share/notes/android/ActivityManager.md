@@ -12,6 +12,13 @@ Then after couple of seconds (__will not work__ because of permissions; physical
 See [list of keycodes](KEYCODE.md)
 
 
+Starting and stopping OpenVPN
+=============================
+
+    am start -a android.intent.action.MAIN  -n de.blinkt.openvpn/.LaunchVPN  -e de.blinkt.openvpn.shortcutProfileName  MYPROFILENAME
+
+    am start -a android.intent.action.MAIN -n de.blinkt.openvpn/activities.DisconnectVPN
+
 Manual of am command
 ====================
 
