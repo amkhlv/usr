@@ -19,6 +19,7 @@ Starting and stopping OpenVPN
 
     am start -a android.intent.action.MAIN -n de.blinkt.openvpn/activities.DisconnectVPN
 
+
 Manual of am command
 ====================
 
