@@ -5,7 +5,8 @@ package controllers
   */
 
 import java.text.SimpleDateFormat
-import java.util.Calendar
+import java.time._
+import java.time.format._
 
 import akka.actor._
 import com.andreimikhailov.utils.FileEvent
@@ -46,16 +47,15 @@ class MyWebSocketActor(out: ActorRef, broadcast: ActorRef) extends Actor {
 }
 
 class ClockActor extends Actor {
-  val format = new SimpleDateFormat("yyyy-MM-dd HH:mm z")
   var sa : Option[ActorRef] = None
   def sendTime(x: Option[ActorRef]) = x match {
     case None => Unit
     case Some(s) =>
-      val today = Calendar.getInstance.getTime
-      val timestr = format.format(today)
+      val today = ZonedDateTime.now()
+      val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
       val jsn: JsValue = JsObject(Seq(
         "type" -> JsString("datetime"),
-        "content" ->  JsString(timestr)
+        "content" ->  JsString(today.format(formatter))
       ))
       s ! InternalMessage(jsn)
   }
