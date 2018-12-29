@@ -170,10 +170,11 @@ type ShowTags = Bool
 type SearchString = String
 data TypingMode = LoginThenPassword | PasswordThenLogin | JustPassword deriving Eq
 data Action = CallRobot TypingMode | ShowAccount deriving Eq
+type ShowMoreSecrets = Bool
 data Mode =
   MainWin ShowTags 
   | ItemSelector (Map.Map Char SiteAndAccount) Action
-  | AccountInfo Account
+  | AccountInfo Account ShowMoreSecrets
   | EnterPassword
   | ErrorMessage T.Text
 data St =
@@ -210,45 +211,64 @@ drawItemSelector hints action =
                  , str " "
                  , f (action == ShowAccount) "ShowSecretData"
                  ]
-      slctr = vBox [vBox [ charHintedItem (fst x, login $ account $ snd x)
-                           <+>
-                           str " "
-                           <+>
-                           markup (nickname (snd x) @? "highlighted")
-                           <+>
-                           str "("
-                           <+>
-                           (txt . siteurl . snd) x
-                           <+>
-                           str ")"
-                           <+>
-                           markup (T.pack " TAGS: " @@ fg V.blue)
-                           <+>
-                           str (show $ tags $ account $ snd x)
-                         , txt (T.concat
-                                [ T.pack "  "
-                                , (T.intercalate (T.pack "\n") . description . account . snd) x
-                                ])
-                         , txt (T.concat
-                                [ T.pack "  "
-                                , (T.intercalate (T.pack "\n") . notes . account . snd) x
-                                ])
-                         ]
+      slctr = vBox [vBox $ [ charHintedItem (fst x, login $ account $ snd x)
+                             <+>
+                             str " "
+                             <+>
+                             markup (nickname (snd x) @? "highlighted")
+                             <+>
+                             str "("
+                             <+>
+                             (txt . siteurl . snd) x
+                             <+>
+                             str ")"
+                             <+>
+                             markup (T.pack " TAGS: " @@ fg V.blue)
+                             <+>
+                             str (show $ tags $ account $ snd x)
+                           , txt (T.concat
+                                  [ T.pack "  "
+                                  , (T.intercalate (T.pack "\n") . description . account . snd) x
+                                  ])
+                           , txt (T.concat
+                                  [ T.pack "  "
+                                  , (T.intercalate (T.pack "\n") . notes . account . snd) x
+                                  ])
+                           ] ++ if ((secretNotes . account . snd) x
+                                    ++ (loginChallenge . account . snd) x
+                                    ++ (forgotPasswordChallenge . account . snd) x) == []
+                                then []
+                                else [ markup ("  secret info available" @? "red") ]
                    | x <- Map.assocs hints]
   in [vBox [top, slctr]]
 
-drawAccountInfo :: Account -> [T.Widget Name]
-drawAccountInfo acct = [v] where
+drawAccountInfo :: Account -> ShowMoreSecrets -> [T.Widget Name]
+drawAccountInfo acct ssn = [v] where
   v = vBox $ concat
     [ [ str (printf "password changed on %s" $ T.unpack t) | t <- changedOn acct ]
     , [ str (printf "password expires on %s" $ T.unpack t) | t <- expiringOn acct ]
     , [ markup ("login challenge: " @? "charhint") <+> markup (t @? "red")
       | t <- loginChallenge acct
       ]
-    , [ markup ("\"forgot password\" challenge" @? "charhint") <+> str " on file"
-      | t <- forgotPasswordChallenge acct
-      ]
-    , [ str "exists " <+> markup ("secret note" @? "charhint") | t <- secretNotes acct ]
+    , if ssn
+      then [ markup ("\"forgot password\" challenge: " @? "charhint") <+> markup (t @? "red")
+           | t <- forgotPasswordChallenge acct
+           ]
+      else [ markup ("\"forgot password\" challenge" @? "charhint") <+> str " on file, press SPACE to show"
+           | t <- forgotPasswordChallenge acct
+           ]
+    , if secretNotes acct == []
+      then []
+      else if ssn
+           then [ markup (t @? "red")
+                | t <- secretNotes acct
+                ]
+           else [ str "exists "
+                  <+>
+                  markup ("secret note: " @? "charhint")
+                  <+>
+                  str " --- press SPACE to show"
+                ]
     ]
 
 drawUI :: St -> [T.Widget Name]
@@ -256,7 +276,7 @@ drawUI st = case (st^.mode) of
   EnterPassword -> [ str "Enter password: " <+> WEdit.renderEditor (str . unlines) True emptyPwdLine ]
   MainWin showTags -> drawMainWin st showTags
   ItemSelector hints action -> drawItemSelector hints action
-  AccountInfo acct -> drawAccountInfo acct
+  AccountInfo acct ssn -> drawAccountInfo acct ssn
   ErrorMessage t -> [txt "ERROR: " <+> txt t]
 
 theMap :: A.AttrMap
@@ -296,8 +316,9 @@ appEvent st (T.VtyEvent ev) =
              (charHintsForNick (T.pack s) (st^.sites))
              (CallRobot LoginThenPassword)
         _ -> M.continue =<< T.handleEventLensed st cmdLine WEdit.handleEditorEvent ev
-    AccountInfo acct ->
+    AccountInfo acct ssn ->
       case ev of
+        V.EvKey (V.KChar ' ') [] -> M.continue $ st & mode .~ AccountInfo acct (not ssn)
         V.EvKey V.KEsc [] -> M.continue $ st & mode .~ MainWin False & cmdLine .~ emptyCmdLine
         _ -> M.continue st
     ItemSelector hints action ->
@@ -317,7 +338,7 @@ appEvent st (T.VtyEvent ev) =
                   IOC.liftIO $ typingRobot a acct
                   M.continue $ st & mode .~ MainWin False & cmdLine .~ emptyCmdLine
                 ShowAccount -> 
-                  M.continue $ st & mode .~ AccountInfo acct & cmdLine .~ emptyCmdLine
+                  M.continue $ st & mode .~ AccountInfo acct False & cmdLine .~ emptyCmdLine
             Nothing -> case Map.lookup (C.toLower c) hints of
               Just (SiteAndAccount _ u acct) -> 
                 case action of
@@ -326,7 +347,7 @@ appEvent st (T.VtyEvent ev) =
                     IOC.liftIO $ typingRobot a acct
                     M.continue $ st & mode .~ MainWin False & cmdLine .~ emptyCmdLine
                   ShowAccount -> 
-                    M.continue $ st & mode .~ AccountInfo acct & cmdLine .~ emptyCmdLine
+                    M.continue $ st & mode .~ AccountInfo acct False & cmdLine .~ emptyCmdLine
               Nothing ->
                 M.continue st
         V.EvKey V.KEsc [] -> M.continue $ st & mode .~ MainWin False & cmdLine .~ emptyCmdLine
