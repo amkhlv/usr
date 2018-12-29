@@ -202,15 +202,14 @@ drawMainWin st showTags =
 drawItemSelector :: Map.Map Char SiteAndAccount -> Action -> [T.Widget Name]
 drawItemSelector hints action =
   let f b x = if b then markup (T.pack x @? "selected") else markup (T.pack x @? "unselected")
-      top = hBox [
-        f (action == CallRobot LoginThenPassword) "LoginThenPassword" ,
-        str " ",
-        f (action == CallRobot JustPassword) "JustPassword" ,
-        str " ",
-        f (action == CallRobot PasswordThenLogin) "PasswordThenLogin" ,
-        str " ",
-        f (action == ShowAccount) "ShowSecretData"
-        ]
+      top = hBox [ f (action == CallRobot LoginThenPassword) "LoginThenPassword"
+                 , str " "
+                 , f (action == CallRobot JustPassword) "JustPassword"
+                 , str " "
+                 , f (action == CallRobot PasswordThenLogin) "PasswordThenLogin"
+                 , str " "
+                 , f (action == ShowAccount) "ShowSecretData"
+                 ]
       slctr = vBox [vBox [ charHintedItem (fst x, login $ account $ snd x)
                            <+>
                            str " "
