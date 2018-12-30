@@ -29,6 +29,7 @@ import qualified Brick.Widgets.Edit   as WEdit
 import Lens.Micro
 import Lens.Micro.TH
 import System.Process
+import qualified System.Directory as SysDir
 import GHC.IO.Handle
 import System.Exit
 import Data.Maybe
@@ -48,28 +49,32 @@ typeText t = do
   waitForProcess hndl1
   return ()
 
-notification :: String -> IO ()
-notification x = do
-  _ <- createProcess (proc "notify-send" ["-t", "1500", x])
+notification :: String -> Maybe String -> IO ()
+notification x mx = do
+  dir <- SysDir.getHomeDirectory
+  let icn = case mx of
+        Just i -> ["-i", dir ++ "/.config/amkhlv/secrets/" ++ i]
+        Nothing -> []
+  _ <- createProcess (proc "notify-send" $ icn ++ ["-t", "1500", x])
   return ()
 
 typingRobot :: TypingMode -> Account -> IO ()
 typingRobot LoginThenPassword acct = do
-  notification "ready to type login"
+  notification "ready to type login" (Just "login.svg")
   typeText $ login acct
-  notification "typing login"
+  notification "typing login" (Just "login.svg")
   typeText $ password acct
-  notification "typing password"
+  notification "typing password" (Just "password.svg")
 typingRobot PasswordThenLogin acct = do
-  notification "ready to type password"
+  notification "ready to type password" (Just "password.svg")
   typeText $ password acct
-  notification "typing password"
+  notification "typing password" (Just "password.svg")
   typeText $ login acct
-  notification "typing login"
+  notification "typing login" (Just "login.svg")
 typingRobot JustPassword acct = do
-  notification "ready to typ password"
+  notification "ready to type password" (Just "password.svg")
   typeText $ password acct
-  notification "typing password"
+  notification "typing password" (Just "password.svg")
 
 data Account = Account
   { login :: T.Text
@@ -121,6 +126,8 @@ type Nick = T.Text
 type URL = T.Text
 data Site = Site { nick :: Nick, url :: URL, accounts :: [Account] } deriving Show
 
+data Error = ParsingError T.Text
+
 getSite :: Cursor -> Site
 getSite cur =
   Site
@@ -150,18 +157,24 @@ allTags sites =
   
 data SiteAndAccount = SiteAndAccount { nickname :: Nick, siteurl :: URL, account :: Account }
 
-charHintsForNick :: T.Text -> [Site] -> Map.Map Char SiteAndAccount
-charHintsForNick s sites = 
-  let (tgs, substr) = case (T.split (=='.') s) of
-        [u] -> (Sets.empty, u)
-        [u,v] -> (Sets.fromList $ T.split (==',') u,   v)
-      nas = concat [
-        [SiteAndAccount (nick x) (url x) a
-        | a <- filter (Sets.isSubsetOf tgs . Sets.fromList . tags) $ accounts x
-        ]
-        | x <- filter (T.isInfixOf substr . nick) sites
-        ]
-  in Map.fromList $ zip (map C.chr [97..122]) nas
+charHintsForNick :: T.Text -> [Site] -> Either Error (Map.Map Char SiteAndAccount)
+charHintsForNick s sites =
+  case (T.split (=='.') s) of
+    [u] ->
+      let nas = concat [ map (SiteAndAccount (nick x) (url x)) $ accounts x
+                       | x <- filter (T.isInfixOf u . nick) sites
+                       ]
+      in Right $ Map.fromList $ zip (map C.chr [97..122]) nas
+    [u,v] ->
+      let (tgs, substr) = (Sets.fromList $ T.split (==',') u,   v)
+          nas = concat [
+            [SiteAndAccount (nick x) (url x) a
+            | a <- filter (Sets.isSubsetOf tgs . Sets.fromList . tags) $ accounts x
+            ]
+            | x <- filter (T.isInfixOf substr . nick) sites
+            ] 
+      in Right $ Map.fromList $ zip (map C.chr [97..122]) nas
+    _ -> Left $ ParsingError "search terms can contain at most one '.'"
 
 -- GUI
 
@@ -176,7 +189,7 @@ data Mode =
   | ItemSelector (Map.Map Char SiteAndAccount) Action
   | AccountInfo Account ShowMoreSecrets
   | EnterPassword
-  | ErrorMessage T.Text
+  | ErrorMessage [T.Text]
 data St =
     St { _mode  :: Mode
        , _sites :: [Site]
@@ -277,13 +290,14 @@ drawUI st = case (st^.mode) of
   MainWin showTags -> drawMainWin st showTags
   ItemSelector hints action -> drawItemSelector hints action
   AccountInfo acct ssn -> drawAccountInfo acct ssn
-  ErrorMessage t -> [txt "ERROR: " <+> txt t]
+  ErrorMessage ts -> [vBox $ markup ("ERROR: " @? "error") : map txt ts]
 
 theMap :: A.AttrMap
 theMap = A.attrMap V.defAttr 
     [ (WEdit.editAttr,                   V.white `on` V.blue)
     , (WEdit.editFocusedAttr,            V.black `on` V.yellow)
     , ("red", V.red `on` V.black)
+    , ("error", V.white `on` V.red)
     , ("charhint", V.yellow `on` V.black `V.withStyle` V.bold)
     , ("highlighted", V.black `on` V.green)
     , ("selected", V.black `on` V.white)
@@ -298,7 +312,7 @@ appEvent st (T.VtyEvent ev) =
         V.EvKey V.KEnter [] -> do
           let pwd = head $ WEdit.getEditContents $ st^.pwdLine
           mysites <- IOC.liftIO $ getSecrets pwd
-          IOC.liftIO $ notification $ (show $ length $ mysites >>= accounts) ++ " accounts" 
+          IOC.liftIO $ notification ((show $ length $ mysites >>= accounts) ++ " accounts") Nothing
           M.continue $ st & mode .~ MainWin False & sites .~ mysites
         _ -> M.continue =<< T.handleEventLensed st pwdLine WEdit.handleEditorEvent ev
     MainWin showTags ->
@@ -307,14 +321,13 @@ appEvent st (T.VtyEvent ev) =
         V.EvKey (V.KChar 'r') [V.MCtrl] -> do
           let pwd = head $ WEdit.getEditContents $ st^.pwdLine
           mysites <- IOC.liftIO $ getSecrets pwd
-          IOC.liftIO $ notification $ (show $ length $ mysites >>= accounts) ++ " accounts" 
+          IOC.liftIO $ notification ((show $ length $ mysites >>= accounts) ++ " accounts") Nothing
           M.continue $ st & mode .~ MainWin False & sites .~ mysites & cmdLine .~ emptyCmdLine
         V.EvKey (V.KChar 't') [V.MCtrl] -> M.continue $ st & mode .~ MainWin (not showTags)
         V.EvKey V.KEnter [] ->
-          let s = head $ WEdit.getEditContents $ st^.cmdLine
-          in M.continue $ st & mode .~ ItemSelector
-             (charHintsForNick (T.pack s) (st^.sites))
-             (CallRobot LoginThenPassword)
+          case charHintsForNick (T.pack $ head $ WEdit.getEditContents $ st^.cmdLine) (st^.sites) of
+            Left (ParsingError t) -> M.continue $ st & mode .~ ErrorMessage [t, "", "press SPACE to continue"]
+            Right chfn -> M.continue $ st & mode .~ ItemSelector chfn (CallRobot LoginThenPassword)
         _ -> M.continue =<< T.handleEventLensed st cmdLine WEdit.handleEditorEvent ev
     AccountInfo acct ssn ->
       case ev of
@@ -343,7 +356,7 @@ appEvent st (T.VtyEvent ev) =
               Just (SiteAndAccount _ u acct) -> 
                 case action of
                   CallRobot a -> do
-                    IOC.liftIO $ notification ("opening: " ++ T.unpack u)  >> xdgOpen u 
+                    IOC.liftIO $ notification ("opening: " ++ T.unpack u) (Just "opening.svg") >> xdgOpen u
                     IOC.liftIO $ typingRobot a acct
                     M.continue $ st & mode .~ MainWin False & cmdLine .~ emptyCmdLine
                   ShowAccount -> 
@@ -352,6 +365,12 @@ appEvent st (T.VtyEvent ev) =
                 M.continue st
         V.EvKey V.KEsc [] -> M.continue $ st & mode .~ MainWin False & cmdLine .~ emptyCmdLine
         _ -> M.continue st
+    ErrorMessage t ->
+      case ev of
+        V.EvKey (V.KChar ' ') [] -> retreat
+        V.EvKey V.KEsc [] -> retreat
+      where retreat = M.continue $ st & mode .~ MainWin False 
+
 appEvent st _ = M.continue st
 
 theApp :: M.App St e Name
@@ -387,6 +406,6 @@ getSecrets pwd = do
 
 main :: IO ()
 main = do
-  notification "starting password manager"
+  notification "starting password manager" (Just "starting.svg")
   _ <- M.defaultMain theApp initialState
   return ()
