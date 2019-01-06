@@ -1,0 +1,19 @@
+any_content = any_element* & text
+any_element = element * { any_attribute*, any_content }
+any_attribute = attribute * { text }
+
+start = element medicines {
+   element medicine {
+      attribute name { text },
+      element note { any_content }*,
+      element brands {
+         element brand {
+            attribute name { text },
+            attribute started { xsd:date }*,
+            attribute ended { xsd:date }*,
+            element note { text }*,
+            element tags { (element cur { text } | element old { text } | element q { text } ) }*
+         }*
+      }
+   }*
+}
