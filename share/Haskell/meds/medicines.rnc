@@ -2,6 +2,12 @@ any_content = any_element* & text
 any_element = element * { any_attribute*, any_content }
 any_attribute = attribute * { text }
 
+period = element period {
+   attribute start { xsd:date }*,
+   attribute end { xsd:date }*,
+   text
+}
+
 start = element medicines {
    element medicine {
       attribute name { text },
@@ -9,9 +15,8 @@ start = element medicines {
       element brands {
          element brand {
             attribute name { text },
-            attribute started { xsd:date }*,
-            attribute ended { xsd:date }*,
-            element note { text }*,
+            element note { any_content }*,
+            element periods { period* }*,
             element tags { (element cur { text } | element old { text } | element q { text } ) }*
          }*
       }
