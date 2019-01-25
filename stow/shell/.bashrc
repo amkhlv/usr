@@ -114,15 +114,16 @@ export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$
 export MAIL=/var/mail/andrei
 export MAILCHECK=30
 export XDG_RUNTIME_DIR="/run/user/$UID"
-
+export LIBVIRT_DEFAULT_URI=qemu:///system
+export LYNX_LSS=$HOME/.config/amkhlv/lynx.lss
+export LYNX_CFG=$HOME/.config/amkhlv/lynx.cfg
 
 source ~/.andrei
 source /etc/bash_completion
 # keychain ~/.ssh/id_rsa 2>&-
 # source ~/.keychain/$(uname -n)-sh > /dev/null
 
-td now
-events -n 3
+# events -n 3
 
 # find /home/andrei/maildirs/ -regextype posix-basic -regex '.*:.*F.*' | xargs amail.py -i
 # clndr.py --tt
@@ -133,4 +134,5 @@ events -n 3
 #         echo "$TDLIST"
 # fi
 
-export LIBVIRT_DEFAULT_URI=qemu:///system
+
+td now

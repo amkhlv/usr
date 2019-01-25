@@ -1,0 +1,7 @@
+Useful commands
+===============
+
+  lsinitramfs
+  
+  unmkinitramfs
+

@@ -7,4 +7,7 @@ export PYTHONPATH=/home/andrei/usr/lib/python/
 export PATH="$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin"
 export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$HOME/usr/local/share/man"
 
-setxkbmap -option "ctrl:nocaps"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/var/run/user/1000/bus"
+
+# setxkbmap -option "ctrl:nocaps"
+

@@ -1,3 +1,7 @@
+(add-to-list 'load-path "~/usr/lib/emacs/")
+(add-to-list 'load-path "~/a/git/yasnippet")
+(add-to-list 'load-path "~/a/git/rust-mode")
+
 (modify-frame-parameters nil '((wait-for-wm . nil)))
 (require 'color-theme)
 (require 'thingatpt)
@@ -18,8 +22,6 @@
 (transient-mark-mode 1)
 (scroll-bar-mode -1)
 (tool-bar-mode 0)
-(add-to-list 'load-path "~/usr/lib/emacs/")
-(add-to-list 'load-path "~/a/git/yasnippet")
 
 (require 'amkhlv)
 (require 'amkhlv-dired)
@@ -274,7 +276,8 @@
                  ("begin" "$1" "$" "$$" "\\(" "\\["))))
  '(package-archives
    '(
-     ("melpa-stable" . "https://stable.melpa.org/packages/")
+     ("gnu" . "https://elpa.gnu.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")
      ))
  '(preview-LaTeX-command
    (quote
@@ -340,6 +343,7 @@
          ("\\.md\\'" . markdown-mode)
          ("\\.rnc\\'" . rnc-mode)
          ("\\.pdq\\'" . nxml-mode)
+         ("\\.rs\\'" . rust-mode)
          )
        auto-mode-alist))
 
@@ -402,3 +406,4 @@
 (add-hook 'haskell-mode-hook 'intero-mode)
 
 
+(autoload 'rust-mode "rust-mode" nil t)
