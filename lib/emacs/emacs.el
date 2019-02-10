@@ -1,9 +1,18 @@
+(setq user-init-file (or load-file-name (buffer-file-name)))
+(setq user-emacs-directory (file-name-directory user-init-file))
+
 (add-to-list 'load-path "~/usr/lib/emacs/")
 (add-to-list 'load-path "~/a/git/yasnippet")
 (add-to-list 'load-path "~/a/git/rust-mode")
 
+
+(setq gnutls-algorithm-priority
+      "SECURE192:+SECURE128:-VERS-ALL:+VERS-TLS1.2:%PROFILE_MEDIUM"
+      gnutls-min-prime-bits 2048
+      gnutl-verify-error t)
+
 (modify-frame-parameters nil '((wait-for-wm . nil)))
-(require 'color-theme)
+
 (require 'thingatpt)
 
 (setq w32-lwindow-modifier 'super) ; Left Windows key
@@ -15,8 +24,7 @@
 (setq column-number-mode t)
 
 (set-input-method "rfc1345")
-(color-theme-initialize)
-(color-theme-classic)
+
 (set-frame-font "Terminus-12")
 (set-face-font 'menu "Terminus-12")
 (transient-mark-mode 1)
@@ -113,17 +121,6 @@
             (define-key nxml-mode-map "\C-c\C-r" 'rng-reload-schema)
             ))
 
-(defun insert-halfwidth-left-corner-bracket () (interactive) (ucs-insert #xff62)) ; "｢"
-(defun insert-halfwidth-right-corner-bracket () (interactive) (ucs-insert #xff63)) ; "｣"
-(defun insert-opening-guillemet () (interactive) (ucs-insert #x00ab)) ; "«"
-(defun insert-closing-guillemet () (interactive) (ucs-insert #x00bb)) ; "»"
-(add-hook 'perl6-mode-hook '(lambda () 
-                              (local-set-key (kbd "C-c ,") 'insert-halfwidth-left-corner-bracket)
-                              (local-set-key (kbd "C-c .") 'insert-halfwidth-right-corner-bracket)
-                              (local-set-key (kbd "C-c C-,") 'insert-opening-guillemet)
-                              (local-set-key (kbd "C-c C-.") 'insert-closing-guillemet)
-                              ))
-
 (add-to-list 'hs-special-modes-alist
              '(nxml-mode
                "<!--\\|<[^/>]*[^/]>" ;; regexp for start block
@@ -215,6 +212,7 @@
  '(TeX-save-query nil)
  '(browse-url-browser-function (quote browse-url-firefox))
  '(calendar-mark-diary-entries-flag t)
+ '(custom-enabled-themes (quote (deeper-blue)))
  '(fill-column 75)
  '(font-latex-user-keyword-classes
    (quote
@@ -274,11 +272,7 @@
    (quote
     (:foreground default :background default :scale 1.3 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
                  ("begin" "$1" "$" "$$" "\\(" "\\["))))
- '(package-archives
-   '(
-     ("gnu" . "https://elpa.gnu.org/packages/")
-     ("melpa" . "https://melpa.org/packages/")
-     ))
+ '(package-archives (quote nil))
  '(preview-LaTeX-command
    (quote
     ("%`%l --jobname=%s \"\\nonstopmode\\nofiles\\PassOptionsToPackage{"
@@ -295,9 +289,6 @@
  '(preview-image-type (quote png))
  '(preview-scale-function 1.6)
  '(ps-font-size (quote (12 . 12)))
- '(quack-fontify-style (quote plt))
- '(quack-pretty-lambda-p t)
- '(quack-programs (quote ("racket" "guile" )))
  '(tab-stop-list (quote (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))))
 
 (custom-set-faces
@@ -389,21 +380,7 @@
 (setq yas-snippet-dirs '("~/usr/lib/emacs/snippets"))
 (yas-global-mode 1)
 (require 'scribble)
-(require 'quack)
 (require 'epa-file)
 (setenv "GPG_AGENT_INFO" nil)
 (autoload 'rnc-mode "rnc-mode")
-
-(require 'package)
-(add-to-list
-  'package-archives
-  '("melpa" . "https://melpa.org/packages/") t)
-(package-initialize)
-;; (package-refresh-contents)
-
-;; Install Intero
-(package-install 'intero)
-(add-hook 'haskell-mode-hook 'intero-mode)
-
-
-(autoload 'rust-mode "rust-mode" nil t)
+(require 'markdown-mode)
