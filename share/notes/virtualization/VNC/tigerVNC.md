@@ -19,7 +19,7 @@ Setup of server
 
 Execute:
 
-    passwd
+    vncpasswd
 
 This lets to choose a password, which is saved into `~/.vnc/passwd` (in a slightly obfuscated form...)
 

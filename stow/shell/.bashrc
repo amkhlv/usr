@@ -120,6 +120,7 @@ export LYNX_CFG=$HOME/.config/amkhlv/lynx.cfg
 
 source ~/.andrei
 source /etc/bash_completion
+source ~/.amkhlv
 # keychain ~/.ssh/id_rsa 2>&-
 # source ~/.keychain/$(uname -n)-sh > /dev/null
 

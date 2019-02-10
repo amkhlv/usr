@@ -176,3 +176,8 @@ Then important sections are:
 
 (which determines the location of the log file)
 
+# MANGLE FWMARK
+
+    *mangle
+    -A OUTPUT ...  -j MARK --set-mark 2
+    COMMIT
