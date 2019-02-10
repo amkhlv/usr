@@ -3,7 +3,8 @@
 @import com.andreimikhailov.utils.ICal._
 @import controllers._
 
-@(weeks: List[List[MyDay]],
+@(gglCal: String,
+  weeks: List[List[MyDay]],
   markdown: String,
   isSecure: Boolean,
   webJarsUtil: org.webjars.play.WebJarsUtil
@@ -17,6 +18,8 @@
 @Html(webJarsUtil.script("jquery.min.js"))
 
 @Html(markdown)
+
+<iframe src="@gglCal" width="1300" height="600" frameborder="0"></iframe>
 
 <script>
 var ws = new WebSocket("@routes.HomeController.socket().webSocketURL(secure = isSecure)");
@@ -45,30 +48,7 @@ window.onfocus = function() {
   }   ;
 </script>
 
- <table class="calTable">
-    <tr>
-        @ICal.namesOfDaysOfWeek.map { x => <td class="weekDayName">@x</td> }
-    </tr>
-    @weeks.map { week =>
-      <tr> @week.map { day =>
-          <td class="calendarCell">
-              <table class="dayTable">
-                  <tr>
-                      <td class="@day.style">
-                         <a href="/@day.yyyy_mm_dd">@day.dayTitle</a>
-                      </td>
-                      <td class="summariesListCell">
-                         <ul class="summaries">
-                             @day.summaries.map { s =>
-                             <li class="summary"> @s </li> }
-                         </ul>
-                      </td>
-                  </tr>
-              </table>
-          </td> }
-      </tr>
-    }
-</table>
+<br/>
 
 <a href="/automate">automate</a>
 

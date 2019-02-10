@@ -10,6 +10,7 @@ trait Common {
   val icalFile: java.io.File
   val icalDir:  java.nio.file.Path
   val icalFileName: String
+  val googleCalendar: String
   val broadcastActor: ActorRef
   val gui: GUI
 }
@@ -24,5 +25,6 @@ class MyCommon @Inject() (val config: Configuration, val gui: GUI, val system: A
   val icalFile  = new java.io.File(config.get[String]("application.ics"))
   val icalDir = icalFile.getParentFile.toPath
   val icalFileName : String = icalFile.toPath.getFileName.toString
+  val googleCalendar = config.get[String](path = "application.googleCalendar")
   val broadcastActor = system.actorOf(Props(new SocketBroadcastActor(icalFileName)), "broadcastActor")
 }

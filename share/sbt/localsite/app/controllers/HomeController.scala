@@ -114,7 +114,7 @@ class HomeController @Inject()(
     Action { implicit request =>
       println("Index Request")
       common.gui.checkMainWin()
-      Ok(views.html.index(getWeeks(1,2),  getMarkdown, isSecure, webJarsUtil))
+      Ok(views.html.index(common.googleCalendar, getWeeks(1,2),  getMarkdown, isSecure, webJarsUtil))
     }
   def calendar =
     Action { implicit  request =>
