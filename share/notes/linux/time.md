@@ -21,3 +21,10 @@ Debugging
 
     ntpdate -dv pool.ntp.org
 
+Using SystemD
+=============
+
+The configuration file is `/etc/systemd/timesyncd.conf`
+
+    systemctl restart systemd-timesyncd
+

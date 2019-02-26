@@ -65,6 +65,12 @@ Resolve
     ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 
+In container
+============
+
+The configuration file for the `host0` interface should be called `00-host.network` because there is
+a competing file in `/usr/lib/systemd/network/80-container-host0.network`
+
 Starting and stopping interface
 ===============================
 

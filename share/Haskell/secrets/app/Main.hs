@@ -33,7 +33,7 @@ import qualified System.Directory as SysDir
 import GHC.IO.Handle
 import System.Exit
 import Data.Maybe
-import Data.List (intersperse)
+import Data.List (intersperse, sort)
 import Text.Printf
 
 xdgOpen :: T.Text -> IO ()
@@ -210,7 +210,7 @@ drawMainWin st showTags =
         , WEdit.renderEditor (str . unlines) True (st^.cmdLine)
         ]
   in if showTags
-     then [vBox $ (hBox . map txt . intersperse (T.pack "  ") $ allTags $ st^.sites) : listOfWidgets]
+     then [vBox $ (hBox . map txt . intersperse (T.pack "  ") $ sort $ allTags $ st^.sites) : listOfWidgets]
      else [vBox listOfWidgets]
 
 drawItemSelector :: Map.Map Char SiteAndAccount -> Action -> [T.Widget Name]
