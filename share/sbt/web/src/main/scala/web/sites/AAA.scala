@@ -10,7 +10,6 @@ import web.{conf, getDriver, waitUntilUserClosesWindow}
 
 object AAA extends App {
   val driver = getDriver(20)
-  driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS)
   driver.get("https://www.google.com")
 
   val w = new WebDriverWait(driver,3600)
