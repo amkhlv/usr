@@ -1,3 +1,8 @@
+Create qcow2 image
+==================
+
+    qemu-img create -f qcow2 foobar.qcow2 10G
+
 Convert VDI to QCOW2
 ====================
 

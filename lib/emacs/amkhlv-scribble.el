@@ -7,7 +7,7 @@
   (let* ((filename (file-name-nondirectory (buffer-file-name)))
          (exists-xml? (file-exists-p "bystrotex.xml")))
     (if exists-xml?
-        (shell-command (concat "bystrotex " filename))
+        (shell-command (concat "bystrotex '" filename "'"))
       (progn
         (message "no registry found, proceeding with single html")
         (shell-command (concat "scribble " filename))))))
@@ -18,7 +18,7 @@
   (interactive)
   (save-buffer)
   (let* ((filepath (buffer-file-name)))
-    (shell-command (concat "scribble ++arg --htmls --htmls " filepath))
+    (shell-command (concat "scribble ++arg --htmls --htmls '" filepath "'"))
     )
   )
 

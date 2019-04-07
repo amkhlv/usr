@@ -21,36 +21,22 @@ or:
 
     lb config
 
-depending on the version of `live-build`; there is some confusion about this. Actually `lb config` has tons of arguments:
+depending on the version of `live-build`; there is some confusion about this. Actually `lb config` has tons of arguments,
+which can be learned from:
 
-    lb config --distribution stretch --archive-areas "main contrib non-free" --bootappend-live "boot=live config username=andrei" --mirror-binary-security http://security.debian.org/   --mirror-chroot-security http://security.debian.org/  --security true
+    man lb_config
 
-by default, `live-build` __does not include Debian Installer images__ in the images. 
-It needs to be specifically enabled with lb config. Also, please note that for the "Desktop" installer to work, 
-the kernel of the live system must match the kernel d-i uses for the specified architecture. For example:
+For example:
 
-    lb config --architecture amd64 --debian-installer live --packages debian-installer-launcher
+    lb config --architecture amd64 --distribution buster --debian-installer live --archive-areas "main contrib non-free" --bootappend-live "boot=live config username=andrei"  --security true
 
 Then:
 
     lb bootstrap
     lb chroot
+    lb installer
 
-## Running in container, adjustments
-
-First execute, just to set users and passwords:
-
-    systemd-nspawn  -D chroot/
-
-Then just boot it and install all that is needed:
-
-    systemd-nspawn  -D chroot/  --network-macvlan=eth0  --boot
-
-Comments:
-
-1. Remember that to exit need to press `Ctrl-]` three times rapidly
-
-2. the flat `--network-macvlan` puts a second `MAC` address on the same physical card, which then goes to the container; its name inside the container start with `mv-`; we have to remember that it should be configured (execute `dhclient` inside the container)
+And then __snapshot__
 
 ## Binary stage
 
@@ -88,6 +74,7 @@ and then moving the resulting files into the root of the `live-build` folder. In
 
     lb clean --binary
     rm -rf cache/ 
+    mkdir -p binary/install
 
 correct the `chroot` filesystem, then again: 
 
@@ -96,7 +83,7 @@ correct the `chroot` filesystem, then again:
 
 # Useful programs
 
-    apt-get install  aptitude stow git screen btrfs-tools systemd-container ntfs-3g lshw dmidecode socat cryptsetup
+    apt-get install  aptitude stow git screen btrfs-progs systemd-container ntfs-3g lshw dmidecode socat cryptsetup gparted  debian-installer-launcher
 
     apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket xul-ext-noscript
 

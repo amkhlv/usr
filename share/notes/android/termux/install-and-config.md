@@ -15,6 +15,13 @@ Termux Android API
 
 This installs many commands, all starting with `termux-` .
 
+Enable access to Android storage
+================================
+
+    termux-setup-storage
+
+This opens permissions, and creates nice symlinks in `~/storage/` to `/storage/emulated/0/...`
+
 Using touch keyboard
 ====================
 
