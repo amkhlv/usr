@@ -1,10 +1,29 @@
 (setq user-init-file (or load-file-name (buffer-file-name)))
 (setq user-emacs-directory (file-name-directory user-init-file))
 
-(add-to-list 'load-path "~/usr/lib/emacs/")
-(add-to-list 'load-path "~/a/git/yasnippet")
-(add-to-list 'load-path "~/a/git/rust-mode")
+;(setq package-archives nil)
+;(add-to-list 'package-archives '("melpa_local" . "/home/andrei/.cache/melpa/"))
+;(package-initialize)
 
+(add-to-list 'load-path "~/usr/lib/emacs/")
+(add-to-list 'load-path "~/usr/lib/emacs/auctex-12.1/")
+(add-to-list 'load-path "~/a/git/yasnippet/")
+(add-to-list 'load-path "~/a/git/rust-mode/")
+(add-to-list 'load-path "~/melpa/s.el/")
+(add-to-list 'load-path "~/melpa/faceup/")
+(add-to-list 'load-path "~/melpa/racket-mode/")
+
+(require 'racket-mode)
+
+;------------- AUCTeX -----------------
+(setq dpi
+      (car (with-temp-buffer
+             (insert-file-contents "~/.local/boi/dpi")
+             (split-string (buffer-string) "\n" t))))
+
+(load "auctex.el" nil t t)
+(load "preview-latex.el" nil t t)
+;--------------------------------------
 
 (setq gnutls-algorithm-priority
       "SECURE192:+SECURE128:-VERS-ALL:+VERS-TLS1.2:%PROFILE_MEDIUM"
@@ -89,18 +108,38 @@
 (add-hook 'pod-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'mypod-view)))
 (add-outline 'pod-mode-hook)
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
-(add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-s") 'amkhlv/scribble/compile-htmls)))
-(add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
+(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
+(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
 (defun mylambda () (interactive) (ucs-insert #x3bb))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)
 (add-hook 'scribble-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide")))
+(add-outline 'racket-mode-hook)
+(add-hook 'racket-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide")))
 (defface scribble-slide-face
-  '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.2)))
+  '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.3)))
   "Basic face for highlighting the scribble slide title.")
 (add-hook 'scribble-mode-hook '(lambda () (font-lock-add-keywords 'scribble-mode
       '(("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
         ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
+        ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
+        ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
+(defface scribble-section-face
+  '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.4)))
+  "Basic face for highlighting the scribble section title.")
+(defface scribble-subsection-face
+  '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.2)))
+  "Basic face for highlighting the scribble subsection title.")
+(defface scribble-subsubsection-face
+  '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold )))
+  "Basic face for highlighting the scribble subsection title.")
+(add-hook 'racket-mode-hook '(lambda () (font-lock-add-keywords 'racket-mode
+      '(("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
+        ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
+        ("@title\\(\\[.*\\]\\)*?{\\([^}]*?\\)}" 2 'scribble-section-face prepend)
+        ("@section\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-section-face prepend)
+        ("@subsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsection-face prepend)
+        ("@subsubsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsubsection-face prepend)
         ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
         ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
@@ -110,7 +149,6 @@
                                     (highlight-regexp ".*\.scrbl" "hi-pink")
                                     ))
 
-(add-hook 'scheme-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-hook 'markdown-mode-hook '(lambda () 
                                  (local-set-key (kbd "C-c C-c") 'markdown-to-html)
                                  (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
@@ -149,7 +187,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(inhibit-startup-screen t)
  '(LaTeX-indent-level 3)
  '(TeX-PDF-mode t)
  '(TeX-command-list
@@ -262,6 +299,7 @@
        (:line-width 2 :color "red" :style released-button)
        :background "yellow" :foreground "black")
       command))))
+ '(inhibit-startup-screen t)
  '(ispell-local-dictionary-alist
    (quote
     (("brasileiro" "[A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[^A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[']" nil nil nil iso-8859-1))))
@@ -287,7 +325,7 @@
    (quote
     ("-q" "-dNOSAFER" "-dNOPAUSE" "-DNOPLATFONTS" "-dPrinted" "-dTextAlphaBits=4" "-dGraphicsAlphaBits=4" "-dAlignToPixels=1")))
  '(preview-image-type (quote png))
- '(preview-scale-function 1.6)
+ '(preview-scale-function (/ 110.0 (string-to-number dpi)))
  '(ps-font-size (quote (12 . 12)))
  '(tab-stop-list (quote (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))))
 
@@ -330,7 +368,8 @@
 (setq auto-mode-alist
       (append 
        '(
-         ("\\.rkt\\'" . scheme-mode)
+         ("\\.rkt\\'" . racket-mode)
+         ("\\.scrbl\\'" . racket-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.rnc\\'" . rnc-mode)
          ("\\.pdq\\'" . nxml-mode)
