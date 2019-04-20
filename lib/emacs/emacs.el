@@ -2,20 +2,38 @@
 (setq user-emacs-directory (file-name-directory user-init-file))
 
 ;(setq package-archives nil)
-;(add-to-list 'package-archives '("melpa_local" . "/home/andrei/.cache/melpa/"))
+;(add-to-list 'package-archives '("melpa_local" . "/home/andrei/melpa/"))
 ;(package-initialize)
 
 (add-to-list 'load-path "~/usr/lib/emacs/")
 (add-to-list 'load-path "~/usr/lib/emacs/auctex-12.1/")
 (add-to-list 'load-path "~/a/git/yasnippet/")
 (add-to-list 'load-path "~/a/git/rust-mode/")
+;; needed for racket-mode:
 (add-to-list 'load-path "~/melpa/s.el/")
 (add-to-list 'load-path "~/melpa/faceup/")
 (add-to-list 'load-path "~/melpa/racket-mode/")
+;; needed for intero:
+(add-to-list 'load-path "~/elpa/")
+(add-to-list 'load-path "~/elpa/seq-2.20/")
+(add-to-list 'load-path "~/melpa/dash.el/")
+(add-to-list 'load-path "~/melpa/company-mode/")
+(add-to-list 'load-path "~/melpa/epl/")
+(add-to-list 'load-path "~/melpa/pkg-info.el/")
+(add-to-list 'load-path "~/melpa/flycheck/")
+(add-to-list 'load-path "~/melpa/haskell-mode/")
+(add-to-list 'load-path "~/melpa/intero/elisp/")
 
+(require 'thingatpt)
 (require 'racket-mode)
 
-;------------- AUCTeX -----------------
+;;------------ Haskell ----------------
+(require 'pkg-info) ; seems to be needed for Haskell
+(require 'haskell-mode)
+(require 'intero)
+(add-hook 'haskell-mode-hook 'intero-mode)
+
+;;------------- AUCTeX -----------------
 (setq dpi
       (car (with-temp-buffer
              (insert-file-contents "~/.local/boi/dpi")
@@ -23,16 +41,32 @@
 
 (load "auctex.el" nil t t)
 (load "preview-latex.el" nil t t)
-;--------------------------------------
+;;--------------------------------------
 
 (setq gnutls-algorithm-priority
       "SECURE192:+SECURE128:-VERS-ALL:+VERS-TLS1.2:%PROFILE_MEDIUM"
       gnutls-min-prime-bits 2048
       gnutl-verify-error t)
 
-(modify-frame-parameters nil '((wait-for-wm . nil)))
+;;------ File Backups ------------------
+(defvar my-backup-directory "~/emacs-backups/")
+(if (not (file-exists-p my-backup-directory))
+        (make-directory my-backup-directory t))
+(setq backup-directory-alist `((".*" . ,my-backup-directory)))
+(setq make-backup-files t               ; backup of a file the first time it is saved.
+      backup-by-copying t               ; don't clobber symlinks
+      version-control t                 ; version numbers for backup files
+      delete-old-versions t             ; delete excess backup files silently
+      delete-by-moving-to-trash nil
+      kept-old-versions 2               ; oldest versions to keep when a new numbered backup is made (default: 2)
+      kept-new-versions 2               ; newest versions to keep when a new numbered backup is made (default: 2)
+      auto-save-default t               ; auto-save every buffer that visits a file
+      auto-save-timeout 20              ; number of seconds idle time before auto-save (default: 30)
+      auto-save-interval 300            ; number of keystrokes between auto-saves (default: 300)
+      )
 
-(require 'thingatpt)
+
+(modify-frame-parameters nil '((wait-for-wm . nil)))
 
 (setq w32-lwindow-modifier 'super) ; Left Windows key
 
@@ -113,17 +147,21 @@
 (defun mylambda () (interactive) (ucs-insert #x3bb))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)
-(add-hook 'scribble-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide")))
+(add-hook 'scribble-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide\\|@page")))
 (add-outline 'racket-mode-hook)
-(add-hook 'racket-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide")))
+(add-hook 'racket-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide\\|@page")))
 (defface scribble-slide-face
   '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.3)))
   "Basic face for highlighting the scribble slide title.")
-(add-hook 'scribble-mode-hook '(lambda () (font-lock-add-keywords 'scribble-mode
-      '(("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
-        ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
-        ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
-        ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
+(add-hook 'scribble-mode-hook
+          '(lambda ()
+             (font-lock-add-keywords 'scribble-mode
+                                     '(("@page\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
+                                       ("@page\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
+                                       ("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
+                                       ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
+                                       ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
+                                       ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
 (defface scribble-section-face
   '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.4)))
   "Basic face for highlighting the scribble section title.")
@@ -133,15 +171,19 @@
 (defface scribble-subsubsection-face
   '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold )))
   "Basic face for highlighting the scribble subsection title.")
-(add-hook 'racket-mode-hook '(lambda () (font-lock-add-keywords 'racket-mode
-      '(("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
-        ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
-        ("@title\\(\\[.*\\]\\)*?{\\([^}]*?\\)}" 2 'scribble-section-face prepend)
-        ("@section\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-section-face prepend)
-        ("@subsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsection-face prepend)
-        ("@subsubsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsubsection-face prepend)
-        ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
-        ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
+(add-hook 'racket-mode-hook
+          '(lambda ()
+             (font-lock-add-keywords 'racket-mode
+                                     '(("@page\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
+                                       ("@page\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
+                                       ("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
+                                       ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
+                                       ("@title\\(\\[.*\\]\\)*?{\\([^}]*?\\)}" 2 'scribble-section-face prepend)
+                                       ("@section\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-section-face prepend)
+                                       ("@subsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsection-face prepend)
+                                       ("@subsubsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsubsection-face prepend)
+                                       ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
+                                       ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
 
 (add-hook 'buffer-menu-mode-hook '(lambda () 
@@ -374,6 +416,7 @@
          ("\\.rnc\\'" . rnc-mode)
          ("\\.pdq\\'" . nxml-mode)
          ("\\.rs\\'" . rust-mode)
+         ("\\.hs\\'" . haskell-mode)
          )
        auto-mode-alist))
 
