@@ -1,5 +1,3 @@
-{-# LANGUAGE Arrows #-}
-
 module Main where
 import Options.Applicative
 import Text.XML.HXT.Core
@@ -65,7 +63,7 @@ instance XmlPickler Cfg where xpickle = xpCfg
 xpCfg :: PU Cfg
 xpCfg =
   xpElem "config" $
-  xpWrap ( \(r,t) -> Cfg r t , \cf -> (rngFile cf, todoList cf) ) $
+  xpWrap ( uncurry Cfg , \cf -> (rngFile cf, todoList cf) ) $
   xpPair (xpElem "rngFile" xpText) (xpElem "todolists" xpTodoListMap)
 
 type TodoListMap = Map String PathTs
@@ -112,10 +110,10 @@ toDoToXml :: TodoItem -> XmlTree
 toDoToXml tdi = head $ DTC.getChildren (pickleDoc xpTodoItem tdi)
 -- because an HXT parse tree always starts with a root element (tag) of name "/"
 
-showItem :: Int -> (Maybe TodoItem) -> IO ()
+showItem :: Int -> Maybe TodoItem -> IO ()
 showItem n (Just (TodoItem nick mdl mdesc murl mdir mpp murgent)) = do
   setSGR [SetColor Foreground Vivid Yellow, SetConsoleIntensity BoldIntensity]
-  putStr $ (if (n < 10) then (" " ++ (show n)) else show n)
+  putStr $ if n < 10 then " " ++ show n else show n
   setSGR [Reset]
   case murgent of
     Just _ -> setSGR [SetColor Foreground Vivid Red, SetBlinkSpeed SlowBlink] >> putStr " ■ "
@@ -123,10 +121,10 @@ showItem n (Just (TodoItem nick mdl mdesc murl mdir mpp murgent)) = do
   setSGR [Reset]
   putStr nick
   case mdesc of
-    Just desc -> setSGR [SetColor Foreground Vivid Green] >> (putStr " …") >> setSGR [Reset]
+    Just desc -> setSGR [SetColor Foreground Vivid Green] >> putStr " …" >> setSGR [Reset]
     Nothing -> return ()
   case mdl of
-    Just dl -> setSGR [SetColor Foreground Vivid Red] >> (putStr  $ " [" ++ dl ++ "]" )  >> setSGR [Reset]
+    Just dl -> setSGR [SetColor Foreground Vivid Red] >> putStr (" [" ++ dl ++ "]")  >> setSGR [Reset]
     Nothing -> return ()
   putStrLn ""
 showItem _ Nothing = putStrLn "ERROR"
@@ -136,28 +134,30 @@ readYMD yyyy mm dd = (read yyyy, read mm, read dd)
 
 timeHasCome :: TodoItem -> (UTCTime, TimeZone) -> Bool
 timeHasCome tdi (ct, ctz) =
-  case (postponed tdi) of
+  case postponed tdi of
     Just p ->
       let [yyyy, mm, dd] = Data.List.map unpack $ Data.Text.split (== '-') (pack p) in
       let (yN, mN, dN) = readYMD yyyy mm dd in
-      case (fromGregorianValid yN mN dN) of
-        Just dpp -> (diffDays dpp (localDay $ utcToLocalTime ctz ct)) <= 0 
+      case fromGregorianValid yN mN dN of
+        Just dpp -> diffDays dpp (localDay $ utcToLocalTime ctz ct) <= 0
     Nothing -> True
 
 ns :: (UTCTime, TimeZone) -> [Maybe TodoItem] -> [Int]
-ns ttz tdis = [ (fst p) | p <- (zip [0..] $ fromJust <$> tdis), timeHasCome (snd p) ttz]
+ns ttz tdis = [ fst p | p <- zip [0..] (fromJust <$> tdis), timeHasCome (snd p) ttz]
 
-readTodoListXML r x = readDocument [withRelaxNG r, withRemoveWS yes] x
+readTodoListXML r = readDocument [withRelaxNG r, withRemoveWS yes]
 getTodoItems :: String -> String -> IO [Maybe TodoItem]
-getTodoItems r x = runX $ readTodoListXML r x  >>> getChildren >>> getChildren >>> isElem >>> (processChildren isElem) >>^ (unpickleDoc xpTodoItem)
+getTodoItems r x = runX $
+  readTodoListXML r x >>> getChildren >>> getChildren >>> isElem >>> processChildren isElem >>^ unpickleDoc xpTodoItem
 
 addItem :: String -> String -> String -> Bool -> IO ()
 addItem r x a urg = do
   let murg = if urg then Just "" else Nothing
   runX $
       readTodoListXML r x  >>>
-      (processChildren (processChildren isElem)) >>>
-      (processChildren (changeChildren (\xmls -> (toDoToXml (TodoItem a Nothing Nothing Nothing Nothing Nothing murg)):xmls))) >>>
+      processChildren (processChildren isElem) >>>
+      processChildren (changeChildren
+                        (\xmls -> toDoToXml (TodoItem a Nothing Nothing Nothing Nothing Nothing murg):xmls)) >>>
       writeDocument [withIndent yes] x
   return ()
 
@@ -167,21 +167,21 @@ gtdShow r x sa ttz = do
   if sa then
     sequence_ [ showItem n item | (n, item) <- zip [1..] items]
     else
-    putStrLn (show $ ns ttz items) >>
+    print (ns ttz items) >>
     sequence_ [ showItem n (items !! nreal) | (n, nreal) <- zip [1..] (ns ttz items) ]
 
 gtdDelete :: String -> String -> Int -> Bool -> (UTCTime, TimeZone) -> IO ()
 gtdDelete r x n0 sa ttz =
   do
     items <- getTodoItems r x
-    let n = if sa then n0 - 1 else (ns ttz items) !! (n0 - 1)
+    let n = if sa then n0 - 1 else ns ttz items !! (n0 - 1)
     putStrLn "delete this?"
     c <- getChar
     case c of
       'y' -> runX $
         readTodoListXML r x  >>>
-        (processChildren (processChildren isElem)) >>>
-        (processChildren (changeChildren (\xmls -> (Data.List.take n xmls) ++ (Data.List.drop (n + 1) xmls)))) >>>
+        processChildren (processChildren isElem) >>>
+        processChildren (changeChildren (\xmls -> Data.List.take n xmls ++ Data.List.drop (n + 1) xmls)) >>>
         writeDocument [withIndent yes] x
       _ -> return []
     return ()
@@ -189,8 +189,8 @@ gtdDelete r x n0 sa ttz =
 gtdFull :: String -> String -> Int -> Bool -> (UTCTime, TimeZone) -> IO ()
 gtdFull r x n0 sa ttz = do
   items <- getTodoItems r x
-  let n = if sa then n0 - 1 else (ns ttz items) !! (n0 - 1)
-  case (items !! n) of -- TodoItem nick deadline description url dir
+  let n = if sa then n0 - 1 else ns ttz items !! (n0 - 1)
+  case items !! n of -- TodoItem nick deadline description url dir
     Just (TodoItem a mdl mdsc murl mdir mpp murgent) ->
       putStrLn "" >> setSGR [Reset, SetUnderlining SingleUnderline] >> putStrLn a >> setSGR [ Reset ] >>
       do
