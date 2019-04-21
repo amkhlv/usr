@@ -1,3 +1,8 @@
+List of Latest LHC by GHC version
+=================================
+
+[is available on stackage.org](https://www.stackage.org/)
+
 Starting new project
 ====================
 

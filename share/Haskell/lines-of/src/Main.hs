@@ -26,7 +26,7 @@ instance XmlPickler TableSpecs where xpickle = xpTableSpecs
 xpTableSpecs :: PU TableSpecs
 xpTableSpecs =
   xpElem "table" $
-  xpWrap ( \((c,d,t,r)) -> TableSpecs c d t r , \s -> (Main.csspath s, Main.dbpath s, Main.table s, Main.colspecs s) ) $
+  xpWrap ( \(c,d,t,r) -> TableSpecs c d t r , \s -> (Main.csspath s, Main.dbpath s, Main.table s, Main.colspecs s) ) $
   xp4Tuple
   (xpElem "cssfile" xpText)
   (xpElem "dbfile" xpText)

@@ -5,12 +5,13 @@ import Options.Applicative
 import Text.XML.HXT.Core
 import Text.XML.HXT.RelaxNG
 import Text.XML.HXT.Arrow.Pickle
+import Text.XML.HXT.Arrow.XmlArrow
+import qualified Text.XML.HXT.DOM.XmlNode as DOM
 import Data.Text (Text, pack, unpack, split)
 import Data.List
 import Control.Monad
 import System.Console.ANSI
 import qualified Data.Tree.Class as DTC
-import qualified Text.XML.HXT.DOM.XmlNode as HXTDOM
 import Data.Map
 import Data.Maybe
 import System.Directory
@@ -36,6 +37,8 @@ data Clops = Clops
              , dir :: Bool
              , urg :: Bool
              , showAll :: Bool
+             , newListName :: Maybe String
+             , newXMLFile  :: Maybe String
              }
 
 cloparser :: Parser Clops
@@ -50,6 +53,8 @@ cloparser = Clops
   <*> switch ( long "dir" <> help "print path to the project directory")
   <*> switch ( long "urg" <> help "urgent flag")
   <*> switch ( long "all" <> help "show all items included postponed")
+  <*> optional ( option str (long "newlist" <> metavar "NL" <> help "New list"))
+  <*> optional ( option str (long "file" <> metavar "NF" <> help "XML file for new list"))
 
 data Cfg = Cfg
   { rngFile :: String
@@ -60,7 +65,7 @@ instance XmlPickler Cfg where xpickle = xpCfg
 xpCfg :: PU Cfg
 xpCfg =
   xpElem "config" $
-  xpWrap ( \((r,t)) -> Cfg r t , \cf -> (rngFile cf, todoList cf) ) $
+  xpWrap ( \(r,t) -> Cfg r t , \cf -> (rngFile cf, todoList cf) ) $
   xpPair (xpElem "rngFile" xpText) (xpElem "todolists" xpTodoListMap)
 
 type TodoListMap = Map String PathTs
@@ -74,7 +79,7 @@ xpTodoListMap =
 type PathTs = (String, Maybe String)
 xpPathTs :: PU PathTs
 xpPathTs =
-  xpWrap ( \((t,p)) -> (p,t) , \x -> (snd x, fst x) ) $
+  xpWrap ( \(t,p) -> (p,t) , \x -> (snd x, fst x) ) $
   xpPair (xpOption (xpElem "ts" xpText)) (xpElem "path" xpText)
 
 data TodoItem = TodoItem
@@ -91,7 +96,7 @@ instance XmlPickler TodoItem where
 xpTodoItem :: PU TodoItem
 xpTodoItem =
   xpElem "todo" $
-  xpWrap ( \ ((ni, dl, desc, url, dir, pp, urgent)) -> TodoItem ni dl desc url dir pp urgent
+  xpWrap ( \ (ni, dl, desc, url, dir, pp, urgent) -> TodoItem ni dl desc url dir pp urgent
          , \t -> (nick t, deadline t, description t, url t, directory t, postponed t, urgent t)
          ) $
   xp7Tuple
@@ -176,7 +181,7 @@ gtdDelete r x n0 sa ttz =
       'y' -> runX $
         readTodoListXML r x  >>>
         (processChildren (processChildren isElem)) >>>
-        (processChildren (changeChildren (\xmls -> (take n xmls) ++ (drop (n + 1) xmls)))) >>>
+        (processChildren (changeChildren (\xmls -> (Data.List.take n xmls) ++ (Data.List.drop (n + 1) xmls)))) >>>
         writeDocument [withIndent yes] x
       _ -> return []
     return ()
@@ -212,8 +217,8 @@ gtdFull r x n0 sa ttz = do
 gtdOpenInBrowser :: String -> String -> Int -> Bool -> (UTCTime, TimeZone) -> IO ()
 gtdOpenInBrowser r x n0 sa ttz = do
   items <- getTodoItems r x
-  let n = if sa then n0 - 1 else (ns ttz items) !! (n0 - 1)
-  case (items !! n) of
+  let n = if sa then n0 - 1 else ns ttz items !! (n0 - 1)
+  case items !! n of
     Just (TodoItem a _ _ (Just url) _ _ _) -> spawnCommand ("firefox '" ++ url ++ "'") >> putStrLn "opening in Firefox"
     _ -> putStrLn "-- no URL to open"
 
@@ -222,63 +227,97 @@ gtdCD r x n0 sa ttz = do
   home <- getHomeDirectory
   current <- getCurrentDirectory
   items <- getTodoItems r x
-  let n = if sa then n0 - 1 else (ns ttz items) !! (n0 - 1)
-  case (items !! n) of
+  let n = if sa then n0 - 1 else ns ttz items !! (n0 - 1)
+  case items !! n of
     Just (TodoItem a _ _ _ (Just dir) _ _) -> putStr (home ++ "/" ++ dir)
     _ -> putStr current
 
 gtdShowLists :: TodoListMap -> IO ()
-gtdShowLists tdlm = (sequence_ $ [ putStr k | k <- (intersperse " " (keys tdlm))]) >> putStrLn ""
+gtdShowLists tdlm = sequence_ [ putStr k | k <- intersperse " " (keys tdlm)] >> putStrLn ""
 
 checkTS :: String -> Cfg -> (UTCTime, TimeZone) -> IO Bool
 checkTS lName cfg ttz = do
-  let expectedTS = formatTime defaultTimeLocale (iso8601DateFormat Nothing) (utcToLocalTime (snd ttz) (fst ttz))
-  return $ case (snd ((todoList cfg) ! lName)) of
-             Just ts -> (expectedTS == ts)
+  let expectedTS = formatTime defaultTimeLocale "%s" (fst ttz)
+  return $ case snd (todoList cfg ! lName) of
+             Just ts -> (read expectedTS :: Int) < ((read ts :: Int) + 60)
              Nothing -> False
 
 insertTS :: String -> Cfg -> (UTCTime, TimeZone) -> IO ()
 insertTS lName cfg ttz = do
   home <- getHomeDirectory
-  let  newTS = formatTime defaultTimeLocale (iso8601DateFormat Nothing) (utcToLocalTime (snd ttz) (fst ttz))
+  let  newTS = formatTime defaultTimeLocale "%s" (fst ttz)
   mc <- runX $ readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
                               , withRemoveWS yes
                               ] (home ++ "/" ++ tdhsXML) >>>
-        (processChildren
+        processChildren
          (processChildren (orElse
                            (hasName "rngFile")
                            (processChildren
                             (orElse
-                             ((hasName "todolist") >>>
-                              (hasAttrValue "name" (== lName)) >>>
-                              (processChildren (none `Text.XML.HXT.Core.when` (hasName "ts"))) >>>
-                               (changeChildren
-                                 (\xmls -> (HXTDOM.NTree (XTag (mkName "ts") []) [HXTDOM.NTree (XText newTS) []]):xmls))
+                             (hasName "todolist" >>>
+                              hasAttrValue "name" (== lName) >>>
+                              processChildren (none `Text.XML.HXT.Core.when` hasName "ts") >>>
+                               changeChildren
+                                 (\xmls -> DOM.NTree (XTag (mkName "ts") []) [DOM.NTree (XText newTS) []]:xmls)
                               )
-                              returnA))))) >>>
+                              returnA)))) >>>
         writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
   return ()
 
+insertNewList :: String -> String -> Cfg -> IO ()
+insertNewList name filename cfg = do
+  home <- getHomeDirectory
+  absPath <- makeAbsolute filename
+  runX $ readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
+                              , withRemoveWS yes
+                              ] (home ++ "/" ++ tdhsXML) >>>
+        processChildren
+         (processChildren (orElse
+                           (hasName "rngFile")
+                           (changeChildren
+                            (\xmls -> DOM.NTree
+                                       (XTag
+                                        (mkName "todolist")
+                                        [DOM.NTree (XAttr (mkName "name")) [DOM.NTree (XText name) []]])
+                                       [DOM.NTree
+                                        (XTag (mkName "path") [])
+                                          [DOM.NTree (XText absPath) []]]
+                                      :xmls
+                            ))))
+         >>>
+         writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
+  runX $ root [] [mkelem "todolist" [] []] >>> writeDocument [withIndent yes] filename
+  return ()
+
+
 replaceItem :: String -> String -> TodoItem -> TodoItem -> IO ()
 replaceItem r x oldItem newItem = do
-  runX $ readTodoListXML r x >>> 
-    (processChildren
-     (processChildren (orElse
-                        ((hasName "todo") >>>
-                         (hasAttrValue "nick" (== (nick oldItem))) >>>
-                         (case (description oldItem) of
-                          Nothing -> returnA
-                          Just txt -> (processChildren ((hasName "description") >>> (hasText (== txt))))
-                         ) >>>
-                         (setChildren $ (DTC.getChildren $ head (DTC.getChildren (pickleDoc xpTodoItem newItem)))))
-                        returnA))) >>>
+  runX $
+    readTodoListXML r x
+    >>>
+    processChildren
+      (processChildren
+        (orElse
+          (hasName "todo"
+           >>>
+           hasAttrValue "nick" (== nick oldItem)
+           >>>
+           case description oldItem of
+             Nothing -> returnA
+             Just txt -> processChildren (hasName "description" >>> hasText (== txt))
+           >>>
+           setChildren (DTC.getChildren $ head (DTC.getChildren (pickleDoc xpTodoItem newItem)))
+           )
+          returnA
+          ))
+    >>>
     writeDocument [withIndent yes] x
   return ()
 
 gtdEdit :: String -> String -> Int -> Bool -> (UTCTime, TimeZone) -> IO ()
 gtdEdit r x n0 sa ttz = do
   items <- getTodoItems r x
-  let n = if sa then n0 - 1 else (ns ttz items) !! (n0 - 1)
+  let n = if sa then n0 - 1 else ns ttz items !! (n0 - 1)
   let item = fromJust $ items !! n
   pp <- newIORef $ postponed item
   dl <- newIORef $ deadline item
@@ -297,39 +336,39 @@ gtdEdit r x n0 sa ttz = do
   --
   mainTbl <- tableNew 2 6 False
   --
-  btnUnselDL <- buttonNewWithLabel $ case (deadline item) of
+  btnUnselDL <- buttonNewWithLabel $ case deadline item of
     Nothing -> "No deadline"
     Just x -> "Deadline: " ++ x
   calDL <- calendarNew
   calendarClearMarks calDL
-  case (deadline item) of
+  case deadline item of
     Just ymd -> let [yyyy, mm, dd] = Data.List.map unpack $ Data.Text.split (== '-') (pack ymd) in do
-      calendarSelectMonth calDL ((read mm) - 1) (read yyyy)
+      calendarSelectMonth calDL (read mm - 1) (read yyyy)
       calendarSelectDay calDL (read dd)
     Nothing -> return ()
   onDaySelected calDL $ do
     (nY, nM, nD) <- calendarGetDate calDL
-    let mm = if (nM < 9) then "0" ++ (show $ nM + 1) else (show $ nM + 1)
-    let dd = if (nD < 10) then "0" ++ (show nD) else (show nD)
-    buttonSetLabel btnUnselDL $ "Deadline: " ++ (show nY) ++ "-" ++ mm ++ "-" ++ dd
-    writeIORef dl (Just $ (show nY) ++ "-" ++ mm ++ "-" ++ dd)
+    let mm = if nM < 9  then "0" ++ show (nM + 1) else show (nM + 1)
+    let dd = if nD < 10 then "0" ++ show nD else show nD
+    buttonSetLabel btnUnselDL $ "Deadline: " ++ show nY ++ "-" ++ mm ++ "-" ++ dd
+    writeIORef dl (Just $ show nY ++ "-" ++ mm ++ "-" ++ dd)
   --
-  btnUnselPP <- buttonNewWithLabel $ case (postponed item) of
+  btnUnselPP <- buttonNewWithLabel $ case postponed item of
     Nothing -> "Not postponed"
     Just x -> "Postponed until " ++ x
   calPP <- calendarNew
   calendarClearMarks calPP
-  case (postponed item) of
+  case postponed item of
     Just ymd -> let [yyyy, mm, dd] = Data.List.map unpack $ Data.Text.split (== '-') (pack ymd) in do
-      calendarSelectMonth calPP ((read mm) - 1) (read yyyy)
+      calendarSelectMonth calPP (read mm - 1) (read yyyy)
       calendarSelectDay calPP (read dd)
     Nothing -> return ()
   onDaySelected calPP $ do
     (nY, nM, nD) <- calendarGetDate calPP
-    let mm = if (nM < 9) then "0" ++ (show $ nM + 1) else (show $ nM + 1)
-    let dd = if (nD < 10) then "0" ++ (show nD) else (show nD)
-    buttonSetLabel btnUnselPP $ "Postponed until " ++ (show nY) ++ "-" ++ mm ++ "-" ++ dd
-    writeIORef pp (Just $ (show nY) ++ "-" ++ mm ++ "-" ++ dd)
+    let mm = if nM < 9  then "0" ++ show (nM + 1) else show (nM + 1)
+    let dd = if nD < 10 then "0" ++ show nD else show nD
+    buttonSetLabel btnUnselPP $ "Postponed until " ++ show nY ++ "-" ++ mm ++ "-" ++ dd
+    writeIORef pp (Just $ show nY ++ "-" ++ mm ++ "-" ++ dd)
   --
   lblNick <- labelNew (Just $ nick item)
   labelSetAttributes lblNick [AttrScale 0 (-1) 1.2]
@@ -361,7 +400,7 @@ gtdEdit r x n0 sa ttz = do
   btnOK <- buttonNew
   set btnOK [ buttonLabel := "OK" ]
   btnOK `on` buttonActivated $ do
-    (i0,i1) <- (,) <$> (textBufferGetIterAtOffset tvBuf 0) <*> (textBufferGetIterAtOffset tvBuf $ -1)
+    (i0,i1) <- (,) <$> textBufferGetIterAtOffset tvBuf 0 <*> textBufferGetIterAtOffset tvBuf (- 1)
     newDesc <- textBufferGetText tvBuf i0 i1 True
     newURL  <- entryGetText entryURL
     newDir  <- entryGetText entryDir
@@ -371,9 +410,9 @@ gtdEdit r x n0 sa ttz = do
     let newItem = TodoItem
                   (nick item)
                   newDL
-                  (if (newDesc == "") then Nothing else Just newDesc)
-                  (if (newURL == "") then Nothing else Just newURL)
-                  (if (newDir == "") then Nothing else Just newDir)
+                  (if newDesc == "" then Nothing else Just newDesc)
+                  (if newURL == "" then Nothing else Just newURL)
+                  (if newDir == "" then Nothing else Just newDir)
                   newPP
                   (if newUrg then Just "" else Nothing)
     replaceItem r x item newItem
@@ -420,40 +459,68 @@ getConf = do
   mc <- runX $ readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
                             , withRemoveWS yes
                             ] (home ++ "/" ++ tdhsXML) >>>
-        getChildren >>> isElem >>> (processChildren isElem) >>^ (unpickleDoc xpCfg)
+        getChildren >>> isElem >>> processChildren isElem >>^ unpickleDoc xpCfg
   return $ head mc
 
 getTTZ :: IO (UTCTime, TimeZone)
-getTTZ = do
-  ttz <- (,) <$> getCurrentTime <*> getCurrentTimeZone
-  return ttz
+getTTZ = (,) <$> getCurrentTime <*> getCurrentTimeZone
 
-dispatch :: Clops -> (Maybe Cfg) -> (UTCTime, TimeZone) -> IO ()
+dispatch :: Clops -> Maybe Cfg -> (UTCTime, TimeZone) -> IO ()
 dispatch _ Nothing ttz = putStrLn "ERROR: unable to configure"
 --      Clops    listName     n        add      del   edt   full  ff    dir   urg   all
-dispatch (Clops (Just lName) Nothing  Nothing  False False False False False False sa) (Just cfg) ttz =
-  gtdShow (rngFile cfg) (fst $ (todoList cfg) ! lName) sa ttz >>
+dispatch
+  (Clops (Just lName) Nothing  Nothing  False False False False False False sa Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  gtdShow (rngFile cfg) (fst $ todoList cfg ! lName) sa ttz >>
   insertTS lName cfg ttz
-dispatch (Clops (Just lName) Nothing  (Just a) False edt   False False False urg   _ ) (Just cfg) ttz =
-  addItem (rngFile cfg) (fst $ (todoList cfg) ! lName) a urg
-dispatch (Clops (Just lName) (Just n) Nothing  True  _     _     _     _     False sa) (Just cfg) ttz = do
-  tsIsOK <- checkTS lName cfg ttz
-  if tsIsOK then
-    gtdFull   (rngFile cfg) (fst $ (todoList cfg) ! lName) n sa ttz >>
-    gtdDelete (rngFile cfg) (fst $ (todoList cfg) ! lName) n sa ttz
-  else
-    putStrLn $ "-- bad timestamp; please do first:   " ++ "td " ++ lName
-dispatch (Clops (Just lName) (Just n) Nothing  False edt   False False False _     sa) (Just cfg) ttz =
-  gtdEdit (rngFile cfg) (fst $ (todoList cfg) ! lName) n sa ttz
-dispatch (Clops (Just lName) (Just n) Nothing  False False True  False False False sa) (Just cfg) ttz =
-  gtdFull (rngFile cfg) (fst $ (todoList cfg) ! lName) n sa ttz
-dispatch (Clops (Just lName) (Just n) Nothing  False False False True  False False sa) (Just cfg) ttz =
-  gtdOpenInBrowser (rngFile cfg) (fst $ (todoList cfg) ! lName) n sa ttz
-dispatch (Clops (Just lName) (Just n) Nothing  False False False False True  False sa) (Just cfg) ttz =
-  gtdCD (rngFile cfg) (fst $ (todoList cfg) ! lName) n sa ttz
-dispatch (Clops Nothing _ _ _ _ _ _ _ _ _) (Just cfg) _ =
-  gtdShowLists $ todoList cfg
-dispatch (Clops mlName n add del edt full ff cd urg sa) _ _ = 
+dispatch
+  (Clops (Just lName) Nothing  (Just a) False edt   False False False urg   _ Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  addItem (rngFile cfg) (fst $ todoList cfg ! lName) a urg
+dispatch
+  (Clops (Just lName) (Just n) Nothing  True  _     _     _     _     False sa Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  do
+    tsIsOK <- checkTS lName cfg ttz
+    if tsIsOK then
+      gtdFull   (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz >>
+      gtdDelete (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
+    else
+      putStrLn $ "-- bad timestamp; please do first:   " ++ "td " ++ lName
+dispatch
+  (Clops (Just lName) (Just n) Nothing  False edt   False False False _     sa Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  gtdEdit (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
+dispatch
+  (Clops (Just lName) (Just n) Nothing  False False True  False False False sa Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  gtdFull (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
+dispatch
+  (Clops (Just lName) (Just n) Nothing  False False False True  False False sa Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  gtdOpenInBrowser (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
+dispatch
+  (Clops (Just lName) (Just n) Nothing  False False False False True  False sa Nothing Nothing)
+  (Just cfg)
+  ttz
+  =
+  gtdCD (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
+dispatch (Clops Nothing _ _ _ _ _ _ _ _ _ Nothing Nothing) (Just cfg) _ = gtdShowLists $ todoList cfg
+dispatch (Clops mlName n add del edt full ff cd urg sa (Just newlist) (Just newxml)) (Just cfg) _ =
+  insertNewList newlist newxml cfg
+dispatch (Clops mlName n add del edt full ff cd urg sa newlist newxml) _ _ =
   putStrLn "ERROR, contradicting CLOPS:" >>
   putStr "MListName: " >> putStr (show mlName) >> putStr " , n: " >> putStr (show n) >>
   putStr " , add: " >> putStr (show add) >> putStr " , del: " >> putStr (show del) >>
@@ -463,7 +530,7 @@ dispatch (Clops mlName n add del edt full ff cd urg sa) _ _ =
   putStrLn ""
 
 main :: IO ()
-main = join $ dispatch <$> (execParser opts) <*> getConf <*> getTTZ 
+main = join $ dispatch <$> execParser opts <*> getConf <*> getTTZ
   where
     opts = info (helper <*> cloparser)
            ( fullDesc
