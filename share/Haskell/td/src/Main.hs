@@ -5,6 +5,7 @@ import Text.XML.HXT.RelaxNG
 import Text.XML.HXT.Arrow.Pickle
 import Text.XML.HXT.Arrow.XmlArrow
 import qualified Text.XML.HXT.DOM.XmlNode as DOM
+import Control.Arrow.ArrowIO
 import Data.Text (Text, pack, unpack, split)
 import Data.List
 import Control.Monad
@@ -13,6 +14,7 @@ import qualified Data.Tree.Class as DTC
 import Data.Map
 import Data.Maybe
 import System.Directory
+import System.FilePath.Posix
 import System.Process
 import System.IO
 import Data.Time
@@ -37,6 +39,8 @@ data Clops = Clops
              , showAll :: Bool
              , newListName :: Maybe String
              , newXMLFile  :: Maybe String
+             , emacs :: Bool
+             , delist :: Bool
              }
 
 cloparser :: Parser Clops
@@ -53,6 +57,8 @@ cloparser = Clops
   <*> switch ( long "all" <> help "show all items included postponed")
   <*> optional ( option str (long "newlist" <> metavar "NL" <> help "New list"))
   <*> optional ( option str (long "file" <> metavar "NF" <> help "XML file for new list"))
+  <*> switch ( long "emacs" <> help "Open list in Emacs" )
+  <*> switch ( long "delist" <> help "unregister list")
 
 data Cfg = Cfg
   { rngFile :: String
@@ -222,6 +228,9 @@ gtdOpenInBrowser r x n0 sa ttz = do
     Just (TodoItem a _ _ (Just url) _ _ _) -> spawnCommand ("firefox '" ++ url ++ "'") >> putStrLn "opening in Firefox"
     _ -> putStrLn "-- no URL to open"
 
+gtdOpenInEmacs :: String -> Cfg -> IO ()
+gtdOpenInEmacs nick conf = spawnCommand ("emacsclient " ++ (fst $ todoList conf ! nick)) >> putStrLn "opening in EmacsClient"
+
 gtdCD :: String -> String -> Int -> Bool -> (UTCTime, TimeZone) -> IO ()
 gtdCD r x n0 sa ttz = do
   home <- getHomeDirectory
@@ -242,6 +251,26 @@ checkTS lName cfg ttz = do
              Just ts -> (read expectedTS :: Int) < ((read ts :: Int) + 60)
              Nothing -> False
 
+gtdDelist :: String -> Cfg -> IO ()
+gtdDelist name cfg = do
+  home <- getHomeDirectory
+  runX $
+    readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
+                      , withRemoveWS yes
+                      ] (home ++ "/" ++ tdhsXML)
+    >>>
+    processChildren
+         (processChildren (orElse
+                           (hasName "rngFile")
+                           (replaceChildren
+                              (getChildren
+                                >>>
+                                neg (hasAttrValue "name" (== name)
+                                      >>>
+                                      arrIO0 (putStrLn $ "-- the todolist: " ++ name ++ " -- is unregistered"))))))
+    >>>
+    writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
+  return ()
 insertTS :: String -> Cfg -> (UTCTime, TimeZone) -> IO ()
 insertTS lName cfg ttz = do
   home <- getHomeDirectory
@@ -264,31 +293,80 @@ insertTS lName cfg ttz = do
         writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
   return ()
 
+locatingRule cfg path =
+  mkelem
+    "uri"
+    [ attr "resource" $ txt path
+    , attr "uri" $ txt (rngFile cfg)]
+    []
+
+locatingRules cfg path =
+  mkelem
+    "locatingRules"
+    [attr "xmlns" $ txt "http://thaiopensource.com/ns/locating-rules/1.0"]
+    [locatingRule cfg path]
+
+updateSchemas :: String -> Cfg -> IO ()
+updateSchemas path cfg = do
+  let schemasXML = takeDirectory path ++ "/schemas.xml"
+  alreadyExistsSchemasXML <- doesFileExist schemasXML
+  todolistFile <- makeAbsolute path
+  if alreadyExistsSchemasXML
+  then do
+    putStrLn $ "about to add a location rule into " ++ schemasXML
+    runX
+      (readDocument [withRemoveWS yes] schemasXML
+        >>>
+        processTopDown
+          (replaceChildren
+            (getChildren <+> locatingRule cfg todolistFile)
+            `Text.XML.HXT.Core.when`
+            (hasName "locatingRules"
+              >>>
+              neg (getChildren
+                    >>>
+                    hasAttrValue "resource" ( == todolistFile)
+                    >>>
+                    arrIO0 (putStrLn $
+                            "schema for: " ++ todolistFile ++ " -- have already beed registered in " ++ schemasXML))))
+        >>>
+        writeDocument [withIndent yes] schemasXML)
+    return ()
+  else do
+    runX $ root [] [locatingRules cfg todolistFile] >>> writeDocument [withIndent yes] schemasXML
+    return ()
+
 insertNewList :: String -> String -> Cfg -> IO ()
 insertNewList name filename cfg = do
   home <- getHomeDirectory
   absPath <- makeAbsolute filename
-  runX $ readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
-                              , withRemoveWS yes
-                              ] (home ++ "/" ++ tdhsXML) >>>
-        processChildren
+  runX $
+    readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
+                      , withRemoveWS yes
+                      ] (home ++ "/" ++ tdhsXML)
+    >>>
+    processChildren
          (processChildren (orElse
                            (hasName "rngFile")
-                           (changeChildren
-                            (\xmls -> DOM.NTree
-                                       (XTag
-                                        (mkName "todolist")
-                                        [DOM.NTree (XAttr (mkName "name")) [DOM.NTree (XText name) []]])
-                                       [DOM.NTree
-                                        (XTag (mkName "path") [])
-                                          [DOM.NTree (XText absPath) []]]
-                                      :xmls
-                            ))))
-         >>>
-         writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
-  runX $ root [] [mkelem "todolist" [] []] >>> writeDocument [withIndent yes] filename
-  return ()
-
+                           (replaceChildren
+                              (getChildren
+                                <+>
+                                mkelem "todolist" [attr "name" $ txt name] [mkelem "path" [] [txt absPath]])
+                              `Text.XML.HXT.Core.when`
+                              neg (getChildren
+                                    >>>
+                                    hasAttrValue "name" (== name)
+                                    >>>
+                                    arrIO0 (putStrLn $ "-- " ++ name ++ " -- have already been registered")))))
+    >>>
+    writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
+  alreadyExitsXML <- doesFileExist filename
+  updateSchemas filename cfg
+  if alreadyExitsXML
+  then putStrLn "XML file already exists"
+  else do
+    runX $ root [] [mkelem "todolist" [] []] >>> writeDocument [withIndent yes] filename
+    putStrLn $ "created XML file " ++ filename
 
 replaceItem :: String -> String -> TodoItem -> TodoItem -> IO ()
 replaceItem r x oldItem newItem = do
@@ -468,21 +546,23 @@ getTTZ = (,) <$> getCurrentTime <*> getCurrentTimeZone
 dispatch :: Clops -> Maybe Cfg -> (UTCTime, TimeZone) -> IO ()
 dispatch _ Nothing ttz = putStrLn "ERROR: unable to configure"
 --      Clops    listName     n        add      del   edt   full  ff    dir   urg   all
+dispatch (Clops (Just lName) _ _ _ _ _ _ _ _ _ _ _ True _) (Just cfg) _ =
+  gtdOpenInEmacs lName cfg
 dispatch
-  (Clops (Just lName) Nothing  Nothing  False False False False False False sa Nothing Nothing)
+  (Clops (Just lName) Nothing  Nothing  False False False False False False sa Nothing Nothing False False)
   (Just cfg)
   ttz
   =
   gtdShow (rngFile cfg) (fst $ todoList cfg ! lName) sa ttz >>
   insertTS lName cfg ttz
 dispatch
-  (Clops (Just lName) Nothing  (Just a) False edt   False False False urg   _ Nothing Nothing)
+  (Clops (Just lName) Nothing  (Just a) False edt   False False False urg   _ Nothing Nothing _ _)
   (Just cfg)
   ttz
   =
   addItem (rngFile cfg) (fst $ todoList cfg ! lName) a urg
 dispatch
-  (Clops (Just lName) (Just n) Nothing  True  _     _     _     _     False sa Nothing Nothing)
+  (Clops (Just lName) (Just n) Nothing  True  _     _     _     _     False sa Nothing Nothing _ _)
   (Just cfg)
   ttz
   =
@@ -494,33 +574,39 @@ dispatch
     else
       putStrLn $ "-- bad timestamp; please do first:   " ++ "td " ++ lName
 dispatch
-  (Clops (Just lName) (Just n) Nothing  False edt   False False False _     sa Nothing Nothing)
+  (Clops (Just lName) (Just n) Nothing  False edt   False False False _     sa Nothing Nothing _ _)
   (Just cfg)
   ttz
   =
   gtdEdit (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
 dispatch
-  (Clops (Just lName) (Just n) Nothing  False False True  False False False sa Nothing Nothing)
+  (Clops (Just lName) (Just n) Nothing  False False True  False False False sa Nothing Nothing _ _)
   (Just cfg)
   ttz
   =
   gtdFull (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
 dispatch
-  (Clops (Just lName) (Just n) Nothing  False False False True  False False sa Nothing Nothing)
+  (Clops (Just lName) (Just n) Nothing  False False False True  False False sa Nothing Nothing _ _)
   (Just cfg)
   ttz
   =
   gtdOpenInBrowser (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
 dispatch
-  (Clops (Just lName) (Just n) Nothing  False False False False True  False sa Nothing Nothing)
+  (Clops (Just lName) (Just n) Nothing  False False False False True  False sa Nothing Nothing _ _)
   (Just cfg)
   ttz
   =
   gtdCD (rngFile cfg) (fst $ todoList cfg ! lName) n sa ttz
-dispatch (Clops Nothing _ _ _ _ _ _ _ _ _ Nothing Nothing) (Just cfg) _ = gtdShowLists $ todoList cfg
-dispatch (Clops mlName n add del edt full ff cd urg sa (Just newlist) (Just newxml)) (Just cfg) _ =
+dispatch
+  (Clops (Just lName) _ _ _ _ _ _ _ _ _ _ _ _ True)
+  (Just cfg)
+  ttz
+  =
+  gtdDelist lName cfg
+dispatch (Clops Nothing _ _ _ _ _ _ _ _ _ Nothing Nothing _ _) (Just cfg) _ = gtdShowLists $ todoList cfg
+dispatch (Clops mlName n add del edt full ff cd urg sa (Just newlist) (Just newxml) _ _) (Just cfg) _ =
   insertNewList newlist newxml cfg
-dispatch (Clops mlName n add del edt full ff cd urg sa newlist newxml) _ _ =
+dispatch (Clops mlName n add del edt full ff cd urg sa newlist newxml _ _) _ _ =
   putStrLn "ERROR, contradicting CLOPS:" >>
   putStr "MListName: " >> putStr (show mlName) >> putStr " , n: " >> putStr (show n) >>
   putStr " , add: " >> putStr (show add) >> putStr " , del: " >> putStr (show del) >>

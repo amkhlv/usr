@@ -29,3 +29,4 @@ executable td
                      , iso8601-time
                      , gtk
                      , transformers
+                     , filepath
