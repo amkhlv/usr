@@ -41,6 +41,13 @@ executable lines-of-seminarios
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
 
+executable lines-of-SIMcards
+  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  ghc-options:         -main-is SIMcards
+  main-is:             SIMcards.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+
 executable lines-of-example
   hs-source-dirs:      src, tables
   ghc-options:         -main-is Example
