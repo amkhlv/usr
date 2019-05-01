@@ -8,7 +8,7 @@ import qualified Text.XML.HXT.DOM.XmlNode as DOM
 import Control.Arrow.ArrowIO
 import Data.Text (Text, pack, unpack, split)
 import Data.List
-import Control.Monad
+import qualified Control.Monad as CM
 import System.Console.ANSI
 import qualified Data.Tree.Class as DTC
 import Data.Map
@@ -112,8 +112,8 @@ xpTodoItem =
   (xpOption (xpElem "after" xpText))
   (xpOption (xpElem "urgent" xpText0))
   
-toDoToXml :: TodoItem -> XmlTree 
-toDoToXml tdi = head $ DTC.getChildren (pickleDoc xpTodoItem tdi)
+toDoToXml :: Text.XML.HXT.Core.Arrow a => TodoItem -> a b XmlTree
+toDoToXml tdi = arr $ const (head $ DTC.getChildren (pickleDoc xpTodoItem tdi))
 -- because an HXT parse tree always starts with a root element (tag) of name "/"
 
 showItem :: Int -> Maybe TodoItem -> IO ()
@@ -161,9 +161,12 @@ addItem r x a urg = do
   let murg = if urg then Just "" else Nothing
   runX $
       readTodoListXML r x  >>>
-      processChildren (processChildren isElem) >>>
-      processChildren (changeChildren
-                        (\xmls -> toDoToXml (TodoItem a Nothing Nothing Nothing Nothing Nothing murg):xmls)) >>>
+      processChildren
+        (replaceChildren
+          (getChildren <+> toDoToXml (TodoItem a Nothing Nothing Nothing Nothing Nothing murg))
+          `when`
+          hasName "todolist"
+         ) >>>
       writeDocument [withIndent yes] x
   return ()
 
@@ -229,7 +232,7 @@ gtdOpenInBrowser r x n0 sa ttz = do
     _ -> putStrLn "-- no URL to open"
 
 gtdOpenInEmacs :: String -> Cfg -> IO ()
-gtdOpenInEmacs nick conf = spawnCommand ("emacsclient " ++ (fst $ todoList conf ! nick)) >> putStrLn "opening in EmacsClient"
+gtdOpenInEmacs nick conf = spawnCommand ("emacsclient " ++ fst (todoList conf ! nick)) >> putStrLn "opening in EmacsClient"
 
 gtdCD :: String -> String -> Int -> Bool -> (UTCTime, TimeZone) -> IO ()
 gtdCD r x n0 sa ttz = do
@@ -257,18 +260,14 @@ gtdDelist name cfg = do
   runX $
     readDocument [ withRelaxNG (home ++ "/" ++ tdhsRNG)
                       , withRemoveWS yes
-                      ] (home ++ "/" ++ tdhsXML)
-    >>>
+                      ] (home ++ "/" ++ tdhsXML) >>>
     processChildren
-         (processChildren (orElse
-                           (hasName "rngFile")
-                           (replaceChildren
-                              (getChildren
-                                >>>
-                                neg (hasAttrValue "name" (== name)
-                                      >>>
-                                      arrIO0 (putStrLn $ "-- the todolist: " ++ name ++ " -- is unregistered"))))))
-    >>>
+      (processChildren (orElse
+                        (hasName "rngFile")
+                        (replaceChildren
+                           (getChildren >>>
+                             neg (hasAttrValue "name" (== name) >>>
+                                  arrIO0 (putStrLn $ "-- the todolist: " ++ name ++ " -- is unregistered")))))) >>>
     writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
   return ()
 insertTS :: String -> Cfg -> (UTCTime, TimeZone) -> IO ()
@@ -279,25 +278,26 @@ insertTS lName cfg ttz = do
                               , withRemoveWS yes
                               ] (home ++ "/" ++ tdhsXML) >>>
         processChildren
-         (processChildren (orElse
-                           (hasName "rngFile")
-                           (processChildren
-                            (orElse
-                             (hasName "todolist" >>>
-                              hasAttrValue "name" (== lName) >>>
-                              processChildren (none `Text.XML.HXT.Core.when` hasName "ts") >>>
-                               changeChildren
-                                 (\xmls -> DOM.NTree (XTag (mkName "ts") []) [DOM.NTree (XText newTS) []]:xmls)
-                              )
-                              returnA)))) >>>
+         (processChildren ( orElse
+                              (hasName "todolists" >>>
+                                processChildren
+                                  (orElse
+                                    (hasAttrValue "name" (== lName) >>>
+                                      processChildren (none `when` hasName "ts") >>>
+                                      replaceChildren (mkelem "ts" [] [txt newTS] <+> getChildren))
+                                    returnA))
+                              returnA)) >>>
         writeDocument [withIndent yes] (home ++ "/" ++ tdhsXML)
   return ()
+
+rng2rnc :: String -> String
+rng2rnc x = Data.List.take (length x - 1) x ++ "c"
 
 locatingRule cfg path =
   mkelem
     "uri"
     [ attr "resource" $ txt path
-    , attr "uri" $ txt (rngFile cfg)]
+    , attr "uri" $ txt (rng2rnc $ rngFile cfg)]
     []
 
 locatingRules cfg path =
@@ -320,7 +320,7 @@ updateSchemas path cfg = do
         processTopDown
           (replaceChildren
             (getChildren <+> locatingRule cfg todolistFile)
-            `Text.XML.HXT.Core.when`
+            `when`
             (hasName "locatingRules"
               >>>
               neg (getChildren
@@ -352,7 +352,7 @@ insertNewList name filename cfg = do
                               (getChildren
                                 <+>
                                 mkelem "todolist" [attr "name" $ txt name] [mkelem "path" [] [txt absPath]])
-                              `Text.XML.HXT.Core.when`
+                              `when`
                               neg (getChildren
                                     >>>
                                     hasAttrValue "name" (== name)
@@ -400,7 +400,7 @@ gtdEdit r x n0 sa ttz = do
   pp <- newIORef $ postponed item
   dl <- newIORef $ deadline item
   --
-  void initGUI
+  CM.void initGUI
   window <- windowNew
   set window [ windowTitle         := "Edit Entry"
              , windowDefaultWidth  := 400
@@ -616,7 +616,7 @@ dispatch (Clops mlName n add del edt full ff cd urg sa newlist newxml _ _) _ _ =
   putStrLn ""
 
 main :: IO ()
-main = join $ dispatch <$> execParser opts <*> getConf <*> getTTZ
+main = CM.join $ dispatch <$> execParser opts <*> getConf <*> getTTZ
   where
     opts = info (helper <*> cloparser)
            ( fullDesc
