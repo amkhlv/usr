@@ -14,24 +14,24 @@
 (add-to-list 'load-path "~/melpa/faceup/")
 (add-to-list 'load-path "~/melpa/racket-mode/")
 ;; needed for intero:
-(add-to-list 'load-path "~/elpa/")
-(add-to-list 'load-path "~/elpa/seq-2.20/")
-(add-to-list 'load-path "~/melpa/dash.el/")
-(add-to-list 'load-path "~/melpa/company-mode/")
-(add-to-list 'load-path "~/melpa/epl/")
-(add-to-list 'load-path "~/melpa/pkg-info.el/")
-(add-to-list 'load-path "~/melpa/flycheck/")
-(add-to-list 'load-path "~/melpa/haskell-mode/")
-(add-to-list 'load-path "~/melpa/intero/elisp/")
+;; (add-to-list 'load-path "~/elpa/")
+;; (add-to-list 'load-path "~/elpa/seq-2.20/")
+;; (add-to-list 'load-path "~/melpa/dash.el/")
+;; (add-to-list 'load-path "~/melpa/company-mode/")
+;; (add-to-list 'load-path "~/melpa/epl/")
+;; (add-to-list 'load-path "~/melpa/pkg-info.el/")
+;; (add-to-list 'load-path "~/melpa/flycheck/")
+;; (add-to-list 'load-path "~/melpa/haskell-mode/")
+;; (add-to-list 'load-path "~/melpa/intero/elisp/")
 
 (require 'thingatpt)
 (require 'racket-mode)
 
 ;;------------ Haskell ----------------
-(require 'pkg-info) ; seems to be needed for Haskell
-(require 'haskell-mode)
-(require 'intero)
-(add-hook 'haskell-mode-hook 'intero-mode)
+;;(require 'pkg-info) ; seems to be needed for Haskell
+;;(require 'haskell-mode)
+;;(require 'intero)
+;;(add-hook 'haskell-mode-hook 'intero-mode)
 
 ;;------------- AUCTeX -----------------
 (setq dpi
@@ -161,7 +161,9 @@
                                        ("@slide\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
                                        ("@slide\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
                                        ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
-                                       ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
+                                       ("@\\(slide\\)" 1 'font-lock-warning-face prepend)
+                                       ("@\\(page\\)" 1 'font-lock-warning-face prepend)
+                                       ))))
 (defface scribble-section-face
   '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.4)))
   "Basic face for highlighting the scribble section title.")
@@ -183,7 +185,15 @@
                                        ("@subsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsection-face prepend)
                                        ("@subsubsection\\(\\[.*\\]\\)?{\\([^}]*?\\)}" 2 'scribble-subsubsection-face prepend)
                                        ("@\\(after-pause\\)" 1 'font-lock-warning-face prepend)
-                                       ("@\\(slide\\)" 1 'font-lock-warning-face prepend)))))
+                                       ("@\\(slide\\)" 1 'font-lock-warning-face prepend)
+                                       ("@\\(page\\)" 1 'font-lock-warning-face prepend)
+                                       ("@subpage\\[1\s-*\"\\(.*?\\)\".*\\]"    1 'scribble-section-face prepend)
+                                       ("@subpage\\[1\s-*@elem{\\(.*?\\)}.*\\]" 1 'scribble-section-face prepend)
+                                       ("@subpage\\[2\s-*\"\\(.*?\\)\".*\\]"    1 'scribble-subsection-face prepend)
+                                       ("@subpage\\[2\s-*@elem{\\(.*?\\)}.*\\]" 1 'scribble-subsection-face prepend)
+                                       ("@subpage\\[3\s-*\"\\(.*?\\)\".*\\]"    1 'scribble-subsubsection-face prepend)
+                                       ("@subpage\\[3\s-*@elem{\\(.*?\\)}.*\\]" 1 'scribble-subsubsection-face prepend)
+                                       ))))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
 
 (add-hook 'buffer-menu-mode-hook '(lambda () 
