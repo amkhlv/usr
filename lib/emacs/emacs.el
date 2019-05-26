@@ -5,8 +5,8 @@
 ;(add-to-list 'package-archives '("melpa_local" . "/home/andrei/melpa/"))
 ;(package-initialize)
 
-(add-to-list 'load-path "~/usr/lib/emacs/")
-(add-to-list 'load-path "~/usr/lib/emacs/auctex-12.1/")
+(add-to-list 'load-path "~/usr/lib/emacs/elisp/")
+;(add-to-list 'load-path "~/usr/lib/emacs/elisp/auctex-12.1/")
 (add-to-list 'load-path "~/a/git/yasnippet/")
 (add-to-list 'load-path "~/a/git/rust-mode/")
 ;; needed for racket-mode:
@@ -144,6 +144,7 @@
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
+(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-tab>") 'bystroTeX-toggle-preview-and-recenter)))
 (defun mylambda () (interactive) (ucs-insert #x3bb))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)
@@ -197,8 +198,8 @@
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
 
 (add-hook 'buffer-menu-mode-hook '(lambda () 
-                                    (highlight-regexp ".*[^_]\.tex" "hi-green-b") 
-                                    (highlight-regexp ".*\.scrbl" "hi-pink")
+                                    (highlight-regexp ".*[^_]\.tex" 'hi-green-b) 
+                                    (highlight-regexp ".*\.scrbl" 'hi-pink)
                                     ))
 
 (add-hook 'markdown-mode-hook '(lambda () 
@@ -469,10 +470,11 @@
   )
 
 (require 'yasnippet) ;; not yasnippet-bundle
-(setq yas-snippet-dirs '("~/usr/lib/emacs/snippets"))
+(setq yas-snippet-dirs '("~/usr/lib/emacs/elisp/snippets"))
 (yas-global-mode 1)
 (require 'scribble)
 (require 'epa-file)
 (setenv "GPG_AGENT_INFO" nil)
 (autoload 'rnc-mode "rnc-mode")
 (require 'markdown-mode)
+(require 'bystroTeX-preview)
