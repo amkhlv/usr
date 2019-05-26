@@ -1,0 +1,1 @@
+/home/andrei/a/git/amkhlv/bystroTeX-preview.el

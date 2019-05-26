@@ -28,9 +28,7 @@
   (interactive)
   (let* ((filepath (buffer-file-name))
          (filename (file-name-nondirectory filepath))
-         (htmlpath (progn
-                     (string-match "\\(.*\\)\.scrbl$" filepath)
-                     (match-string 1 filepath))))
+         )
     (shell-command 
      (concat "firefox `bystrotex -l " filename "` &"))))
 
