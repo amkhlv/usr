@@ -3,7 +3,7 @@ Building
 
 Should have installed `libgtk2.0-dev`:
 
-    sudo aptitude install libgtk2.0-dev
+    sudo aptitude install libgtk2.0-dev libgmp-dev
 
 Then build:
 

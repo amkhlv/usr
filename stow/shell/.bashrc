@@ -109,7 +109,7 @@ setxkbmap -option "caps:none"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 export PYTHONPATH=/home/andrei/usr/lib/python/
-export PATH="$HOME/.cargo/bin:$HOME/.local/opt/rakudo-star-2017.07/bin:$HOME/.local/opt/rakudo-star-2017.07/share/perl6/site/bin:$HOME/.local/bin:$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin"
+export PATH="$HOME/.cargo/bin:$HOME/.local/opt/rakudo/bin:$HOME/.local/opt/rakudo/share/perl6/site/bin:$HOME/.local/bin:$PATH:$HOME/bin:$HOME/usr/bin:$HOME/usr/local/bin"
 export MANPATH="$MANPATH:$HOME/usr/man:$HOME/usr/share/man:$HOME/usr/local/man:$HOME/usr/local/share/man"
 export MAIL=/var/mail/andrei
 export MAILCHECK=30
@@ -117,6 +117,7 @@ export XDG_RUNTIME_DIR="/run/user/$UID"
 export LIBVIRT_DEFAULT_URI=qemu:///system
 export LYNX_LSS=$HOME/.config/amkhlv/lynx.lss
 export LYNX_CFG=$HOME/.config/amkhlv/lynx.cfg
+
 
 source ~/.andrei
 source /etc/bash_completion

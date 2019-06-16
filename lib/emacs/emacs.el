@@ -145,6 +145,8 @@
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-tab>") 'bystroTeX-toggle-preview-and-recenter)))
+(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-M-tab>") 'bystroTeX-reveal)))
+(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-`") 'bystroTeX-unindent)))
 (defun mylambda () (interactive) (ucs-insert #x3bb))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)
@@ -478,3 +480,4 @@
 (autoload 'rnc-mode "rnc-mode")
 (require 'markdown-mode)
 (require 'bystroTeX-preview)
+(require 'bystroTeX-utils)

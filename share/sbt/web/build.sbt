@@ -36,3 +36,25 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.1.1"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "1.1.1"
 
+// https://stackoverflow.com/questions/25144484/sbt-assembly-deduplication-found-error/25147568
+assemblyMergeStrategy in assembly := {
+ case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+ case x => MergeStrategy.first
+}
+
+val osName: SettingKey[String] = SettingKey[String]("osName")
+
+osName := (System.getProperty("os.name") match {
+  case name if name.startsWith("Linux") => "linux"
+  case name if name.startsWith("Mac") => "mac"
+  case name if name.startsWith("Windows") => "win"
+  case _ => throw new Exception("Unknown platform!")
+})
+
+libraryDependencies += "org.openjfx" % "javafx-base" % "12.0.1" classifier osName.value
+
+libraryDependencies += "org.openjfx" % "javafx-controls" % "12.0.1" classifier osName.value
+
+libraryDependencies += "org.openjfx" % "javafx-fxml" % "12.0.1" classifier osName.value
+
+libraryDependencies += "org.openjfx" % "javafx-graphics" % "12.0.1" classifier osName.value

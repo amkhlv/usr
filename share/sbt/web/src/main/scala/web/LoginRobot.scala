@@ -1,20 +1,22 @@
-package web.utils
-
-import java.util.concurrent.TimeUnit
+package web
 
 import org.openqa.selenium.By
-import org.openqa.selenium.firefox.FirefoxDriver
-import web.getDriver
 
 import scala.xml.{Node, NodeSeq}
-class LoginRobot (account: Node, sel: Node)  {
+class LoginRobot (account: Node, sel: NodeSeq)  {
+  println("-- Will do:")
+  for (n <- sel) yield {
+    println(n.toString())
+  }
   val driver = getDriver(60)
-  val steps: NodeSeq = sel.\("_")
   def go = {
-    for (step <- steps) {
+    for (step <- sel) {
       println("STEP ----- " + step.toString())
       step.label match {
-        case "goto" => driver.get(step.text)
+        case "goto" => {
+          println("-- navigating to: " + step.text)
+          driver.get(step.text)
+        }
         case "elt" => {
           val elt = {
             val f = step.\@("find")
@@ -37,6 +39,14 @@ class LoginRobot (account: Node, sel: Node)  {
         case "sleep" => Thread.sleep(Integer.parseInt(step.\@("t")))
         case "defaultContent" => driver.switchTo().defaultContent()
         case "frame" => driver.switchTo().frame(step.text)
+        case  "#PCDATA" => ()
+        case x => {
+          println("-- unknown step: ")
+          println("-- xmlType: " + step.xmlType())
+          println("-- toString: " + step.toString())
+          println("-- label: " + step.label)
+          println("-- text: -->" + step.text +"<--")
+        }
       }
     }
     web.waitUntilUserClosesWindow(driver)

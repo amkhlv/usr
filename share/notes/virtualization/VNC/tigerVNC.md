@@ -23,6 +23,10 @@ Execute:
 
 This lets to choose a password, which is saved into `~/.vnc/passwd` (in a slightly obfuscated form...)
 
+__For XFWM4 work__ need to first execute as root:
+
+    loginctl enable-linger andrei
+
 The file `~/.vnc/xstartup` contains a sequence of commands which are executed immediately after the start of the tiger's  Xserver.
 (Essentially, `xinitrc`). Mine is:
 
@@ -42,6 +46,8 @@ The file `~/.vnc/xstartup` contains a sequence of commands which are executed im
     monthly &
 
     indicator /home/andrei/.config/amkhlv/indicator.xml &
+
+
 
 The file `~/.vnc/config` contains a list of flags of the command `Xvnc`.
 

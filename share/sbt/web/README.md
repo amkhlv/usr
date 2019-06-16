@@ -1,3 +1,11 @@
+Install
+=======
+
+    sudo aptitude install openjfx openjfx-source
+
+    sbt assembly
+
+
 Use
 ===
 
@@ -11,18 +19,30 @@ Example start script
 Login using secrets file
 ------------------------
 
-To login to one account:
+### To login to one account
 
     java -Dconfig.file=$HOME/.config/amkhlv/web/logins.conf \
          -cp ~/usr/share/sbt/web/target/scala-2.12/web-assembly-0.1.0-SNAPSHOT.jar \
-         web.Login brainFM
+         web.Login \ 
+         --site brainFM \
+         --login andrei \
+         --inject "<x><elt find="start-button" by="id"><click/></elt></x>"
 
-To open GUI with the list:
+where `--login` and `--inject` are optional. Notice that we provided 
+the root `<x>...</x>` to the injected XML. (There could be several 
+child elements; in our example we just have one, the `<elt/>`)
+
+For the list of actions which can be injected see the source:
+[LoginRobot.scala](src/main/scala/web/LoginRobot.scala)
+
+### To open GUI with the list
 
     java -Dconfig.file=$HOME/.config/amkhlv/web/logins.conf \
-         -cp ~/usr/share/sbt/web/target/scala-2.12/web-assembly-0.1.0-SNAPSHOT.jar \
-         web.Logins
-    
+         --module-path ~/.local/lib/javafx-sdk-11.0.2/lib/ \
+         --add-modules=javafx.base,javafx.controls,javafx.fxml,javafx.graphics \
+         -cp $HOME/usr/share/sbt/web/target/scala-2.12/web-assembly-0.1.0-SNAPSHOT.jar \
+         web.Logins  &
+
 Writing new robots
 ==================
 

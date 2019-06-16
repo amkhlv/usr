@@ -6,7 +6,7 @@ import javafx.scene.Scene
 import javafx.scene.control.{Button, Label}
 import javafx.scene.layout.{HBox, VBox}
 import javafx.stage.Stage
-import web.utils.{Decryptor, LoginRobot}
+import web.utils.Decryptor
 
 import scala.xml.{Node, NodeSeq}
 
@@ -18,8 +18,7 @@ class Logins extends Application {
     val root = new VBox
     primaryStage.setScene(new Scene(root, 700, 900))
     for (site <- sites) {
-      site.selenium match {
-        case Some(slnm) => {
+      if (!site.selenium.isEmpty) {
           val row = new HBox
           val siteLabel = new Label(site.nick)
           row.getChildren.add(siteLabel)
@@ -28,14 +27,12 @@ class Logins extends Application {
             val btnAcct = new Button(login)
             btnAcct.setOnAction(
               (e: ActionEvent) => {
-                new LoginRobot(site.account(login), slnm).go
+                new LoginRobot(site.account(login), site.selenium).go
               }
             )
             row.getChildren.add(btnAcct)
           }
           root.getChildren.add(row)
-        }
-        case  None => ()
       }
     }
     val btnExit = new Button
@@ -56,20 +53,3 @@ object Logins {
     }
 }
 
-class MyPassItem(x: xml.Node) {
-  val nick : String = x.\@("nick")
-  val accounts : NodeSeq = x.\("account")
-  val logins : List[String] = accounts.map(acc => acc.\@("login")).toList
-  val account : Map[String,Node] = Map((for (acc <- accounts) yield {
-    acc.\@("login") -> acc
-  }) :_*)
-  val selenium : Option[Node] = x.\("selenium").toList match {
-    case a::rest  =>  Some(a)
-    case List() => None
-  }
-  val hasSelenium = selenium match {
-    case Some(a) => true
-    case None => false
-  }
-  val canShow : Boolean = !(x.\("canShow").isEmpty)
-}
