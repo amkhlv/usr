@@ -18,7 +18,10 @@ ApplicationWindow {
             killThread();
         }
     }
-    onAfterRendering: function() {width = box.width; height = box.height;}
+    onAfterRendering: function() {
+        width = box.width;
+        height = box.height;
+    }
 
     Item {
         id: control
@@ -29,9 +32,9 @@ ApplicationWindow {
     Item {
         id: st
         objectName: "stateObject"
-        property string prompt: "";
-        onPromptChanged: lbl.text = prompt;
+        property string init: "";
         property var todolist: [];
+        onInitChanged: function () { putStr(JSON.stringify({status: "ready"})); }
         onTodolistChanged: function () {
             todos.model = todolist;
             //putStr("OK");
@@ -55,10 +58,15 @@ ApplicationWindow {
                 Button {
                     text: modelData.nick
                     Layout.fillWidth: true
-                    contentItem: Text {
-                        text: modelData.nick
-                        color: modelData.urgent ? "#aa0000" : "#0000bb"
-                        font.pointSize: 18
+                    contentItem: Rectangle {
+                        color: modelData.urgent ? "#c00000" : "#ffffff"
+                        Text {
+                            text: modelData.nick
+                            color: modelData.urgent ? "#ffffff" : "#0000bb"
+                            font.pointSize: 18
+                        }
+                        width: childrenRect.width
+                        height: childrenRect.height
                     }
                     function activate() {
                         entry.text = modelData.nick
