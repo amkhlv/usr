@@ -1,6 +1,7 @@
 package web
 
 import org.openqa.selenium.By
+import org.openqa.selenium.support.ui.{ExpectedCondition, ExpectedConditions, WebDriverWait}
 
 import scala.xml.{Node, NodeSeq}
 class LoginRobot (account: Node, sel: NodeSeq)  {
@@ -16,6 +17,18 @@ class LoginRobot (account: Node, sel: NodeSeq)  {
         case "goto" => {
           println("-- navigating to: " + step.text)
           driver.get(step.text)
+        }
+        case "wait" => {
+          println("-- waiting")
+          val f = step.\@("visible")
+          val wait = new WebDriverWait(driver, 60)
+          step.\@("by") match {
+            case "linkText" => wait.until(ExpectedConditions.visibilityOfElementLocated(By.linkText(f)))
+            case "id" => wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(f)))
+            case "name" => wait.until(ExpectedConditions.visibilityOfElementLocated(By.name(f)))
+            case "class" => wait.until(ExpectedConditions.visibilityOfElementLocated(By.className(f)))
+            case "xpath" => wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(f)))
+          }
         }
         case "elt" => {
           val elt = {
