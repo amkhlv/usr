@@ -15,6 +15,9 @@ The configuration file is `~/.gnupg/gpg-agent.conf`. One possibility:
     display :9
     default-cache-ttl-ssh 86400
     max-cache-ttl-ssh 86400
+    default-cache-ttl 86400
+    max-cache-ttl 86400
+
 
 pinentry-program
 ----------------

@@ -10,6 +10,11 @@ Starting new project
 
 Then edit `project.yaml` , __do not edit__ the `my-project.cabal` file (it is auto-generated)
 
+Stack install to specific path
+==============================
+
+    stack install --local-bin-path /my/special/path/
+
 Installing personal package globally
 ====================================
 
@@ -25,25 +30,6 @@ Then edit the file: `~/.stack/global-project/stack.yaml` to have the following l
 Then in `~/` say:
 
     stack install myparser
-
-
-Making available dependencies
-=============================
-
-The most important part of `myparser.cabal` is the __library__ section:
-
-    library
-      hs-source-dirs:      src
-      exposed-modules:     MyParser1
-                           , MyParser2
-      build-depends:       base >= 4.7 && < 5
-                          , parsec
-                          , directory
-                          , optparse-applicative
-      default-language:    Haskell2010
-
-__install this package globally__ ⇒ get all packages listed in `build-depends` __available globally__
-
 
 Uninstalling personal package globally
 ======================================

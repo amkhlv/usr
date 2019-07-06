@@ -83,7 +83,7 @@ correct the `chroot` filesystem, then again:
 
 # Useful programs
 
-    apt-get install  aptitude stow git screen btrfs-progs systemd-container ntfs-3g lshw dmidecode socat cryptsetup gparted  debian-installer-launcher
+    apt-get install  aptitude stow git screen btrfs-progs systemd-container ntfs-3g lshw dmidecode socat cryptsetup gparted gdisk refind grub-pc
 
     apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket xul-ext-noscript
 
@@ -96,4 +96,34 @@ correct the `chroot` filesystem, then again:
     dpkg --list | egrep -i --color 'linux-image|linux-headers'
 
     apt-get --purge remove  linux-image-4.8.0-2-amd64   linux-image-4.9.0-1-amd64
+
+# Installer
+
+To have he Debian Installer (d-i) available, have to:
+
+1. at the time of configuring `lb`, include the flag: `lb config ... --debian-installer live ... `
+
+1. run `lb installer` before `lb binary`
+
+
+# Various comments
+
+## Access into squash from within running live system
+
+It is already mounted on `/usr/lib/live/mount/rootfs/filesystem.squashfs`
+
+## Update initram 
+
+    mkinitramfs -o initrd.img-4.19.0-5-amd64  4.19.0-5-amd64
+
+(becauser `update-initramfs` does not work)
+
+## Install grub
+
+    cd /
+    mv boot boot1
+    ln -s /path/to/my/boot boot
+    grub-install /dev/sdX
+
+
 
