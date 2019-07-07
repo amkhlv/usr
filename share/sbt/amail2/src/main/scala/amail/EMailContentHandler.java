@@ -1,4 +1,4 @@
-package AMail;
+package amail;
 
 /**
  * Created by andrei on 5/22/17.

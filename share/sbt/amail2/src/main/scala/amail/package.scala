@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-package object AMail {
+package object amail {
   val myformatter = DateTimeFormatter.ofPattern("yyyyMM")
   val formatter = DateTimeFormatter.RFC_1123_DATE_TIME
 

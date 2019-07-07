@@ -1,4 +1,4 @@
-package AMail
+package amail
 
 import slick.jdbc.SQLiteProfile.api._
 /**

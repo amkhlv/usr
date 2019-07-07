@@ -5,20 +5,15 @@ import org.openqa.selenium.support.ui.{ExpectedCondition, ExpectedConditions, We
 
 import scala.xml.{Node, NodeSeq}
 class LoginRobot (account: Node, sel: NodeSeq)  {
-  println("-- Will do:")
-  for (n <- sel) yield {
-    println(n.toString())
-  }
   val driver = getDriver(60)
   def go = {
     for (step <- sel) {
-      println("STEP ----- " + step.toString())
       step.label match {
         case "goto" => {
           println("-- navigating to: " + step.text)
           driver.get(step.text)
         }
-        case "wait" => {
+        case "waitFor" => {
           println("-- waiting")
           val f = step.\@("visible")
           val wait = new WebDriverWait(driver, 60)

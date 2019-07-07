@@ -105,7 +105,7 @@ fi
 export TERM=screen-256color
 
 xset b 15 6000 15
-setxkbmap -option "caps:none"
+# setxkbmap -option "caps:none"
 xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 export PYTHONPATH=/home/andrei/usr/lib/python/
@@ -137,4 +137,7 @@ source ~/.amkhlv
 # fi
 
 
+~/.local/lib/amkhlv/weather.sh
 td now
+
+

@@ -1,4 +1,4 @@
-package AMail
+package amail
 
 import java.io.{File, FileInputStream}
 import java.time.Instant
