@@ -48,4 +48,5 @@ Examples
 
     echo aaa@example.com | amail-msgid2file.sh | amail-file2mbox.sh
 
-Or, `cat | amail-msgid2file.sh | amail-file2mbox.sh` and then enter `MSGID`s and press `Ctrl-D`
+    amail-select-json-where.sh f like "'%fapes%'" and d like 201906 | jq -r .msgid | amail-msgid2file.sh | amail-file2mbox.sh 
+
