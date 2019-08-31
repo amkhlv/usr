@@ -1,5 +1,5 @@
 hardstatus alwayslastline '%{= KW} %H [%`] %{= Kw}|%{-} %-Lw%{= kW}%n%f %t%{-}%+Lw %=%C%a %Y-%M-%d'
-backtick 0 10 10 echo hi
+backtick 0 10 10 echo $STY
 term screen-256color
 startup_message off
 

@@ -14,7 +14,44 @@ Plug 'autozimu/LanguageClient-neovim', {
 set rtp+=~/.vim/plugged/LanguageClient-neovim
 let g:LanguageClient_serverCommands = { 'haskell': ['hie-wrapper'] }
 
-Plug 'avakhov/vim-yaml'
+
+"dein Scripts-----------------------------
+if &compatible
+  set nocompatible               " Be iMproved
+endif
+
+" Required:
+set runtimepath+=/home/andrei/.local/share/dein//repos/github.com/Shougo/dein.vim
+
+" Required:
+if dein#load_state('/home/andrei/.local/share/dein/')
+  call dein#begin('/home/andrei/.local/share/dein/')
+
+  " Let dein manage dein
+  " Required:
+  call dein#add('/home/andrei/.local/share/dein//repos/github.com/Shougo/dein.vim')
+
+  " Add or remove your plugins here like this:
+  "call dein#add('Shougo/neosnippet.vim')
+  "call dein#add('Shougo/neosnippet-snippets')
+  call dein#add('stephpy/vim-yaml')
+  call dein#add('wsdjeg/dein-ui.vim')
+
+  " Required:
+  call dein#end()
+  call dein#save_state()
+endif
+
+" Required:
+filetype plugin indent on
+syntax enable
+
+" If you want to install not installed plugins on startup.
+"if dein#check_install()
+"  call dein#install()
+"endif
+
+"End dein Scripts-------------------------
 
 
 

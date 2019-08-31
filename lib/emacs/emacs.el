@@ -120,6 +120,9 @@
 
 (defun xsel () (interactive) (insert (shell-command-to-string "xsel")))
 (global-set-key (kbd "<s-mouse-2>") (quote xsel))
+(define-key racket-mode-map (kbd "]") nil)
+(define-key racket-mode-map (kbd ")") nil)
+(define-key racket-mode-map (kbd "}") nil)
 (add-hook 'minibuffer-setup-hook
           (lambda ()
             (local-set-key (kbd "<s-mouse-2>") (quote xsel))))

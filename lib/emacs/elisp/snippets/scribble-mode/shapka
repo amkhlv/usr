@@ -25,11 +25,11 @@
 
 @title[#:style '(no-toc no-sidebar)]{$3}
 
+@bystro-source[]
+
 @bystro-ribbon[]
 @table-of-contents[]
-
 $0
-
 @bystro-ribbon[]
 
 @; ---------------------------------------------------------------------------------------------------

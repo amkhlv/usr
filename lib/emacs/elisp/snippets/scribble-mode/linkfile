@@ -1,4 +1,4 @@
 #contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
 #name : link a file
 # --
-@hyperlink[ @bystro-path-to-link{$1} ]{$2}$0
+@(hyperlink @bystro-path-to-link{$1} @`{$2})$0
