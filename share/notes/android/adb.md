@@ -1,3 +1,10 @@
+Permissions
+===========
+
+User should be in the `plugdev` group:
+
+    usermod -a -G plugdev andrei
+
 Enabling
 ========
 

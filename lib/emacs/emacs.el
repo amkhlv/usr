@@ -26,6 +26,9 @@
 
 (require 'thingatpt)
 (require 'racket-mode)
+(require 'yaml-mode)
+
+
 
 ;;------------ Haskell ----------------
 ;;(require 'pkg-info) ; seems to be needed for Haskell
@@ -433,6 +436,8 @@
          ("\\.pdq\\'" . nxml-mode)
          ("\\.rs\\'" . rust-mode)
          ("\\.hs\\'" . haskell-mode)
+         ("\\.yaml\\'" . yaml-mode)
+         ("\\.yml\\'" . yaml-mode)
          )
        auto-mode-alist))
 
