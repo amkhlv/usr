@@ -4,7 +4,7 @@ Introduction
 
 This is a collection of various scripts (which are probably only useful for myself) and [notes on Linux](share/notes)
 
-    aptitude install stow emacs gmrun xbindkeys racket screen vim-gtk emacs-goodies-el elpa-markdown-mode xfonts-terminus python3-markdown xautomation xsel
+    aptitude install dirmngr stow emacs gmrun xbindkeys racket screen vim-gtk emacs-goodies-el elpa-racket-mode elpa-yaml-mode auctex xfonts-terminus xautomation xsel
 
 My `emacs` configuration uses `yasnippet` which should be setup like this:
 

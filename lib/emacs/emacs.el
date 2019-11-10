@@ -113,6 +113,8 @@
 
 (global-set-key [f11] 'toggle-fullscreen)
 
+(global-set-key [f8] 'amkhlv/toggle-folding)
+
 (defmacro add-outline (hookname) 
   `(add-hook ,hookname '(lambda () (outline-minor-mode 1)
                           (local-set-key (kbd "C-c C-t") 'hide-body)

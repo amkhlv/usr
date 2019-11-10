@@ -13,9 +13,18 @@ To get:
 Dial a number
 =============
 
+via phone
+---------
+
     termux-open-url tel:12345678
 
 (while `termux-telephony-call` does not seem to work...)
+
+Message via WhatsApp
+====================
+
+    termux-open-url 'https://api.whatsapp.com/send?phone=111111111&text=hi'
+
 
 Take a photo
 ============

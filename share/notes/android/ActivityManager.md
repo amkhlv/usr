@@ -1,7 +1,13 @@
+Starting an app
+===============
+
+    am start --user 0 -n com.some.app/com.some.app.MainClassName
+
+where `MainClassName` is often `MainActivity`
+
+
 Taking picture
 ==============
-
-
 
     am start -a android.media.action.IMAGE_CAPTURE --user 0
 

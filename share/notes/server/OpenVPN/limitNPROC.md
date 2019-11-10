@@ -1,1 +1,12 @@
-Sometimes need to comment line with `limitNPROC` in `/lib/systemd/system/openvpn-server@.service`
+
+Correcting unable to fork problem
+=================================
+
+    systemctl edit openvpn-server@.service
+
+and type in:
+
+    [Service]
+    LimitNPROC=infinity
+
+

@@ -4,6 +4,12 @@ GUI
     aptitude install d-feet
 
 
+Introspection
+=============
+
+    gdbus introspect --system --dest org.freedesktop.login1 --object-path /org/freedesktop/login1
+
+
 List available services
 =======================
 

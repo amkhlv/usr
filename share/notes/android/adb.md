@@ -5,6 +5,11 @@ User should be in the `plugdev` group:
 
     usermod -a -G plugdev andrei
 
+Moreover, it seems that I need a `udev` rule like:
+
+    SUBSYSTEM=="usb", ATTR{idVendor}=="22b8", ATTR{idProduct}=="2e81", MODE="0666", GROUP="plugdev"
+
+
 Enabling
 ========
 
