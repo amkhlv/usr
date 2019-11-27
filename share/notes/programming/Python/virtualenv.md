@@ -36,6 +36,8 @@ Freeze
 
     pip freeze > requirements.txt
 
-Then, to __reproduce on a different virtualenv__ : `pip install -r requirements.txt`
+Then, to __reproduce on a different virtualenv__ : 
+
+    pip install -r requirements.txt
 
 

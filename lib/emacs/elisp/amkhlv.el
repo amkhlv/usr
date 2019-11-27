@@ -289,3 +289,4 @@ To choose size, use ps-print-customize"
       (setq col (+ 1 (current-column)))
       (set-selective-display
        (if selective-display nil (or col 1))))))
+

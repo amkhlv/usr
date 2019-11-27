@@ -10,6 +10,16 @@ Printer statistics
     lpstat -p
     lpstat -t
 
+Printer options
+===============
+
+To learn printer-specific options:
+
+    lpoptions -p $PRINTER_NAME -l
+
+To print with some option:
+
+    lpr -P  $PRINTER_NAME -o InputSlot=Tray1   file.pdf
 
 Un-Pause
 ========

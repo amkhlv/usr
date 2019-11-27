@@ -111,9 +111,9 @@
      nil 'fullscreen
      (when (not (frame-parameter nil 'fullscreen)) 'fullboth))))
 
+(global-set-key [f8] 'amkhlv/toggle-folding)
 (global-set-key [f11] 'toggle-fullscreen)
 
-(global-set-key [f8] 'amkhlv/toggle-folding)
 
 (defmacro add-outline (hookname) 
   `(add-hook ,hookname '(lambda () (outline-minor-mode 1)
@@ -366,6 +366,8 @@
  '(ispell-local-dictionary-alist
    (quote
     (("brasileiro" "[A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[^A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[']" nil nil nil iso-8859-1))))
+; '(max-lisp-eval-depth 10000)
+; '(max-specpdl-size 30000)
  '(nxml-heading-element-name-regexp "description\\|title\\|head")
  '(nxml-section-element-name-regexp
    "account\\|article\\|\\(sub\\)*section\\|chapter\\|div\\|appendix\\|part\\|preface\\|reference\\|simplesect\\|bibliography\\|bibliodiv\\|glossary\\|glossdiv")
