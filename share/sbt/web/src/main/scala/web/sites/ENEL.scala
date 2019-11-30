@@ -11,7 +11,7 @@ import web.{conf, getDriver, waitUntilUserClosesWindow}
 
 object ENEL extends App {
   val driver = getDriver(20)
-  driver.get("https://portalhome.eletropaulo.com.br/#/login")
+  driver.get("https://portalhome.eneldistribuicaosp.com.br/#/login")
 
   val w = new WebDriverWait(driver,3600)
   w.until(ExpectedConditions.titleContains("Enel"))

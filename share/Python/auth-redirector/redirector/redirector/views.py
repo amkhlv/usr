@@ -18,6 +18,7 @@ def redirectHandler(request,path=""):
         response['X-Accel-Redirect'] = '/redirector/' + nm + '/' + path
         if (path[-4:] == '.css') : response['Content-Type'] = 'text/css; charset=utf-8'
         if (path[-4:] == '.pdf') : response['Content-Type'] = 'application/pdf'
+        if (path[-4:] == '.svg') : response['Content-Type'] = 'image/svg+xml'
         return response
     else :
         template = loader.get_template('login.html')
