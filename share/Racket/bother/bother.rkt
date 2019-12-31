@@ -178,6 +178,6 @@
                #t]
               )]
            ))))))
+(when (file-exists? socket-path) (delete-file socket-path))
 (thread-send main 'show-gui)
 (thread-wait main)
-(when (file-exists? socket-path) (delete-file socket-path))
