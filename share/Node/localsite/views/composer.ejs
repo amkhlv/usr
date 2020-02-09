@@ -1,0 +1,11 @@
+
+<h5><%= c['composer'] %> </h5>
+<% for (i = 0 ; i <= Math.round((c['works'].length + ncols - 1) / ncols) - 1 ; i++ ) { %>
+    <div class="row">
+        <% for (j = 0 ; j < ncols ; j++) { 
+            if (c['works'][ncols * i + j]) { %> 
+                <%- include('work', {w : c['works'][ncols * i + j]}) %>
+            <% } 
+        } %>
+    </div>
+<% } %>

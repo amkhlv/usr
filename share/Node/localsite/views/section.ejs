@@ -1,0 +1,10 @@
+<h5><%= s['section'] %> </h5>
+<% for (i = 0 ; i <= Math.round((s['bookmarks'].length + ncols - 1) / ncols) - 1 ; i++ ) { %>
+    <div class="row">
+        <% for (j = 0 ; j < ncols ; j++) { 
+            if (s['bookmarks'][ncols * i + j]) { %> 
+                <%- include('bookmark', {b : s['bookmarks'][ncols * i + j]}) %>
+            <% } 
+        } %>
+    </div>
+<% } %>

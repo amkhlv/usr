@@ -1,0 +1,18 @@
+<div class="col s12 m4">
+<div class="card <% if (w['is_playlist']) { %> orange <% } else { %> blue-grey <% } %> darken-1">
+  <% if (!w['is_playlist']) { 
+    var u0 = w['url'].split('&')[0]
+    %>
+    <div class="card-image">
+      <img src=<%= `https://img.youtube.com/vi/${u0.substring(32).trim()}/` + "hqdefault.jpg" %> >
+    </div>
+  <% } %>
+    <div class="card-content white-text">
+      <span class="card-title"><%= w['title'] %></span>
+      <% if (w['comment']) { %> <p> <%= w['comment'] %> </p> <% } %>
+    </div>
+    <div class="card-action <% if (w['is_playlist']) { %> green <% } else { %> white <% } %>">
+      <a href="<%= w['url'] %>" class="black">PLAY</a>
+    </div>
+</div>
+</div>

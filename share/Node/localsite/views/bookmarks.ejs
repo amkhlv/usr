@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Music</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="shortcut icon" href="/music.ico">
+    <style>
+        body {
+          background-color: chocolate;
+          color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="header"><%= ttl %></h1>
+        <ul>
+            <% Object.keys(myaml).forEach(function(genre) { %>
+            <li>
+                <h3><%= genre %> (<%= myaml[genre].length %>)</h3>
+                <ul>
+                    <% myaml[genre].forEach(function(c) { %>
+                    <li>
+                        <% if (Object.keys(c).includes('section') && Object.keys(c).includes('bookmarks')) { %>
+                            <%- include('section', {s:c, ncols:ncols}) %>
+                        <% } else if (Object.keys(c).includes('composer') && Object.keys(c).includes('works')) { %>
+                            <%- include('composer', {c:c, ncols:ncols}) %>
+                        <% } else if (Object.keys(c).includes('url')) { %>
+                            <%- include('bookmark', {b:c}) %>
+                        <% } %>
+                    </li>
+
+                    <% }); %>
+                </ul>
+            </li>
+            <% }); %>
+        </ul>
+    </div>
+</body>
+
+</html>
