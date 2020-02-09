@@ -10,6 +10,7 @@ import web.utils.Decryptor
 
 import scala.xml.{Node, NodeSeq}
 
+
 class Logins extends Application {
   val x = xml.XML.loadString(Decryptor.decrypt)
   val sites = (x \\ "site").map {s => new MyPassItem(s)}.toList

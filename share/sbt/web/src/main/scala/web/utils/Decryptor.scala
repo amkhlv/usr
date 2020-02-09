@@ -6,7 +6,7 @@ import scala.sys.process._
 import web.conf
 
 object Decryptor {
-  val filename = conf.getString("secretFile")
+  val filename = conf().getString("secretFile")
   val cmd = Seq("gpg", "--decrypt", filename)
   def decrypt = {
     val output = new ByteArrayOutputStream()

@@ -14,7 +14,7 @@ import scala.collection.mutable
 import scala.xml._
 
 class InspireCitations(driver: FirefoxDriver) {
-  driver.get(s"http://inspirehep.net/author/profile/${conf.getString("author")}")
+  driver.get(s"http://inspirehep.net/author/profile/${conf().getString("author")}")
   driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS)
 
   private val citations = driver.findElement(By.xpath("""//*[@id="citations"]"""))

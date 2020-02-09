@@ -12,7 +12,7 @@ object AntiCaptcha {
     val captchaTaskJSON = Http("https://api.anti-captcha.com/createTask").postData(
       s"""
          |{
-         | "clientKey" : "${conf.getString("antiCaptchaClientKey")}",
+         | "clientKey" : "${conf().getString("antiCaptchaClientKey")}",
          | "task" : {
          |           "type" : "ImageToTextTask",
          |           "body" : "$base64string"
@@ -29,7 +29,7 @@ object AntiCaptcha {
     val solvedCaptchaJSON = Http("https://api.anti-captcha.com/getTaskResult").postData(
       s"""
          |{
-         |"clientKey" : "${conf.getString("antiCaptchaClientKey")}",
+         |"clientKey" : "${conf().getString("antiCaptchaClientKey")}",
          |"taskId" : $taskid
          |}
      """.stripMargin

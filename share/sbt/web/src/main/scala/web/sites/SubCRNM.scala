@@ -16,9 +16,9 @@ object SubCRNM extends App {
   val w = new WebDriverWait(driver,3600)
   w.until(ExpectedConditions.titleContains("SISMIGRA"))
 
-  driver.findElementById("form-validar-protocolo:txt-protocolo").sendKeys(web.conf.getString("requerimento"))
+  driver.findElementById("form-validar-protocolo:txt-protocolo").sendKeys(web.conf().getString("requerimento"))
 
-  driver.findElementById("form-validar-protocolo:txt-codigo-controle").sendKeys(web.conf.getString("codigoControle"))
+  driver.findElementById("form-validar-protocolo:txt-codigo-controle").sendKeys(web.conf().getString("codigoControle"))
 
   driver.findElementById("form-validar-protocolo:j_id47").click()
 

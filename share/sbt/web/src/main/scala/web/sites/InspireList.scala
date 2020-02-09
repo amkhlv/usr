@@ -15,7 +15,7 @@ import scala.xml._
 
 class InspireList(driver: FirefoxDriver) {
 
-  private val bibitems = conf.getStringList("bibitems").asScala
+  private val bibitems = conf().getStringList("bibitems").asScala
 
   val publications = <publications>
     {bibitems.map(

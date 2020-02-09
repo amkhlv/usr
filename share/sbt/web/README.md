@@ -43,6 +43,12 @@ For the list of actions which can be injected see the source:
          -cp $HOME/usr/share/sbt/web/target/scala-2.12/web-assembly-0.1.0-SNAPSHOT.jar \
          web.Logins  &
 
+Configuration
+=============
+
+Two common values are: `height` and `width`, both integers, the height and width 
+of the browser window.
+
 Writing new robots
 ==================
 

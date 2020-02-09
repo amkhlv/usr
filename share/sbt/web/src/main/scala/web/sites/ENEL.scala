@@ -19,8 +19,8 @@ object ENEL extends App {
   Thread.sleep(2000)
 
   def firstPageClickFails(): Boolean = {
-    driver.findElement(By.id("cpfcnpj")).sendKeys(conf.getString("CPF"))
-    driver.findElement(By.id("anlage")).sendKeys(conf.getString("inst"))
+    driver.findElement(By.id("cpfcnpj")).sendKeys(conf().getString("CPF"))
+    driver.findElement(By.id("anlage")).sendKeys(conf().getString("inst"))
     val ldnBtn = driver.findElement(By.id("btnLogin"))
     w.until(ExpectedConditions.elementToBeClickable(ldnBtn))
     ldnBtn.click()

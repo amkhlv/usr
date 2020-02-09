@@ -18,7 +18,7 @@ object SABESP extends App {
 
   Thread.sleep(2000)
 
-  driver.findElement(By.id("frmhome:rgi1")).sendKeys(conf.getString("RGI"))
+  driver.findElement(By.id("frmhome:rgi1")).sendKeys(conf().getString("RGI"))
 
   Thread.sleep(2000)
 
