@@ -1,6 +1,9 @@
 NVM is Node Version Manager
 ===========================
 
+Install NVM
+-----------
+
 As a local user (__not__ root):
 
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.2/install.sh | bash
@@ -16,3 +19,8 @@ In particular, the second command sources `~/.nvm/nvm.sh` which prepends to `PAT
 
 
 
+Install Node using NVM
+----------------------
+
+    nvm install node
+    nvm use node

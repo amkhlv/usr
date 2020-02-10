@@ -17,7 +17,9 @@ const conf = yaml.safeLoad(
   fs.readFileSync(
     path.join(os.homedir(), ".config/amkhlv/localsite/config.yaml"),
     "utf8"))
-const mainPage = '/music'
+const mainPage = '/'
+const calPath = conf.calendarPath
+const musPath = conf.musicPath
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
@@ -88,14 +90,22 @@ app.get('/logout',
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
-app.get("/", (req, res) => {
-  // render the index template
-  res.render("index");
-});
+function checkPWD(ruser) {
+  return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser))
+}
+app.get("/", (req,res) => {
+  if (checkPWD(req.user)) {
+    console.log(`-- allowing ${req.user}`)
+    res.render("index", {'homedir': path.join(os.homedir()).toString()});
+  } else {
+    console.log("USER>>>" + req.user + "<<< not allowed")
+    res.redirect('/login')
+  }
+})
 app.get("/music", (req, res) => {
-  if ((typeof req.user === 'string') && (logins.includes(req.user))) {
+  if (checkPWD(req.user)) {
     console.log(`-- allowing ${req.user} to music`)
-    const myaml = yaml.safeLoad(fs.readFileSync(conf.music, 'utf8'))
+    const myaml = yaml.safeLoad(fs.readFileSync(musPath, 'utf8'))
     const genres = Object.keys(myaml)
     res.render("bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3 });
   } else {
@@ -103,6 +113,14 @@ app.get("/music", (req, res) => {
     res.redirect('/login')
   }
 });
+app.get("/calendar", (req, res) => {
+  if (checkPWD(req.user)) {
+    res.sendFile(calPath);
+  } else {
+    console.log("USER>>>" + req.user + "<<< not allowed to /calendar")
+    res.redirect('/login')
+  }
+})
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
