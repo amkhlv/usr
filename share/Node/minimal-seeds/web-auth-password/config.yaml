@@ -1,0 +1,10 @@
+port: 10000
+prefix: ""
+sessionSecret: "aisLZ2N4N4bn9gD1re3LbJ7HGgASXErX2SRrb3Of"
+workingPath: "."
+staticPath: "public"
+sqliteFile: "localsite.sqlite"
+users:
+  - login: "andrei"
+    hash: "04105ac24872227979fc048cabc7fd1c703f7d62d423d2fc9c35824b5eec377f77dd7e4d334222ea0d5781089e22969783bc21f048f5013d92966b85cb81b294"
+    salt: "aaa"
