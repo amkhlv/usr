@@ -12,5 +12,14 @@
     <div class="container">
         <h1 class="header"><%= ttl %></h1>
     </div>
+    <form action="<%= prefix %>/input" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <!-- <input type="hidden" name="_csrf" value="JmrD14AJ-q-6KcYm0_6ExNEQC9X4V45q8njI"> -->
+        <label for="td">say something:</label><br>
+        <input type="text" name="msg">
+        <button type="submit">SUBMIT</button>
+    </form>
+    <h1 class="header"><%= msg %></h1>
+
 </body>
 </html>

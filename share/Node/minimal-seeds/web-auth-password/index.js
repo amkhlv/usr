@@ -4,16 +4,19 @@ var express = require("express");
 var path = require("path");
 var yaml = require("js-yaml");
 var fs = require("fs");
-var os = require("os");
 var passport = require("passport");
 var passportLocal = require("passport-local");
 var LocalStrategy = passportLocal.Strategy;
 var session = require("express-session");
 var bodyParser = require("body-parser");
+var csrf = require("csurf");
 var crypto = require("crypto");
+var sql = require("sqlite3");
+var sqlStore = require("connect-sqlite3");
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-var conf = yaml.safeLoad(fs.readFileSync(path.join(os.homedir(), ".config/amkhlv/localsite/config.yaml"), "utf8"));
+var conf = yaml.safeLoad(fs.readFileSync("config.yaml", "utf8"));
+var prefix = conf.prefix;
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ===================== config =====================================
@@ -26,6 +29,8 @@ var User = /** @class */ (function () {
 }());
 var users = conf.users;
 var logins = users.map(function (u) { return u.login; });
+var db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile));
+var SQLiteStore = sqlStore(session);
 // ====================== App init ===================================
 var app = express();
 app.set("views", path.join(__dirname, "views"));
@@ -59,36 +64,75 @@ passport.deserializeUser(function (id, cb) {
         cb('ERROR: User Not Found...');
     }
 });
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({ secret: sessionSecret, resave: false, saveUninitialized: false }));
+var parseForm = bodyParser.urlencoded({ extended: false });
+app.use(parseForm);
+app.use(session({
+    store: SQLiteStore({ dir: conf.workingPath, db: conf.sqliteFile }),
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+var csrfProtection = csrf({ cookie: false });
+// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ====================== Static files are in folder public/ =========
-app.use(express.static('public'));
+app.use(csrfProtection);
+app.use(express.static(conf.staticPath));
+app.use(function (err, req, res, next) {
+    if (err.code !== 'EBADCSRFTOKEN')
+        return next(err);
+    // handle CSRF token errors here
+    res.status(403);
+    res.send('form tampered with');
+});
 // ====================== Authentication routes ======================
 app.get('/login', function (req, res) {
-    res.render('login');
+    res.render('login', { csrfToken: req.csrfToken(), 'prefix': prefix });
 });
-app.post('/login', passport.authenticate('local', { failureRedirect: '/login' }), function (req, res) {
+app.post('/login', parseForm, passport.authenticate('local', { failureRedirect: prefix + '/login' }), function (req, res) {
     // If this function gets called, authentication was successful.
     // `req.user` contains the authenticated user.
     console.log("AUTH OK");
-    res.redirect('/');
+    res.redirect(prefix + '/');
 });
 app.get('/logout', function (req, res) {
     req.logout();
-    res.redirect('/');
+    res.redirect(prefix + '/');
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+function checkPWD(ruser) {
+    return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser));
+}
 app.get("/", function (req, res) {
-    if ((typeof req.user === 'string') && (logins.includes(req.user))) {
+    if (checkPWD(req.user)) {
         console.log("-- allowing " + req.user + " to enter");
-        res.render("main", { 'ttl': "Welcome " + req.user + "!" });
+        res.render("main", { 'ttl': "Welcome " + req.user + "!",
+            'msg': "Hi " + req.user + " !",
+            'prefix': prefix,
+            'csrfToken': req.csrfToken()
+        });
     }
     else {
         console.log("USER>>>" + req.user + "<<< is not allowed");
-        res.redirect('/login');
+        res.redirect(prefix + '/login');
+    }
+});
+app.post("/input", parseForm, function (req, res) {
+    if (checkPWD(req.user)) {
+        console.log("-- allowing " + req.user + " to enter");
+        res.render("main", { 'prefix': prefix,
+            'csrfToken': req.csrfToken(),
+            'ttl': "Welcome " + req.user + "!",
+            'msg': "I heard: " + req.body.msg
+        });
+    }
+    else {
+        console.log("USER>>>" + req.user + "<<< is not allowed");
+        res.redirect(prefix + '/login');
     }
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮

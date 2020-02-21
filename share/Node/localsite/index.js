@@ -10,13 +10,17 @@ var passportLocal = require("passport-local");
 var LocalStrategy = passportLocal.Strategy;
 var session = require("express-session");
 var bodyParser = require("body-parser");
+var csrf = require("csurf");
 var crypto = require("crypto");
+var sql = require("sqlite3");
+var sqlStore = require("connect-sqlite3");
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 var conf = yaml.safeLoad(fs.readFileSync(path.join(os.homedir(), ".config/amkhlv/localsite/config.yaml"), "utf8"));
 var mainPage = '/';
-var calPath = conf.calendarPath;
-var musPath = conf.musicPath;
+var calPath = path.join(conf.workingPath, conf.calendarFile);
+var musPath = path.join(conf.workingPath, conf.musicFile);
+var prefix = conf.prefix;
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ===================== config =====================================
@@ -29,6 +33,8 @@ var User = /** @class */ (function () {
 }());
 var users = conf.users;
 var logins = users.map(function (u) { return u.login; });
+var db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile));
+var SQLiteStore = sqlStore(session);
 // ====================== App init ===================================
 var app = express();
 app.set("views", path.join(__dirname, "views"));
@@ -62,51 +68,69 @@ passport.deserializeUser(function (id, cb) {
         cb('ERROR: User Not Found...');
     }
 });
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({ secret: sessionSecret, resave: false, saveUninitialized: false }));
+var parseForm = bodyParser.urlencoded({ extended: false });
+app.use(parseForm);
+app.use(session({
+    store: SQLiteStore({ dir: conf.workingPath, db: conf.sqliteFile }),
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }
+}));
 app.use(passport.initialize());
 app.use(passport.session());
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+var csrfProtection = csrf({ cookie: false });
+// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ====================== Static files are in folder public/ =========
-app.use(express.static('public'));
+app.use(csrfProtection);
+app.use(express.static(conf.staticPath));
+app.use(function (err, req, res, next) {
+    if (err.code !== 'EBADCSRFTOKEN')
+        return next(err);
+    // handle CSRF token errors here
+    res.status(403);
+    res.send('form tampered with');
+});
 // ====================== Authentication routes ======================
 app.get('/login', function (req, res) {
-    res.render('login');
+    res.render('login', { csrfToken: req.csrfToken(), 'prefix': prefix });
 });
-app.post('/login', passport.authenticate('local', { failureRedirect: '/login' }), function (req, res) {
+app.post('/login', parseForm, passport.authenticate('local', { failureRedirect: prefix + '/login' }), function (req, res) {
     // If this function gets called, authentication was successful.
     // `req.user` contains the authenticated user.
     console.log("AUTH OK");
-    res.redirect(mainPage);
+    res.redirect(prefix + mainPage);
 });
 app.get('/logout', function (req, res) {
     req.logout();
-    res.redirect('/');
+    res.redirect(prefix + '/');
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 function checkPWD(ruser) {
-    return (typeof ruser === 'string') && (logins.includes(ruser));
+    return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser));
 }
 app.get("/", function (req, res) {
     if (checkPWD(req.user)) {
         console.log("-- allowing " + req.user);
-        res.render("index", { 'homedir': path.join(os.homedir()).toString() });
+        res.render("index", { 'homedir': path.join(os.homedir()).toString(), 'prefix': prefix });
     }
     else {
         console.log("USER>>>" + req.user + "<<< not allowed");
-        res.redirect('/login');
+        res.redirect(prefix + '/login');
     }
 });
 app.get("/music", function (req, res) {
     if (checkPWD(req.user)) {
         console.log("-- allowing " + req.user + " to music");
         var myaml = yaml.safeLoad(fs.readFileSync(musPath, 'utf8'));
-        var genres = Object.keys(myaml);
-        res.render("bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3 });
+        res.render("bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3, 'prefix': prefix });
     }
     else {
         console.log("USER>>>" + req.user + "<<< not allowed to /music");
-        res.redirect('/login');
+        res.redirect(prefix + '/login');
     }
 });
 app.get("/calendar", function (req, res) {
@@ -115,7 +139,40 @@ app.get("/calendar", function (req, res) {
     }
     else {
         console.log("USER>>>" + req.user + "<<< not allowed to /calendar");
-        res.redirect('/login');
+        res.redirect(prefix + '/login');
+    }
+});
+app.get("/todo", function (req, res) {
+    if (checkPWD(req.user)) {
+        var todos = db.all("select todo td, note nt, importance im from todolist", function (err, rows) {
+            res.render("todolist", { 'prefix': prefix, 'csrfToken': req.csrfToken(), 'rows': rows });
+        });
+    }
+    else {
+        console.log("USER>>>" + req.user + "<<< not allowed to /todo");
+        res.redirect(prefix + '/login');
+    }
+});
+app.post("/tododelete", parseForm, function (req, res) {
+    if (checkPWD(req.user)) {
+        console.log(JSON.stringify(req.body, null, 2));
+        db.run("delete from todolist where todo = ? and note = ? and importance = ?", [req.body.td, req.body.nt, req.body.im], function (err) { });
+        res.redirect(prefix + '/todo');
+    }
+    else {
+        console.log("USER>>>" + req.user + "<<< not allowed to delete a TODO");
+        res.redirect(prefix + '/login');
+    }
+});
+app.post("/todoadd", parseForm, function (req, res) {
+    if (checkPWD(req.user)) {
+        console.log(JSON.stringify(req.body, null, 2));
+        db.run("insert into todolist values (?,?,?)", [req.body.td, req.body.nt, req.body.im], function (err) { });
+        res.redirect(prefix + '/todo');
+    }
+    else {
+        console.log("USER>>>" + req.user + "<<< not allowed to delete a TODO");
+        res.redirect(prefix + '/login');
     }
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮

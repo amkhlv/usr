@@ -8,15 +8,18 @@ import * as passportLocal from 'passport-local';
 const LocalStrategy = passportLocal.Strategy;
 import session = require('express-session')
 import bodyParser = require('body-parser')
+import csrf = require('csurf')
 import crypto = require('crypto')
+import sql = require('sqlite3')
+import sqlStore = require('connect-sqlite3')
+import connect = require('connect')
+
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
-const conf = yaml.safeLoad(
-  fs.readFileSync(
-    path.join(os.homedir(), ".config/amkhlv/localsite/config.yaml"),
-    "utf8"))
+const conf = yaml.safeLoad(fs.readFileSync("config.yaml", "utf8"))
+const prefix = conf.prefix
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
@@ -28,6 +31,10 @@ const port: number = conf.port; // default port to listen
 class User { login: string; hash: string; salt: string }
 const users: User[] = conf.users
 const logins = users.map(u => u.login)
+
+const db = new sql.Database(path.join(conf.workingPath , conf.sqliteFile))
+
+const SQLiteStore = sqlStore(session)
 
 // ====================== App init ===================================
 const app = express();
@@ -58,46 +65,93 @@ passport.deserializeUser((id, cb) => {
     cb(null, id)
   } else { cb('ERROR: User Not Found...') }
 });
-app.use(bodyParser.urlencoded({ extended: false }))
-app.use(session({ secret: sessionSecret, resave: false, saveUninitialized: false }));
+const parseForm = bodyParser.urlencoded({ extended: false })
+app.use(parseForm)
+app.use(session({
+  store: SQLiteStore({dir: conf.workingPath , db: conf.sqliteFile}),
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+const csrfProtection = csrf({ cookie: false })
+// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+
 // ====================== Static files are in folder public/ =========
-app.use(express.static('public'))
+app.use(csrfProtection)
+app.use(express.static(conf.staticPath))
+app.use((err, req, res, next) => {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err)
+  // handle CSRF token errors here
+  res.status(403)
+  res.send('form tampered with')
+})
 
 // ====================== Authentication routes ======================
 app.get('/login',
   (req, res) => {
-    res.render('login');
+    res.render('login', { csrfToken: req.csrfToken(), 'prefix': prefix });
   });
 app.post('/login',
-  passport.authenticate('local', { failureRedirect: '/login' }),
+  parseForm,
+  passport.authenticate('local', { failureRedirect: prefix + '/login' }),
   (req, res) => {
     // If this function gets called, authentication was successful.
     // `req.user` contains the authenticated user.
     console.log("AUTH OK")
-    res.redirect('/');
+    res.redirect(prefix + '/');
   });
 app.get('/logout',
   (req, res) => {
     req.logout();
-    res.redirect('/');
+    res.redirect(prefix + '/');
   });
 
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
-app.get("/", (req, res) => {
-  if ((typeof req.user === 'string') && (logins.includes(req.user))) {
-    console.log(`-- allowing ${req.user} to enter`)
-    res.render("main", { 'ttl': `Welcome ${req.user}!` });
-  } else {
-    console.log("USER>>>" + req.user + "<<< is not allowed")
-    res.redirect('/login')
+function checkPWD(ruser) {
+  return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser))
+}
+app.get("/",
+  (req, res) => {
+    if (checkPWD(req.user)) {
+      console.log(`-- allowing ${req.user} to enter`)
+      res.render(
+        "main",
+        { 'ttl': `Welcome ${req.user}!`,
+          'msg' : `Hi ${req.user} !`,
+          'prefix' : prefix,
+          'csrfToken' : req.csrfToken()
+        });
+    } else {
+      console.log("USER>>>" + req.user + "<<< is not allowed")
+      res.redirect(prefix + '/login')
+    }
+  });
+app.post("/input",
+  parseForm,
+  (req, res) => {
+    if (checkPWD(req.user)) {
+      console.log(`-- allowing ${req.user} to enter`)
+      res.render(
+        "main",
+        { 'prefix' : prefix ,
+          'csrfToken': req.csrfToken(),
+          'ttl': `Welcome ${req.user}!`,
+          'msg' : `I heard: ${req.body.msg}`
+        });
+    } else {
+      console.log("USER>>>" + req.user + "<<< is not allowed")
+      res.redirect(prefix + '/login')
+    }
   }
-});
+)
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 

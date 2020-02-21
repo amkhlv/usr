@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>TODO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style scoped>
+        .entxt {
+            font-size: 4wv;
+        }
+
+        .text-of-note {
+            white-space: pre-wrap;
+        }
+
+        .submit-btn {
+            background-color: #64ffda;
+            color: brown;
+            height: 40px;
+            padding: 0 16px;
+            border: none;
+            border-radius: 3px;
+        }
+        .submit-btn:hover {
+            background-color: #a7ffeb;
+            color: #000000;
+        }
+        .submit-btn:focus {
+            background-color: orange;
+        }
+
+        .delete-btn {
+            background-color: #FF8A80;
+            color: black;
+            height: 40px;
+            padding: 0 16px;
+            border: none;
+            border-radius: 3px;
+        }
+        .delete-btn:hover {
+            background-color: rgb(253, 181, 174); 
+        }
+        .delete-btn:focus {
+            background-color: red;
+        }
+
+        @media (max-resolution: 140dpi) {
+            .entxt {
+                font-size: 2wv;
+            }
+        }
+
+        body {
+            background-color: lightskyblue;
+            color: brown;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link rel="shortcut icon" href="/music.ico">
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="header">TODO</h1>
+        <form action="<%= prefix %>/todoadd" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <!-- <input type="hidden" name="_csrf" value="JmrD14AJ-q-6KcYm0_6ExNEQC9X4V45q8njI"> -->
+            <div class="input-field col s12">
+                <label for="td" class="entxt">TODO:</label><br>
+                <input type="text" class="entxt" name="td">
+            </div>
+            <div class="input-field col s12">
+                <label for="nt" class="entxt">NOTE:</label><br>
+                <textarea class="materialize-textarea" name="nt"></textarea>
+            </div>
+            <input type="hidden" class="entxt" name="im">
+            <button type="submit"
+                class="entxt waves-effect waves-light submit-btn">SUBMIT</button>
+        </form>
+        <ul>
+            <% rows.forEach(function(row) { %>
+            <li>
+                <div class="col s12 m4">
+                    <div class="card green darken-1">
+                        <div class="card-content white-text">
+                            <span class="card-title"><%= row['td'] %></span>
+                            <% if (row['nt']) { %> <p class="text-of-note"> <%= row['nt'] %> </p> <% } %>
+                        </div>
+                        <div class="card-action">
+                            <form action="<%= prefix %>/tododelete" method="POST">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <% Object.keys(row).forEach(function(k) { %>
+                                <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
+                                <% }) %>
+                                <button type="submit"
+                                    class="waves-effect waves-light delete-btn">DEL</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <% }); %>
+        </ul>
+    </div>
+</body>
+
+</html>

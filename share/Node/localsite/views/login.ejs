@@ -1,13 +1,37 @@
-<form action="/login" method="post">
-    <div>
-        <label>Username:</label>
-        <input type="text" name="username"/>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style scoped>
+    .logintxt {
+        font-size:4wv;
+    }
+
+    @media (max-resolution: 140dpi) {
+        .logintxt {
+            font-size:unset;
+        }
+    }
+</style>
+
+<body>
+    <div class="row">
+        <form class="col s12" action="<%= prefix %>/login" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="input-field col s12 m6">
+                <input id="username" type="text" class="logintxt" name="username">
+                <label for="username" class="logintxt">Username</label>
+            </div>
+            <div class="row">
+                <div class="input-field col s12 m6">
+                    <input id="password" type="password" class="logintxt" name="password">
+                    <label for="password" class="logintxt">Password</label>
+                </div>
+            </div>
+            <div>
+                <input type="submit" class="logintxt" value="Log In" />
+            </div>
+        </form>
     </div>
-    <div>
-        <label>Password:</label>
-        <input type="password" name="password"/>
-    </div>
-    <div>
-        <input type="submit" value="Log In"/>
-    </div>
-</form>
+
+</body>
+
+</html>

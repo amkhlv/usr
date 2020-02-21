@@ -1,4 +1,5 @@
-<form action="/login" method="post">
+<form action="<%= prefix %>/login" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div>
         <label>Username:</label>
         <input type="text" name="username"/>
