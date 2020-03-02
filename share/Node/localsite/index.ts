@@ -23,8 +23,8 @@ const conf = yaml.safeLoad(
     path.join(os.homedir(), ".config/amkhlv/localsite/config.yaml"),
     "utf8"))
 const mainPage = '/'
-const calPath = path.join(conf.workingPath , conf.calendarFile)
-const musPath = path.join(conf.workingPath , conf.musicFile)
+const calPath = path.join(conf.workingPath, conf.calendarFile)
+const musPath = path.join(conf.workingPath, conf.musicFile)
 const prefix = conf.prefix
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
@@ -38,7 +38,7 @@ class User { login: string; hash: string; salt: string }
 const users: User[] = conf.users
 const logins = users.map(u => u.login)
 
-const db = new sql.Database(path.join(conf.workingPath , conf.sqliteFile))
+const db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile))
 
 const SQLiteStore = sqlStore(session)
 
@@ -71,14 +71,18 @@ passport.deserializeUser((id, cb) => {
     cb(null, id)
   } else { cb('ERROR: User Not Found...') }
 });
+function checkPWD(ruser) {
+  return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser))
+}
 const parseForm = bodyParser.urlencoded({ extended: false })
+
 app.use(parseForm)
 app.use(session({
-  store: SQLiteStore({dir: conf.workingPath , db: conf.sqliteFile}),
+  store: SQLiteStore({ dir: conf.workingPath, db: conf.sqliteFile }),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: {secure : false}
+  cookie: { secure: false }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -97,11 +101,19 @@ app.use((err, req, res, next) => {
   res.status(403)
   res.send('form tampered with')
 })
+app.use((req, res, next) => {
+  if (req.path === "/login" || checkPWD(req.user)) {
+    next()
+  } else {
+    console.log(`DISALLOWING ${req.user}`)
+    res.redirect(prefix + "/login")
+  }
+})
 
 // ====================== Authentication routes ======================
 app.get('/login',
   (req, res) => {
-  res.render('login', {csrfToken: req.csrfToken(), 'prefix': prefix});
+    res.render('login', { csrfToken: req.csrfToken(), 'prefix': prefix });
   });
 app.post('/login',
   parseForm,
@@ -122,84 +134,49 @@ app.get('/logout',
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
-function checkPWD(ruser) {
-  return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser))
-}
 app.get("/",
-  (req,res) => {
-  if (checkPWD(req.user)) {
-    console.log(`-- allowing ${req.user}`)
-    res.render("index", {'homedir': path.join(os.homedir()).toString(), 'prefix': prefix});
-  } else {
-    console.log("USER>>>" + req.user + "<<< not allowed")
-    res.redirect(prefix + '/login')
-  }
-})
+  (req, res) => {
+    res.render("index", { 'homedir': path.join(os.homedir()).toString(), 'prefix': prefix });
+  })
 app.get("/music",
   (req, res) => {
-  if (checkPWD(req.user)) {
-    console.log(`-- allowing ${req.user} to music`)
-    const myaml = yaml.safeLoad(fs.readFileSync(musPath, 'utf8'))
-    res.render("bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3, 'prefix': prefix });
-  } else {
-    console.log("USER>>>" + req.user + "<<< not allowed to /music")
-    res.redirect(prefix + '/login')
-  }
-});
+      const myaml = yaml.safeLoad(fs.readFileSync(musPath, 'utf8'))
+      res.render("bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3, 'prefix': prefix });
+  });
 app.get("/calendar",
   (req, res) => {
-  if (checkPWD(req.user)) {
-    res.sendFile(calPath);
-  } else {
-    console.log("USER>>>" + req.user + "<<< not allowed to /calendar")
-    res.redirect(prefix + '/login')
-  }
-})
+      res.sendFile(calPath);
+  })
 app.get("/todo",
-  (req,res) => {
-  if (checkPWD(req.user)) {
-    const todos = db.all(
-      `select todo td, note nt, importance im from todolist`, (err, rows) => {
-        res.render("todolist", {'prefix': prefix, 'csrfToken': req.csrfToken(), 'rows' : rows})
-      }
-    )
-  } else {
-    console.log("USER>>>" + req.user + "<<< not allowed to /todo")
-    res.redirect(prefix + '/login')
-  }
-})
+  (req, res) => {
+      const todos = db.all(
+        `select todo td, note nt, importance im from todolist`, (err, rows) => {
+          res.render("todolist", { 'prefix': prefix, 'csrfToken': req.csrfToken(), 'rows': rows })
+        }
+      )
+  })
 app.post("/tododelete",
   parseForm,
-  (req,res) => {
-  if (checkPWD(req.user)) {
-    console.log(JSON.stringify(req.body, null, 2))
-    db.run(
-      `delete from todolist where todo = ? and note = ? and importance = ?`,
-      [req.body.td, req.body.nt, req.body.im],
-      err => {}
-    )
-    res.redirect(prefix + '/todo')
-  } else {
-    console.log("USER>>>" + req.user + "<<< not allowed to delete a TODO")
-    res.redirect(prefix + '/login')
-  }
-})
-app.post("/todoadd", 
+  (req, res) => {
+      console.log(JSON.stringify(req.body, null, 2))
+      db.run(
+        `delete from todolist where todo = ? and note = ? and importance = ?`,
+        [req.body.td, req.body.nt, req.body.im],
+        err => { }
+      )
+      res.redirect(prefix + '/todo')
+  })
+app.post("/todoadd",
   parseForm,
-  (req,res) => {
-  if (checkPWD(req.user)) {
-    console.log(JSON.stringify(req.body, null, 2))
-    db.run(
-      `insert into todolist values (?,?,?)`,
-      [req.body.td, req.body.nt, req.body.im],
-      err => {}
-    )
-    res.redirect(prefix + '/todo')
-  } else {
-    console.log("USER>>>" + req.user + "<<< not allowed to delete a TODO")
-    res.redirect(prefix + '/login')
-  }
-})
+  (req, res) => {
+      console.log(JSON.stringify(req.body, null, 2))
+      db.run(
+        `insert into todolist values (?,?,?)`,
+        [req.body.td, req.body.nt, req.body.im],
+        err => { }
+      )
+      res.redirect(prefix + '/todo')
+  })
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 

@@ -32,7 +32,7 @@ class User { login: string; hash: string; salt: string }
 const users: User[] = conf.users
 const logins = users.map(u => u.login)
 
-const db = new sql.Database(path.join(conf.workingPath , conf.sqliteFile))
+const db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile))
 
 const SQLiteStore = sqlStore(session)
 
@@ -66,22 +66,23 @@ passport.deserializeUser((id, cb) => {
   } else { cb('ERROR: User Not Found...') }
 });
 const parseForm = bodyParser.urlencoded({ extended: false })
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+const csrfProtection = csrf({ cookie: false })
+// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+function checkPWD(ruser) {
+  return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser))
+}
+
 app.use(parseForm)
 app.use(session({
-  store: SQLiteStore({dir: conf.workingPath , db: conf.sqliteFile}),
+  store: SQLiteStore({ dir: conf.workingPath, db: conf.sqliteFile }),
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-
-// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-const csrfProtection = csrf({ cookie: false })
-// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
-// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-
-// ====================== Static files are in folder public/ =========
 app.use(csrfProtection)
 app.use(express.static(conf.staticPath))
 app.use((err, req, res, next) => {
@@ -89,6 +90,14 @@ app.use((err, req, res, next) => {
   // handle CSRF token errors here
   res.status(403)
   res.send('form tampered with')
+})
+app.use((req, res, next) => {
+  if (req.path === "/login" || checkPWD(req.user)) {
+    next()
+  } else {
+    console.log(`DISALLOWING ${req.user}`)
+    res.redirect(prefix + "/login")
+  }
 })
 
 // ====================== Authentication routes ======================
@@ -115,41 +124,28 @@ app.get('/logout',
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
-function checkPWD(ruser) {
-  return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser))
-}
 app.get("/",
   (req, res) => {
-    if (checkPWD(req.user)) {
-      console.log(`-- allowing ${req.user} to enter`)
-      res.render(
-        "main",
-        { 'ttl': `Welcome ${req.user}!`,
-          'msg' : `Hi ${req.user} !`,
-          'prefix' : prefix,
-          'csrfToken' : req.csrfToken()
-        });
-    } else {
-      console.log("USER>>>" + req.user + "<<< is not allowed")
-      res.redirect(prefix + '/login')
-    }
+    res.render(
+      "main",
+      {
+        'ttl': `Welcome ${req.user}!`,
+        'msg': `Hi ${req.user} !`,
+        'prefix': prefix,
+        'csrfToken': req.csrfToken()
+      });
   });
 app.post("/input",
   parseForm,
   (req, res) => {
-    if (checkPWD(req.user)) {
-      console.log(`-- allowing ${req.user} to enter`)
-      res.render(
-        "main",
-        { 'prefix' : prefix ,
-          'csrfToken': req.csrfToken(),
-          'ttl': `Welcome ${req.user}!`,
-          'msg' : `I heard: ${req.body.msg}`
-        });
-    } else {
-      console.log("USER>>>" + req.user + "<<< is not allowed")
-      res.redirect(prefix + '/login')
-    }
+    res.render(
+      "main",
+      {
+        'prefix': prefix,
+        'csrfToken': req.csrfToken(),
+        'ttl': `Welcome ${req.user}!`,
+        'msg': `I heard: ${req.body.msg}`
+      });
   }
 )
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
