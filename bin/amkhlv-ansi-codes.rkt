@@ -47,5 +47,6 @@
 (printf "\033[1m\033[48;5;~am\033[38;5;~am background ~a ,,, foreground ~a ~a\n" 220 232 220 232 off)
 (printf "\033[1m\033[48;5;~am\033[38;5;~am background ~a ,,, foreground ~a ~a\n" 76 232 76 232 off)
 
+(printf "Command to enter them in BASH: printf '\\e[31;1m\\e[43;1m'")
 (printf "\nNow practice entering chars. Type a char:\n")
 (printf "-->~a<--" (char->integer (get-one-char)))

@@ -1,15 +1,21 @@
-Need to install `haskero`
+# VSCode with Haskero
 
-Will only work if `intero` is built __for the project__
+## Install
 
-To build intero, execute:
+[Link to instructions](https://gitlab.com/vannnns/haskero/blob/master/client/doc/installation.md)
 
-    stack build intero
+Basically:
 
-__in the project directory__
+    stack build
+    stack build intero --copy-compiler-tool
 
 Also, for the look-up to work, need to build `hoogle` indices.
 Again, __in the project directory__ :
 
     stack hoogle
 
+## Using
+
+Every time after changing the `Cabal` file (__adding new package dependency__), 
+click the `Targets` option on the right side of the bottom bar and then click `Validate` in the dialog that pops up. 
+This forces `Intero` to restart.

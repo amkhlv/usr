@@ -40,8 +40,8 @@ const logins = users.map(u => u.login)
 const requiredHeaders: RequiredHeader[] = conf.checkHeaders
 function todos(): ToDo[] { return yaml.safeLoad(
   fs.readFileSync(path.join(os.homedir(), ".config/amkhlv/daily/list.yaml"), "utf8")
-)
-}
+)}
+const dumpFile = conf.dumpFile
 
 const db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile))
 
@@ -147,6 +147,17 @@ app.get('/logout',
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 
+const tds = todos()
+const globalUnchecked = [...tds]
+function dumpUnchecked(n: number)  {
+  delete globalUnchecked[n]
+  fs.writeFileSync(
+    dumpFile,
+    globalUnchecked.filter((v,_) => v).map((v,_) => v.description)
+    )
+}
+dumpUnchecked(-1)
+
 function pageMap(req: express.Request): { prefix: string, csrfToken: string, ttl: string, todos: ToDo[] } {
   return {
     'prefix': prefix,
@@ -159,9 +170,9 @@ app.get("/", (req, res) => { res.render("main", pageMap(req)) })
 app.post("/activity",
   parseForm,
   (req, res) => {
-    const tds = todos()
     const n: number = +req.body.ord
     if (n < tds.length) {
+      dumpUnchecked(n)
       const x = path.join(bin, tds[n].script)
       console.log(`running script: ${x}`)
       shell.exec(x)

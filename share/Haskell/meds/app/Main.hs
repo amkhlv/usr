@@ -112,7 +112,7 @@ xpBrand = xpElem "brand" $
 atTag tag = deep (isElem >>> hasName tag)
 
 period2Html :: Period -> H.Html
-period2Html p = do
+period2Html p = H.li $ do
   case (start p, end p) of
     (Just s, Just e) -> H.toHtml $ T.concat [ s, " → ", e ]
     (Just s, Nothing) -> H.toHtml $ T.concat [ s, " → ..."]

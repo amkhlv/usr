@@ -1,16 +1,21 @@
-Install packages for user, NOT root
-===================================
+# NPM
+
+## Install packages for user, NOT root
 
 Since we installed `Node.js` via [NVM](nvm.html)
 all the packages installed via `npm install -g ...` will be
 actually installed locally, into some appropriate
 location inside `~/.nvm/`
 
-Private registry (Verdaccio)
-============================
+## New project
 
-Setting multiple registries
----------------------------
+    mkdir myNewProject
+    cd myNewProject
+    npm init
+
+## Private registry (Verdaccio)
+
+### Setting multiple registries
 
 In the `~/.npmrc` file, can have:
 
