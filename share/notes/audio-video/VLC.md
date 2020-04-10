@@ -3,10 +3,18 @@
 
 ## Streaming audio from microphone to public
 
-Suppose that a computer is connected to a server over VPN. The VPN address of computer
-be `COMP_VPN_IP` and of server `SERV_VPN_IP` . We open a port `COMP_VPN_PORT` on computer
-and `SERV_VPN_PORT` on server. The public Internet address of server be `SERV_IP` with `SERV_PORT`
-open to Internet
+Suppose that a computer is connected to a server over VPN. 
+
+Notations:
+
+1. `COMP_VPN_IP` --- the VPN address of the computer
+
+2. `SERV_VPN_IP` --- the VPN address of the server
+
+3. `SERV_IP` --- the public Internet address of the server
+
+4. `COMP_VPN_PORT` and `SERV_PORT` --- the ports we use 
+
 
 Execute on computer:
 
