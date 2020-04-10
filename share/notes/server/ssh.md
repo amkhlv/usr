@@ -123,6 +123,8 @@ Remote port forwarding
 ----------------------
 From __the man page__: _"Specifies that connections to the given TCP port or Unix socket on the remote (server) host are to be forwarded to the given host and port, or Unix socket, on the local side"_
 
+Should have `GatewayPorts yes` in `/etc/ssh/sshd_config`.
+
 This forwards port `9000` of the -<b>R</b>emote machine (the `ssh` server) to `forbidden.com:3000` using my local machine (the `ssh` client)
 as intermediary:
 
