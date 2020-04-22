@@ -11,3 +11,4 @@ _td() {
     return 0
 }
 complete -F _td td
+
