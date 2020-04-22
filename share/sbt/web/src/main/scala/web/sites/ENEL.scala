@@ -13,60 +13,44 @@ object ENEL extends App {
   val driver = getDriver(20)
   driver.get("https://portalhome.eneldistribuicaosp.com.br/#/login")
 
-  val w = new WebDriverWait(driver,3600)
+  val w = new WebDriverWait(driver,30)
   w.until(ExpectedConditions.titleContains("Enel"))
 
   Thread.sleep(2000)
 
-  def firstPageClickFails(): Boolean = {
-    driver.findElement(By.id("cpfcnpj")).sendKeys(conf().getString("CPF"))
-    driver.findElement(By.id("anlage")).sendKeys(conf().getString("inst"))
-    val ldnBtn = driver.findElement(By.id("btnLogin"))
-    w.until(ExpectedConditions.elementToBeClickable(ldnBtn))
-    ldnBtn.click()
-    false
-  }
 
-  def secondPageClickFails(): Boolean ={
-    val yesBtn = driver.findElement(By.xpath("/html/body/div[1]/div/md-content/div/div[1]/a/button"))
-    yesBtn.click()
-    false
-  }
+  val locCPF=By.id("cpfcnpj")
+  val locANLAGE=By.id("anlage")
+  val locLogin=By.id("btnLogin")
+  w.until(ExpectedConditions.presenceOfElementLocated(locCPF))
+  driver.findElement(locCPF).sendKeys(conf().getString("CPF"))
+  w.until(ExpectedConditions.presenceOfElementLocated(locANLAGE))
+  driver.findElement(locANLAGE).sendKeys(conf().getString("inst"))
+  w.until(ExpectedConditions.presenceOfElementLocated(locLogin))
+  val lgnBtn = driver.findElement(locLogin)
+  w.until(ExpectedConditions.elementToBeClickable(lgnBtn))
+  Thread.sleep(3000)
+  lgnBtn.click()
 
-  def thirdPageClickFails(): Boolean = {
-    val homeBtn = driver.findElement(By.xpath("/html/body/div[1]/div/md-sidenav/div/div[1]/div/div[2]/button[1]"))
-    homeBtn.click()
-    false
-  }
+  w.until(ExpectedConditions.presenceOfElementLocated(By.id("question1")))
+  Thread.sleep(3000)
+  driver.findElement(By.id("question1")).sendKeys(conf().getString("tel"))
 
-  def tryclick(clickFails: () => Boolean): Unit  = {
-    while (try {
-      clickFails()
-    } catch {
-      case e: ElementClickInterceptedException => {
-        true
-      }
-    }
-    ) Thread.sleep(1000)
-  }
+  Thread.sleep(1000)
 
-  Thread.sleep(2000)
-
-  tryclick(firstPageClickFails)
-
-  Thread.sleep(2000)
-
-  tryclick(secondPageClickFails)
-
-  Thread.sleep(2000)
-
-  tryclick(thirdPageClickFails)
+  w.until(ExpectedConditions.elementToBeClickable(By.id("avancar2")))
+  driver.findElement(By.id("avancar2")).click()
 
 
+  val locYesBtn = By.xpath("/html/body/div[1]/div/md-content/div/div[1]/a/button")
+  w.until(ExpectedConditions.presenceOfElementLocated(locYesBtn))
+  w.until(ExpectedConditions.elementToBeClickable(locYesBtn))
+  driver.findElement(locYesBtn).click()
 
-
-
-
+  val locHomeBtn = By.xpath("/html/body/div[1]/div/md-sidenav/div/div[1]/div/div[2]/button[1]")
+  w.until(ExpectedConditions.presenceOfElementLocated(locHomeBtn))
+  w.until(ExpectedConditions.elementToBeClickable(locHomeBtn))
+  driver.findElement(locHomeBtn).click()
 
   waitUntilUserClosesWindow(driver)
 
