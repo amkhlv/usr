@@ -19,6 +19,11 @@
 
 <body>
     <div class="container">
+        <form action="<%= prefix %>/" method="get">
+            <button type="submit" class="waves-effect waves-light submit-btn">
+                Go back to MAIN
+            </button>
+        </form>
         <h1 class="header"><%= ttl %></h1>
         <ul>
             <% Object.keys(myaml).forEach(function(genre) { %>

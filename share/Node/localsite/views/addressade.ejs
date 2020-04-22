@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <% 
+    if (role === "addressadd") { %>
+    <title>Add new entry</title> <% 
+    } else if (role === "addressdel") { %>
+    <title>Delete entry?</title> <%
+    } else if (role === "addressedt") { %>
+    <title>Edit entry</title> <%
+    } 
+    %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include("style", {}) %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link rel="shortcut icon" href="/music.ico">
+</head>
+
+<body>
+    <div class="container">
+        <form action="<%= prefix %>/<%= role %>" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <% if (role === "addressdel" || role === "addressedt") { %>
+            <input type="hidden" name="dc" value="<%= prefill['dc'] %>">
+            <input type="hidden" name="odc" value="<%= prefill['dc'] %>">
+            <% } %>
+            <%- include('abkline', {nm: 'ln', lbl: 'Last name:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'fn', lbl: 'First name:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'cp', lbl: 'Cell phone:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'wp', lbl: 'Work phone:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'hp', lbl: 'Home phone:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'wa', lbl: 'Work address:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'ha', lbl: 'Home address:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'web', lbl: 'Website:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'eml', lbl: 'Email:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'bd', lbl: 'Birthday:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'fax', lbl: 'Fax:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'notes', lbl: 'Notes:', prefill:prefill, role:role}) %>
+            <%- include('abkline', {nm: 'tags', lbl: 'Tags:', prefill:prefill, role:role}) %>
+            <button type="submit" class="entxt waves-effect waves-light submit-btn">
+                <% if (role === "addressadd") { %>
+                Sumbit <% 
+                } else if (role === "addressdel") { %>
+                Go ahead with deletion <%
+                } else if (role === "addressedt") { %>
+                Modify <%
+                } 
+                %>
+            </button>
+        </form>
+    </div>
+</body>
+
+</html>

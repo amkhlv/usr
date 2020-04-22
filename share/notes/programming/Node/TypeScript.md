@@ -10,7 +10,7 @@
 
 Have to install types for individual modules, _e.g._ :
 
-    npm install -D selenium-webdirver
+    npm install -D selenium-webdriver
     npm install -D @types/selenium-webdriver
 
 ## Scripts

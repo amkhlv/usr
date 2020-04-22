@@ -32,7 +32,15 @@ For example:
 
 Then:
 
+1. if fresh start:
+
     lb bootstrap
+    lb chroot
+    lb installer
+
+1. if already have `../Live_...` :
+
+    btrfs subv snap ../Live_...  chroot
     lb chroot
     lb installer
 
@@ -83,7 +91,7 @@ correct the `chroot` filesystem, then again:
 
 # Useful programs
 
-    apt-get install  aptitude stow git screen btrfs-progs systemd-container ntfs-3g lshw dmidecode socat cryptsetup gparted gdisk refind grub-pc
+    apt-get install  aptitude stow git screen btrfs-progs systemd-container ntfs-3g lshw dmidecode socat cryptsetup gparted gdisk refind grub-pc wpasupplicant traceroute curl wget
 
     apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket xul-ext-noscript
 

@@ -1,6 +1,6 @@
 {
   "name": "@amkhlv/utils",
-  "version": "1.18.0",
+  "version": "1.28.0",
   "description": "some helpers",
   "main": "index.js",
   "scripts": {
@@ -12,11 +12,14 @@
   "author": "Andrei Mikhailov",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^3.7.5"
+    "@types/xml2js": "^0.4.5",
+    "typescript": "^3.7.5",
+    "xml2js": "^0.4.23"
   },
   "dependencies": {
     "@types/node": "^13.7.0",
     "ts-node": "^8.6.2",
-    "tslint": "^6.0.0"
+    "tslint": "^6.1.1",
+    "xml2js": "^0.4.23"
   }
 }

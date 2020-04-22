@@ -1,0 +1,12 @@
+<div class="input-field col s12">
+    <label for="<%= nm %>"><%= lbl %></label><br>
+    <input 
+        type="text" 
+        name="<%= nm %>" 
+        <% if (role === "addressdel") { %> value="<%= prefill[nm] %>" readonly <% } %> 
+        <% if (role === "addressedt") { %> value="<%= prefill[nm] %>" <% } %> 
+        >
+    <% if (role === "addressedt") { %>
+        <input type="hidden" name="o<%= nm %>" value="<%= prefill[nm] %>">
+    <% } %>
+</div>

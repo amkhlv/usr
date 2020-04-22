@@ -65,6 +65,13 @@ passport.deserializeUser(function (id, cb) {
     }
 });
 var parseForm = bodyParser.urlencoded({ extended: false });
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+var csrfProtection = csrf({ cookie: false });
+// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
+// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
+function checkPWD(ruser) {
+    return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser));
+}
 app.use(parseForm);
 app.use(session({
     store: SQLiteStore({ dir: conf.workingPath, db: conf.sqliteFile }),
@@ -74,11 +81,6 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ HERE should be cookie: false ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-var csrfProtection = csrf({ cookie: false });
-// const csrfProtection = csrf({ cookie: true }) // <-- WRONG !
-// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-// ====================== Static files are in folder public/ =========
 app.use(csrfProtection);
 app.use(express.static(conf.staticPath));
 app.use(function (err, req, res, next) {
@@ -87,6 +89,15 @@ app.use(function (err, req, res, next) {
     // handle CSRF token errors here
     res.status(403);
     res.send('form tampered with');
+});
+app.use(function (req, res, next) {
+    if (req.path === "/login" || checkPWD(req.user)) {
+        next();
+    }
+    else {
+        console.log("DISALLOWING " + req.user);
+        res.redirect(prefix + "/login");
+    }
 });
 // ====================== Authentication routes ======================
 app.get('/login', function (req, res) {
@@ -104,36 +115,21 @@ app.get('/logout', function (req, res) {
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-function checkPWD(ruser) {
-    return (typeof ruser === 'string') && (ruser.length > 2) && (logins.includes(ruser));
-}
 app.get("/", function (req, res) {
-    if (checkPWD(req.user)) {
-        console.log("-- allowing " + req.user + " to enter");
-        res.render("main", { 'ttl': "Welcome " + req.user + "!",
-            'msg': "Hi " + req.user + " !",
-            'prefix': prefix,
-            'csrfToken': req.csrfToken()
-        });
-    }
-    else {
-        console.log("USER>>>" + req.user + "<<< is not allowed");
-        res.redirect(prefix + '/login');
-    }
+    res.render("main", {
+        'ttl': "Welcome " + req.user + "!",
+        'msg': "Hi " + req.user + " !",
+        'prefix': prefix,
+        'csrfToken': req.csrfToken()
+    });
 });
 app.post("/input", parseForm, function (req, res) {
-    if (checkPWD(req.user)) {
-        console.log("-- allowing " + req.user + " to enter");
-        res.render("main", { 'prefix': prefix,
-            'csrfToken': req.csrfToken(),
-            'ttl': "Welcome " + req.user + "!",
-            'msg': "I heard: " + req.body.msg
-        });
-    }
-    else {
-        console.log("USER>>>" + req.user + "<<< is not allowed");
-        res.redirect(prefix + '/login');
-    }
+    res.render("main", {
+        'prefix': prefix,
+        'csrfToken': req.csrfToken(),
+        'ttl': "Welcome " + req.user + "!",
+        'msg': "I heard: " + req.body.msg
+    });
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮

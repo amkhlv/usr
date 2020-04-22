@@ -18,9 +18,14 @@ Stack install to specific path
 Installing personal package globally
 ====================================
 
-In my personal project directory, the command `stack sdist` creates a `tar.gz` file _e.g._ `myparser-0.1.0.0.tar.gz`.
+First, sun `stack dist` in the project directory. The command `stack sdist` creates a `tar.gz` file _e.g._ `myparser-0.1.0.0.tar.gz`.
 
-Put this `myparser-0.1.0.0.tar.gz` into the `nginx` `html` directory.
+Then, there are two methods:
+
+First method: Using global project
+----------------------------------
+
+This __needs NGINX___ . Put this `myparser-0.1.0.0.tar.gz` into the `nginx` `html` directory.
 
 Then edit the file: `~/.stack/global-project/stack.yaml` to have the following lines:
 
@@ -30,6 +35,19 @@ Then edit the file: `~/.stack/global-project/stack.yaml` to have the following l
 Then in `~/` say:
 
     stack install myparser
+
+Second method: using extra-deps
+-------------------------------
+
+Just put in `stack.yaml`:
+
+
+    extra-deps: 
+      - archive: /path/to/that/myparser-0.1.0.0.tar.gz
+
+__Attention__ : with each new update, need to assign new number, 
+such as `myparser-0.1.0.1.gz`, `myparser-0.1.0.2.tar.gz` etc.
+This is done in `package.yaml`.
 
 Uninstalling personal package globally
 ======================================

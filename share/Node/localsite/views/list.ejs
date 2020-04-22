@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>TODO</title>
+    <title><%= lst %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <%- include("style", {}) %>
     <style scoped>
@@ -26,37 +26,29 @@
                 Go back to MAIN
             </button>
         </form>
-        <h1 class="header">TODO</h1>
-        <form action="<%= prefix %>/todoadd" method="post">
+        <h1 class="header"><%= lst %></h1>
+        <form action="<%= prefix %>/listadditem" method="post">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <!-- <input type="hidden" name="_csrf" value="JmrD14AJ-q-6KcYm0_6ExNEQC9X4V45q8njI"> -->
+            <input type="hidden" name="lst" value="<%= lst %>">
             <div class="input-field col s12">
-                <label for="td" class="entxt">TODO:</label><br>
-                <input type="text" class="entxt" name="td">
+                <label for="nitm" class="entxt">New item:</label><br>
+                <input type="text" class="entxt" name="nitm">
             </div>
-            <div class="input-field col s12">
-                <label for="nt" class="entxt">NOTE:</label><br>
-                <textarea class="materialize-textarea" name="nt"></textarea>
-            </div>
-            <input type="hidden" class="entxt" name="im">
-            <button type="submit"
-                class="entxt waves-effect waves-light submit-btn">SUBMIT</button>
+            <button type="submit" class="entxt waves-effect waves-light submit-btn">Add to list</button>
         </form>
         <ul>
-            <% rows.forEach(function(row) { %>
+            <% itms.forEach(function(itm) { %>
             <li>
                 <div class="col s12 m4">
                     <div class="card green darken-1">
                         <div class="card-content white-text">
-                            <span class="card-title"><%= row['td'] %></span>
-                            <% if (row['nt']) { %> <p class="text-of-note"> <%= row['nt'] %> </p> <% } %>
+                            <span class="card-title"><%= itm['itm'] %></span>
                         </div>
                         <div class="card-action">
-                            <form action="<%= prefix %>/tododelete" method="POST">
+                            <form action="<%= prefix %>/listdelitem" method="POST">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                <% Object.keys(row).forEach(function(k) { %>
-                                <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
-                                <% }) %>
+                                <input type="hidden" name="lst" value="<%= lst %>">
+                                <input type="hidden" name="itm" value="<%= itm['itm'] %>">
                                 <button type="submit"
                                     class="waves-effect waves-light delete-btn">DEL</button>
                             </form>

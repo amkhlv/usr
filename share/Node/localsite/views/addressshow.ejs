@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Address lookup results</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="shortcut icon" href="/music.ico">
+    <%- include("style", {}) %>
+    <style scoped>
+        body {
+            background-color: lightgoldenrodyellow;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <form action="<%= prefix %>/abk" method="get">
+            <button type="submit" class="entxt waves-effect waves-light submit-btn">
+                Back to Address Book
+            </button>
+        </form>
+        <% rows.forEach(function(row) { %>
+        <div class="card blue lighten-2">
+            <div class="card-content black-text">
+                <span class="card-title"><%= row['fn'] %> <%= row['ln'] %></span>
+            </div>
+            <table class="striped">
+                <tr>
+                    <td>Email</td>
+                    <td><%= row['eml'] %></td>
+                </tr>
+                <tr>
+                    <td>Cell phone</td>
+                    <td><%= row['cp'] %></td>
+                </tr>
+                <tr>
+                    <td>Work phone</td>
+                    <td><%= row['wp'] %></td>
+                </tr>
+                <tr>
+                    <td>Home phone</td>
+                    <td><%= row['hp'] %></td>
+                </tr>
+                <tr>
+                    <td>Work address</td>
+                    <td><%= row['wa'] %></td>
+                </tr>
+                <tr>
+                    <td>Home address</td>
+                    <td><%= row['ha'] %></td>
+                </tr>
+                <tr>
+                    <td>Web site</td>
+                    <td><%= row['web'] %></td>
+                </tr>
+                <tr>
+                    <td>Notes</td>
+                    <td><%= row['notes'] %></td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                        <form action="<%= prefix %>/addressedt" method="get">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <%  Object.keys(row).forEach(function(k) { %>
+                            <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
+                            <% }); %>
+                            <button type="submit" class="entxt waves-effect waves-light submit-btn">
+                                Edit
+                            </button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="<%= prefix %>/addressdel" method="get">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <%  Object.keys(row).forEach(function(k) { %>
+                            <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
+                            <% }); %>
+                            <button type="submit" class="entxt waves-effect waves-light submit-btn">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                    <td>
+                        <form action="<%= prefix %>/getvcf" method="get">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <%  Object.keys(row).forEach(function(k) { %>
+                            <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
+                            <% }); %>
+                            <button type="submit" class="entxt waves-effect waves-light submit-btn">
+                                VCard
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <% }); %>
+    </div>
+</body>
+
+</html>
