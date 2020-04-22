@@ -37,7 +37,12 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # using the same syntax as the packages field.
 # (e.g., acme-missiles-0.3)
-# extra-deps: []
+
+extra-deps: 
+  - git: https://github.com/kallisti-dev/hs-webdriver.git
+    commit: ea594ce8720c9e11f053b2567f250079f0eac33b
+  - archive: /home/andrei/a/other/usr/share/Haskell/amkhlv-utils/.stack-work/dist/x86_64-linux-tinfo6/Cabal-2.2.0.1/amkhlv-utils-0.1.0.2.tar.gz
+
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

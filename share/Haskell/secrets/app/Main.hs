@@ -3,7 +3,7 @@
 
 module Main where
 
-import Lib
+import AmkhlvSecrets
 import Prelude hiding (readFile)
 import System.Environment
 import qualified Control.Monad.IO.Class as IOC
@@ -76,74 +76,7 @@ typingRobot JustPassword acct = do
   typeText $ password acct
   notification "typing password" (Just "password.svg")
 
-data Account = Account
-  { login :: T.Text
-  , password :: T.Text
-  , changedOn :: [T.Text]
-  , expiringOn :: [T.Text]
-  , description :: [T.Text]
-  , notes :: [T.Text]
-  , loginChallenge :: [T.Text]
-  , forgotPasswordChallenge :: [T.Text]
-  , secretNotes :: [T.Text]
-  , tags :: [T.Text]
-  } deriving Show
-
-getValues :: T.Text -> Cursor -> [T.Text]
-getValues x cur =
-  child >=> checkName (\nm -> x == TX.nameLocalName nm) >=> child >=> content $ cur
-
-getAccount :: Cursor -> Account
-getAccount cur =
-  Account
-  { login =
-    head
-    $ laxAttribute "login" cur
-  , password =
-    head
-    $ child >=> checkName (\nm -> "password" == TX.nameLocalName nm) >=> child >=> content
-    $ cur
-  , changedOn =
-    laxAttribute (T.pack "expires") cur
-  , expiringOn =
-    laxAttribute (T.pack "changed") cur
-  , description =
-    getValues "description" cur
-  , notes =
-    getValues "notes" cur
-  , loginChallenge =
-    getValues "login_challenge" cur
-  , forgotPasswordChallenge =
-    getValues "forgot_password_challenge" cur
-  , secretNotes =
-    getValues "secret_notes" cur
-  , tags =
-    child >=> checkName (\nm -> "tags" == TX.nameLocalName nm) >=> child >=> child >=> content
-    $ cur
-  }
-
-type Nick = T.Text
-type URL = T.Text
-data Site = Site { nick :: Nick, url :: URL, accounts :: [Account] } deriving Show
-
 data Error = ParsingError T.Text
-
-getSite :: Cursor -> Site
-getSite cur =
-  Site
-  (head $ laxAttribute (T.pack "nick") cur)
-  (head $ laxAttribute (T.pack "url") cur)
-  (map getAccount $ (child >=> checkName (\nm -> "account" == TX.nameLocalName nm)) cur)
-
-getData :: Cursor -> [Site]
-getData cur = map getSite $ (child >=> checkName (\nm -> "site" == TX.nameLocalName nm)) cur
-
-readDataFromFile :: IO [Site]
-readDataFromFile = do
-  doc <- TX.readFile TX.def "example.xml"
-  let cur = fromDocument doc
-      sites = map getSite $ (child >=> anyElement) $ head $ (child >=> anyElement) cur
-  return sites
 
 allTags :: [Site] -> [T.Text]
 allTags sites =
@@ -311,7 +244,8 @@ appEvent st (T.VtyEvent ev) =
       case ev of
         V.EvKey V.KEnter [] -> do
           let pwd = head $ WEdit.getEditContents $ st^.pwdLine
-          mysites <- IOC.liftIO $ getSecrets pwd
+          args <- IOC.liftIO $ getArgs
+          mysites <- IOC.liftIO $ getSecrets (args !! 0) pwd
           IOC.liftIO $ notification ((show $ length $ mysites >>= accounts) ++ " accounts") Nothing
           M.continue $ st & mode .~ MainWin False & sites .~ mysites
         _ -> M.continue =<< T.handleEventLensed st pwdLine WEdit.handleEditorEvent ev
@@ -320,7 +254,8 @@ appEvent st (T.VtyEvent ev) =
         V.EvKey (V.KChar 'c') [V.MCtrl] -> M.halt st
         V.EvKey (V.KChar 'r') [V.MCtrl] -> do
           let pwd = head $ WEdit.getEditContents $ st^.pwdLine
-          mysites <- IOC.liftIO $ getSecrets pwd
+          args <- IOC.liftIO $ getArgs
+          mysites <- IOC.liftIO $ getSecrets (args !! 0) pwd
           IOC.liftIO $ notification ((show $ length $ mysites >>= accounts) ++ " accounts") Nothing
           M.continue $ st & mode .~ MainWin False & sites .~ mysites & cmdLine .~ emptyCmdLine
         V.EvKey (V.KChar 't') [V.MCtrl] -> M.continue $ st & mode .~ MainWin (not showTags)
@@ -387,22 +322,6 @@ emptyPwdLine = WEdit.editor PasswordEntry (Just 1) ""
 
 initialState :: St
 initialState = St EnterPassword [] emptyCmdLine emptyPwdLine
-
-getSecrets :: String -> IO [Site]
-getSecrets pwd = do
-  args <- getArgs
-  (Just stdin, Just stdout, Just stderr, hndl) <- createProcess
-    (proc "gpg" ["--batch", "--passphrase-fd", "0", "--decrypt", args !! 0])
-    { std_in  = CreatePipe
-    , std_out = CreatePipe
-    , std_err = CreatePipe
-    }
-  hPutStr stdin pwd >> hFlush stdin
-  contents <- hGetContents stdout
-  let txt = T.pack contents
-      doc = TX.parseText_ TX.def (TLZ.pack contents)
-      cur = fromDocument doc
-  return $ map getSite $ (child >=> anyElement) $ head $ (child >=> anyElement) cur  
 
 main :: IO ()
 main = do

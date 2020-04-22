@@ -13,7 +13,6 @@ import           Data.Aeson
 import           Data.Maybe
 import qualified Data.ByteString.Lazy.Char8 as C8
 import           System.Directory
-import Lib
 
 data ConfWeather = ConfWeather {
     url :: String
