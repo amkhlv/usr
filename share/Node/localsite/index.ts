@@ -26,6 +26,7 @@ const conf = yaml.safeLoad(
 const mainPage = '/'
 const calPath = path.join(conf.workingPath, conf.calendarFile)
 const musPath = path.join(conf.workingPath, conf.musicFile)
+const bmPath = path.join(conf.workingPath, conf.bookmarksFile)
 const prefix = conf.prefix
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
@@ -401,6 +402,11 @@ app.post("/listdelitem",
     res.redirect(prefix + "/list?" + querystring.stringify({'lst': req.body.lst}))
   }
 )
+app.get("/bookmarks",
+        (req,res) => {
+          res.sendFile(bmPath);
+        }
+       )
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 

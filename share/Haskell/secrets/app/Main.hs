@@ -18,7 +18,7 @@ import qualified Graphics.Vty as V
 import Brick (vBox, hBox)
 import qualified Brick.Main as M
 import qualified Brick.Focus as F
-import qualified Brick.Types as T
+import qualified Brick.Types as BT
 import Brick.Util (on, fg, bg)
 import Brick.Markup (markup, (@?))
 import Data.Text.Markup ((@@), fromText)
@@ -35,46 +35,12 @@ import System.Exit
 import Data.Maybe
 import Data.List (intersperse, sort)
 import Text.Printf
+import Lib
 
 xdgOpen :: T.Text -> IO ()
 xdgOpen t = do
   _ <- createProcess (proc "xdg-open" [T.unpack t])
   return ()
-
-typeText :: T.Text -> IO ()
-typeText t = do
-  (mstdin1, _, _, hndl1) <- createProcess
-    (proc "/usr/local/lib/amkhlv/xvkbd-helper.sh" []){std_in = CreatePipe, std_err = CreatePipe}
-  let stdin = fromJust mstdin1 in hPutStr stdin (T.unpack t) >> hFlush stdin
-  waitForProcess hndl1
-  return ()
-
-notification :: String -> Maybe String -> IO ()
-notification x mx = do
-  dir <- SysDir.getHomeDirectory
-  let icn = case mx of
-        Just i -> ["-i", dir ++ "/.config/amkhlv/secrets/" ++ i]
-        Nothing -> []
-  _ <- createProcess (proc "notify-send" $ icn ++ ["-t", "1500", x])
-  return ()
-
-typingRobot :: TypingMode -> Account -> IO ()
-typingRobot LoginThenPassword acct = do
-  notification "ready to type login" (Just "login.svg")
-  typeText $ login acct
-  notification "typing login" (Just "login.svg")
-  typeText $ password acct
-  notification "typing password" (Just "password.svg")
-typingRobot PasswordThenLogin acct = do
-  notification "ready to type password" (Just "password.svg")
-  typeText $ password acct
-  notification "typing password" (Just "password.svg")
-  typeText $ login acct
-  notification "typing login" (Just "login.svg")
-typingRobot JustPassword acct = do
-  notification "ready to type password" (Just "password.svg")
-  typeText $ password acct
-  notification "typing password" (Just "password.svg")
 
 data Error = ParsingError T.Text
 
@@ -114,7 +80,6 @@ charHintsForNick s sites =
 data Name = CommandLine | PasswordEntry  deriving (Ord, Show, Eq)
 type ShowTags = Bool
 type SearchString = String
-data TypingMode = LoginThenPassword | PasswordThenLogin | JustPassword deriving Eq
 data Action = CallRobot TypingMode | ShowAccount deriving Eq
 type ShowMoreSecrets = Bool
 data Mode =
@@ -131,10 +96,10 @@ data St =
        }
 makeLenses ''St
 
-charHintedItem :: (Char, T.Text) -> T.Widget Name
+charHintedItem :: (Char, T.Text) -> BT.Widget Name
 charHintedItem p = markup (T.pack [fst p] @? "charhint") <+> str " " <+> markup (snd p @@ fg V.white)
 
-drawMainWin :: St -> ShowTags -> [T.Widget Name]
+drawMainWin :: St -> ShowTags -> [BT.Widget Name]
 drawMainWin st showTags = 
   let listOfWidgets =
         [ str "Ctrl-r to reload"
@@ -146,7 +111,7 @@ drawMainWin st showTags =
      then [vBox $ (hBox . map txt . intersperse (T.pack "  ") $ sort $ allTags $ st^.sites) : listOfWidgets]
      else [vBox listOfWidgets]
 
-drawItemSelector :: Map.Map Char SiteAndAccount -> Action -> [T.Widget Name]
+drawItemSelector :: Map.Map Char SiteAndAccount -> Action -> [BT.Widget Name]
 drawItemSelector hints action =
   let f b x = if b then markup (T.pack x @? "selected") else markup (T.pack x @? "unselected")
       top = hBox [ f (action == CallRobot LoginThenPassword) "LoginThenPassword"
@@ -188,7 +153,7 @@ drawItemSelector hints action =
                    | x <- Map.assocs hints]
   in [vBox [top, slctr]]
 
-drawAccountInfo :: Account -> ShowMoreSecrets -> [T.Widget Name]
+drawAccountInfo :: Account -> ShowMoreSecrets -> [BT.Widget Name]
 drawAccountInfo acct ssn = [v] where
   v = vBox $ concat
     [ [ str (printf "password changed on %s" $ T.unpack t) | t <- changedOn acct ]
@@ -217,7 +182,7 @@ drawAccountInfo acct ssn = [v] where
                 ]
     ]
 
-drawUI :: St -> [T.Widget Name]
+drawUI :: St -> [BT.Widget Name]
 drawUI st = case (st^.mode) of
   EnterPassword -> [ str "Enter password: " <+> WEdit.renderEditor (str . unlines) True emptyPwdLine ]
   MainWin showTags -> drawMainWin st showTags
@@ -237,8 +202,8 @@ theMap = A.attrMap V.defAttr
     , ("unselected", V.white `on` V.black)
     ]
 
-appEvent :: St -> T.BrickEvent Name e -> T.EventM Name (T.Next St)
-appEvent st (T.VtyEvent ev) =
+appEvent :: St -> BT.BrickEvent Name e -> BT.EventM Name (BT.Next St)
+appEvent st (BT.VtyEvent ev) =
   case (st^.mode) of
     EnterPassword ->
       case ev of
@@ -248,7 +213,7 @@ appEvent st (T.VtyEvent ev) =
           mysites <- IOC.liftIO $ getSecrets (args !! 0) pwd
           IOC.liftIO $ notification ((show $ length $ mysites >>= accounts) ++ " accounts") Nothing
           M.continue $ st & mode .~ MainWin False & sites .~ mysites
-        _ -> M.continue =<< T.handleEventLensed st pwdLine WEdit.handleEditorEvent ev
+        _ -> M.continue =<< BT.handleEventLensed st pwdLine WEdit.handleEditorEvent ev
     MainWin showTags ->
       case ev of
         V.EvKey (V.KChar 'c') [V.MCtrl] -> M.halt st
@@ -263,7 +228,7 @@ appEvent st (T.VtyEvent ev) =
           case charHintsForNick (T.pack $ head $ WEdit.getEditContents $ st^.cmdLine) (st^.sites) of
             Left (ParsingError t) -> M.continue $ st & mode .~ ErrorMessage [t, "", "press SPACE to continue"]
             Right chfn -> M.continue $ st & mode .~ ItemSelector chfn (CallRobot LoginThenPassword)
-        _ -> M.continue =<< T.handleEventLensed st cmdLine WEdit.handleEditorEvent ev
+        _ -> M.continue =<< BT.handleEventLensed st cmdLine WEdit.handleEditorEvent ev
     AccountInfo acct ssn ->
       case ev of
         V.EvKey (V.KChar ' ') [] -> M.continue $ st & mode .~ AccountInfo acct (not ssn)

@@ -14,6 +14,8 @@
           background-color: chocolate;
           color: white;
         }
+        h4 a { color: blue; }
+        a { color: black; }
     </style>
 </head>
 
@@ -25,16 +27,26 @@
             </button>
         </form>
         <h1 class="header"><%= ttl %></h1>
+        <h3 class="header">Index</h2>
+        <% Object.keys(myaml).forEach(function(k) { %>
+          <h4><a href="#genre_<%= encodeURI(k) %>"><%= k %></a></h4>
+          <% myaml[k].forEach(function(c) { 
+                 if (Object.keys(c).includes('composer') && Object.keys(c).includes('works')) { %>
+                 • <a href="#composer_<%= encodeURI(c['composer']) %>"><%= c['composer'] %></a> 
+                 <% } }) %>
+          <% }) %>
+        <h3 class="header">Links</h2>
         <ul>
             <% Object.keys(myaml).forEach(function(genre) { %>
             <li>
-                <h3><%= genre %> (<%= myaml[genre].length %>)</h3>
+              <h3 id="genre_<%= encodeURI(genre) %>"><%= genre %> (<%= myaml[genre].length %>)</h3>
                 <ul>
                     <% myaml[genre].forEach(function(c) { %>
                     <li>
                         <% if (Object.keys(c).includes('section') && Object.keys(c).includes('bookmarks')) { %>
                             <%- include('section', {s:c, ncols:ncols}) %>
                         <% } else if (Object.keys(c).includes('composer') && Object.keys(c).includes('works')) { %>
+                            <tag id="composer_<%= encodeURI(c['composer']) %>"></tag>
                             <%- include('composer', {c:c, ncols:ncols}) %>
                         <% } else if (Object.keys(c).includes('url')) { %>
                             <%- include('bookmark', {b:c}) %>

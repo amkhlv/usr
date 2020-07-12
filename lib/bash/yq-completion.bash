@@ -13,7 +13,8 @@ _yq() {
             "2")
                 if [[ "${COMP_WORDS[1]}" == read ]] ; then
                     [ "$cur" ] && { p="" ; s="*" ; } || { p="./" ; s="" ; }
-                    COMPREPLY=( $(ls -1 "$p$cur"$s | grep 'yaml$') )
+                    cur1=$(echo "$cur" | sed -e 's!^~!'$HOME'!g')
+                    COMPREPLY=( $(x="$p$cur1$s" ; echo "$x") )
                 else
                     COMPREPLY=()
                 fi

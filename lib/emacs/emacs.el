@@ -1,18 +1,42 @@
+
 (setq user-init-file (or load-file-name (buffer-file-name)))
 (setq user-emacs-directory (file-name-directory user-init-file))
 
-;(setq package-archives nil)
+(setq gnutls-min-prime-bits 2048
+      gnutl-verify-error t)
+
+(require 'package)
 ;(add-to-list 'package-archives '("melpa_local" . "/home/andrei/melpa/"))
-;(package-initialize)
+;(add-to-list 'package-archives '("melpa_local" . "/home/andrei/melpa/"))
+                                        ;(package-initialize)
+
+(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                    (not (gnutls-available-p))))
+       (proto (if no-ssl "http" "https")))
+  (when no-ssl (warn "\
+Your version of Emacs does not support SSL connections,
+which is unsafe because it allows man-in-the-middle attacks.
+There are two things you can do about this warning:
+1. Install an Emacs version that does support SSL and be safe.
+2. Remove this warning from your init file so you won't see it again."))
+  (add-to-list 'package-archives
+               (cons "melpa" (concat proto "://melpa.org/packages/"))
+               ;;'("melpa-stable" . "https://stable.melpa.org/packages/")
+               t)
+  ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+  ;; and `package-pinned-packages`. Most users will not need or want to do this.
+  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  )
+(package-initialize)
 
 (add-to-list 'load-path "~/usr/lib/emacs/elisp/")
 ;(add-to-list 'load-path "~/usr/lib/emacs/elisp/auctex-12.1/")
 (add-to-list 'load-path "~/a/git/yasnippet/")
 (add-to-list 'load-path "~/a/git/rust-mode/")
 ;; needed for racket-mode:
-(add-to-list 'load-path "~/melpa/s.el/")
-(add-to-list 'load-path "~/melpa/faceup/")
-(add-to-list 'load-path "~/melpa/racket-mode/")
+;;(add-to-list 'load-path "~/melpa/s.el/")
+;;(add-to-list 'load-path "~/melpa/faceup/")
+;;(add-to-list 'load-path "~/melpa/racket-mode/")
 ;; needed for intero:
 ;; (add-to-list 'load-path "~/elpa/")
 ;; (add-to-list 'load-path "~/elpa/seq-2.20/")
@@ -24,32 +48,74 @@
 ;; (add-to-list 'load-path "~/melpa/haskell-mode/")
 ;; (add-to-list 'load-path "~/melpa/intero/elisp/")
 
+
 (require 'thingatpt)
 (require 'racket-mode)
 (require 'yaml-mode)
+(require 'yasnippet) ;; not yasnippet-bundle
+(setq yas-snippet-dirs '("~/usr/lib/emacs/elisp/snippets"))
+(yas-global-mode 1)
+;(require 'scribble)
+(require 'epa-file)
+(setenv "GPG_AGENT_INFO" nil)
+(autoload 'rnc-mode "rnc-mode")
+(require 'markdown-mode)
+(require 'bystroTeX-preview)
+(require 'bystroTeX-utils)
 
+(require 'use-package)
+(use-package flycheck
+  :init (global-flycheck-mode))
+(use-package lsp-mode
+  ;; Optional - enable lsp-mode automatically in scala files
+  :hook  (haskell-mode . lsp)
+         (scala-mode . lsp)
+         (lsp-mode . lsp-lens-mode)
+  :config (setq lsp-prefer-flymake nil))
+(use-package haskell-mode :mode "\\.hs$")
+(setq lsp-haskell-process-path-hie "hie-wrapper")
 
+;; For Scala:
+;; Enable defer and ensure by default for use-package
+;; Keep auto-save/backup files separate from source code:  https://github.com/scalameta/metals/issues/1027
+(setq use-package-always-defer t
+      use-package-always-ensure t
+      backup-directory-alist `((".*" . ,temporary-file-directory))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+;; Enable scala-mode for highlighting, indentation and motion commands
+(use-package scala-mode
+  :mode "\\.s\\(cala\\|bt\\)$")
+;; Enable sbt mode for executing sbt commands
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map)
+   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
+   (setq sbt:program-options '("-Dsbt.supershell=false"))
+)
+;; Enable nice rendering of diagnostics like compile errors.
+(use-package company-lsp)
+(use-package lsp-treemacs
+  :config
+  (lsp-metals-treeview-enable t)
+  (setq lsp-metals-treeview-show-when-views-received t)
+  )
 
-;;------------ Haskell ----------------
-;;(require 'pkg-info) ; seems to be needed for Haskell
-;;(require 'haskell-mode)
-;;(require 'intero)
-;;(add-hook 'haskell-mode-hook 'intero-mode)
 
 ;;------------- AUCTeX -----------------
-(setq dpi
-      (car (with-temp-buffer
-             (insert-file-contents "~/.local/boi/dpi")
-             (split-string (buffer-string) "\n" t))))
+;; (setq dpi
+;;       (car (with-temp-buffer
+;;              (insert-file-contents "~/.local/boi/dpi")
+;;              (split-string (buffer-string) "\n" t))))
 
-(load "auctex.el" nil t t)
-(load "preview-latex.el" nil t t)
+;; (load "auctex.el" nil t t)
+;; (load "preview-latex.el" nil t t)
 ;;--------------------------------------
-
-(setq gnutls-algorithm-priority
-      "SECURE192:+SECURE128:-VERS-ALL:+VERS-TLS1.2:%PROFILE_MEDIUM"
-      gnutls-min-prime-bits 2048
-      gnutl-verify-error t)
 
 ;;------ File Backups ------------------
 (defvar my-backup-directory "~/emacs-backups/")
@@ -76,7 +142,7 @@
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
-(setq line-number-mode t) 
+(setq line-number-mode t)
 (setq column-number-mode t)
 
 (set-input-method "rfc1345")
@@ -98,13 +164,15 @@
 ;(require 'amkhlv-mail)
 ;(require 'amkhlv-html)
 
+
+
 (ido-mode 'buffers)
 
 ;; Assign hippie-expand:
 (global-set-key "\M- " 'hippie-expand)
 
 (defun toggle-fullscreen ()
-  "Toggle full screen on X11"
+  "Toggle full screen on X11."
   (interactive)
   (when (eq window-system 'x)
     (set-frame-parameter
@@ -250,149 +318,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(LaTeX-indent-level 3)
- '(TeX-PDF-mode t)
- '(TeX-command-list
-   (quote
-    (("TeX" "%(PDF)%(tex) %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil
-      (plain-tex-mode texinfo-mode ams-tex-mode)
-      :help "Run plain TeX")
-     ("LaTeX" "%`%l --jobname=%s --synctex=1 %(mode)%' %t" TeX-run-TeX nil
-      (latex-mode doctex-mode)
-      :help "Run LaTeX")
-     ("Makeinfo" "makeinfo %t" TeX-run-compile nil
-      (texinfo-mode)
-      :help "Run Makeinfo with Info output")
-     ("Makeinfo HTML" "makeinfo --html %t" TeX-run-compile nil
-      (texinfo-mode)
-      :help "Run Makeinfo with HTML output")
-     ("AmSTeX" "%(PDF)amstex %`%S%(PDFout)%(mode)%' %t" TeX-run-TeX nil
-      (ams-tex-mode)
-      :help "Run AMSTeX")
-     ("ConTeXt" "texexec --once --texutil %(execopts)%t" TeX-run-TeX nil
-      (context-mode)
-      :help "Run ConTeXt once")
-     ("ConTeXt Full" "texexec %(execopts)%t" TeX-run-TeX nil
-      (context-mode)
-      :help "Run ConTeXt until completion")
-     ("BibTeX" "bibtex %s" TeX-run-BibTeX nil t :help "Run BibTeX")
-     ("View" "xpdf.real -remote %s %s.pdf" TeX-run-discard-or-function t t :help "Run Viewer")
-     ("Print" "%p" TeX-run-command t t :help "Print the file")
-     ("Queue" "%q" TeX-run-background nil t :help "View the printer queue" :visible TeX-queue-command)
-     ("File" "%(o?)dvips %d -o %f " TeX-run-command t t :help "Generate PostScript file")
-     ("Index" "makeindex %s" TeX-run-command nil t :help "Create index file")
-     ("Check" "lacheck %s" TeX-run-compile nil
-      (latex-mode)
-      :help "Check LaTeX file for correctness")
-     ("Spell" "(TeX-ispell-document \"\")" TeX-run-function nil t :help "Spell-check the document")
-     ("Clean" "TeX-clean" TeX-run-function nil t :help "Delete generated intermediate files")
-     ("Clean All" "(TeX-clean t)" TeX-run-function nil t :help "Delete generated intermediate and output files")
-     ("Other" "" TeX-run-command t t :help "Run an arbitrary command"))))
- '(TeX-fold-macro-spec-list
-   (quote
-    (("[f]"
-      ("footnote"))
-     ("[c]"
-      ("cite"))
-     ("[l]"
-      ("label"))
-     ("[r]"
-      ("ref" "pageref"))
-     ("[i]"
-      ("index"))
-     ("*"
-      ("item"))
-     ("..."
-      ("dots"))
-     (1
-      ("anote" "anth"))
-     ("[F]"
-      ("rem")))))
- '(TeX-fold-type-list (quote (env macro comment)))
- '(TeX-save-query nil)
- '(browse-url-browser-function (quote browse-url-firefox))
- '(calendar-mark-diary-entries-flag t)
  '(custom-enabled-themes (quote (deeper-blue)))
- '(fill-column 75)
- '(font-latex-user-keyword-classes
+ '(initial-buffer-choice t)
+ '(package-selected-packages
    (quote
-    (("rem"
-      ("rem")
-      (:foreground "green")
-      command)
-     ("andrei-remv"
-      (("remv" "{"))
-      (:underline "lightgreen" :foreground "white")
-      command)
-     ("andrei-theorem-header"
-      (("anth" "{"))
-      (:weight bold :underline t :foreground "green")
-      command)
-     ("andrei-marginal-note"
-      (("anote" "{"))
-      (:box
-       (:line-width 2 :color "red" :style released-button)
-       :foreground "yellow")
-      command)
-     ("andrei-underlined"
-      (("underline" "{"))
-      (:underline t)
-      command)
-     ("andrei-why"
-      (("why" "{"))
-      (:box
-       (:line-width 2 :color "grey75" :style released-button)
-       :foreground "orange")
-      command)
-     ("andrei-mark"
-      ("am")
-      (:weight bold :foreground "firebrick1")
-      declaration)
-     ("andrei-question"
-      ("question")
-      (:foreground "LightGreen")
-      declaration)
-     ("andrei-answer"
-      ("answer")
-      (:foreground "LightSalmon1")
-      declaration)
-     ("andrei-attn"
-      (("attn" "{"))
-      (:box
-       (:line-width 2 :color "red" :style released-button)
-       :background "yellow" :foreground "black")
-      command))))
- '(inhibit-startup-screen t)
- '(ispell-local-dictionary-alist
-   (quote
-    (("brasileiro" "[A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[^A-Z\301\311\315\323\332\300\310\314\322\331\303\325\307\334\302\312\324a-z\341\351\355\363\372\340\350\354\362\371\343\365\347\374\342\352\364]" "[']" nil nil nil iso-8859-1))))
-; '(max-lisp-eval-depth 10000)
-; '(max-specpdl-size 30000)
- '(nxml-heading-element-name-regexp "description\\|title\\|head")
- '(nxml-section-element-name-regexp
-   "account\\|article\\|\\(sub\\)*section\\|chapter\\|div\\|appendix\\|part\\|preface\\|reference\\|simplesect\\|bibliography\\|bibliodiv\\|glossary\\|glossdiv")
- '(org-format-latex-options
-   (quote
-    (:foreground default :background default :scale 1.3 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
-                 ("begin" "$1" "$" "$$" "\\(" "\\["))))
- '(package-archives (quote nil))
- '(preview-LaTeX-command
-   (quote
-    ("%`%l --jobname=%s \"\\nonstopmode\\nofiles\\PassOptionsToPackage{"
-     ("," . preview-required-option-list)
-     "}{preview}\\AtBeginDocument{\\ifx\\ifPreview\\undefined" preview-default-preamble "\\fi}\"%' %t")))
- '(preview-auto-cache-preamble t)
- '(preview-default-document-pt 12)
- '(preview-default-option-list
-   (quote
-    ("displaymath" "floats" "graphics" "textmath" "footnotes")))
- '(preview-gs-options
-   (quote
-    ("-q" "-dNOSAFER" "-dNOPAUSE" "-DNOPLATFONTS" "-dPrinted" "-dTextAlphaBits=4" "-dGraphicsAlphaBits=4" "-dAlignToPixels=1")))
- '(preview-image-type (quote png))
- '(preview-scale-function (/ 110.0 (string-to-number dpi)))
- '(ps-font-size (quote (12 . 12)))
- '(tab-stop-list (quote (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60))))
+    (color-theme lsp-treemacs company-lsp yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode lsp-ui lsp-haskell flycheck))))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -439,7 +369,6 @@
          ("\\.rnc\\'" . rnc-mode)
          ("\\.pdq\\'" . nxml-mode)
          ("\\.rs\\'" . rust-mode)
-         ("\\.hs\\'" . haskell-mode)
          ("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)
          )
@@ -483,13 +412,5 @@
   (setq display-mm-dimensions-alist my-original-display-mm-alist)
   )
 
-(require 'yasnippet) ;; not yasnippet-bundle
-(setq yas-snippet-dirs '("~/usr/lib/emacs/elisp/snippets"))
-(yas-global-mode 1)
-(require 'scribble)
-(require 'epa-file)
-(setenv "GPG_AGENT_INFO" nil)
-(autoload 'rnc-mode "rnc-mode")
-(require 'markdown-mode)
-(require 'bystroTeX-preview)
-(require 'bystroTeX-utils)
+
+
