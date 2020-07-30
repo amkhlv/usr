@@ -1,0 +1,25 @@
+.daily-item-pending {
+    background-image: none;
+    background-color: yellow;
+    font-weight: bold;
+}
+
+.daily-item-visited {
+    font-weight: normal;
+}
+
+.ui-edit-button {
+    font-weight: bold;
+    background-image: none;
+    background-color: pink;
+    color: green;
+}
+
+.yaml-edit-button {
+    background-image: none;
+    background-color: white;
+    font-weight: bold;
+    color: green;
+}
+
+

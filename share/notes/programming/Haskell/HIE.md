@@ -7,6 +7,8 @@ Have to install specifically for each `GHC` version, _e.g._ :
 
     stack install.hs  hie-8.4.4
 
+Moreover, before doing this __pull up the haskell-ide-engine repository__
+
 VSCode
 ======
 

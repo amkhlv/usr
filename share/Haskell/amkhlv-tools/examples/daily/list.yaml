@@ -1,0 +1,6 @@
+- description: >-
+    read news
+  script: news.sh
+- description: >-
+    check email
+  script: gmail.sh
