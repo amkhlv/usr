@@ -47,6 +47,9 @@ The file `~/.vnc/xstartup` contains a sequence of commands which are executed im
 
     indicator /home/andrei/.config/amkhlv/indicator.xml &
 
+To run __xfwm4__ dont forget to install `dbus-x11`:
+
+    aptitude install dbus-x11
 
 
 The file `~/.vnc/config` contains a list of flags of the command `Xvnc`.

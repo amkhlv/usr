@@ -27,6 +27,8 @@ const mainPage = '/'
 const calPath = path.join(conf.workingPath, conf.calendarFile)
 const musPath = path.join(conf.workingPath, conf.musicFile)
 const bmPath = path.join(conf.workingPath, conf.bookmarksFile)
+const dailyPath = path.join(conf.workingPath, conf.dailyFile)
+const dailyUrgentPath = path.join(conf.workingPath, conf.dailyUrgentFile)
 const prefix = conf.prefix
 
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
@@ -43,6 +45,21 @@ const logins = users.map(u => u.login)
 const db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile))
 
 const SQLiteStore = sqlStore(session)
+
+// ====================== Global variables ===========================
+
+//const interval = 15000;
+const interval = 1000 * 3600 * 23;
+const timestamps: Map<string, number> = new Map();
+
+function getTimeStamps() {
+  const o:{[key:string]:number} = {};
+  timestamps.forEach((v,key) => {
+    o[key]= v
+  })
+  return o
+}
+
 
 // ====================== App init ===================================
 const app = express();
@@ -151,12 +168,48 @@ app.get("/calendar",
   })
 app.get("/todo",
   (req, res) => {
+    const myaml = yaml.safeLoad(fs.readFileSync(dailyPath, 'utf8'))
+    const urgent = yaml.safeLoad(fs.readFileSync(dailyUrgentPath, 'utf8'))
+    const now = new Date()
+    const hoursNow  = now.getTime()
+    const stamps = getTimeStamps()
+    let ok = true
+    urgent.forEach( (item) => {
+      if (Array.from(timestamps.keys()).indexOf(item['title']) == -1) { 
+        console.log(`Not OK because ${item['title']} missing`) 
+        ok = false 
+      }
+    })
+    timestamps.forEach((v,key) => {
+      if (hoursNow > v + interval) { 
+        console.log(`Not OK because ${v} is overdue`);
+        ok = false 
+      }
+    })
     const todos = db.all(
       `select todo td, note nt, importance im from todolist`, (err, rows) => {
-        res.render("todolist", { 'prefix': prefix, 'csrfToken': req.csrfToken(), 'rows': rows })
+        res.render("todolist", { 
+          'prefix': prefix, 
+          'csrfToken': req.csrfToken(), 
+          'rows': rows , 
+          'myaml': myaml, 
+          'urgent': urgent, 
+          'timestamps': stamps,
+          'hoursNow': hoursNow,
+          'interval': interval,
+          'ok': ok
+        })
       }
     )
   })
+app.post("/timestamps",
+         parseForm,
+         (req,res) => {
+           const now = new Date();
+           timestamps.set(req.body.item, now.getTime());
+           res.redirect(req.body.url)
+         }
+        )
 app.post("/tododelete",
   parseForm,
   (req, res) => {
@@ -407,6 +460,15 @@ app.get("/bookmarks",
           res.sendFile(bmPath);
         }
        )
+app.get("/daily",
+        (req,res) => {
+          const myaml = yaml.safeLoad(fs.readFileSync(dailyPath, 'utf8'))
+          res.render("daily", {'myaml': myaml, 'prefix': prefix})
+        }
+       )
+
+
+
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 

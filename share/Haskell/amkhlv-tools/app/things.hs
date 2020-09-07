@@ -2,7 +2,7 @@
 {-# LANGUAGE QuasiQuotes       #-}
 
 
-module Daily where
+module Things where
 
 import Lib
 import Control.Monad.IO.Class
@@ -26,18 +26,19 @@ import System.Directory
 import System.FilePath.Posix
 
 data Task = Task {
-  description :: Text
+  pic :: Text
+  , description :: Text
   , script :: Text
   } deriving (Eq, Show)
 
 instance FromJSON Task where
   parseJSON (Y.Object v) =
-    Task <$> v .: "description" <*> v .: "script"
+    Task <$> v .: "pic" <*> v .: "description" <*> v .: "script"
   parseJSON _ = fail "Expected Task"
 
 
 configDir :: IO (FilePath)
-configDir = (\p -> p </> (".config/amkhlv/daily/" :: FilePath)) <$> getHomeDirectory 
+configDir = (\p -> p </> (".config/amkhlv/things/" :: FilePath)) <$> getHomeDirectory 
 
 runScript :: Text -> IO ()
 runScript s = do
@@ -91,20 +92,23 @@ main = do
       styleContextAddProviderForScreen (fromJust screen) provider 799
       vboxLeft <- builderGetObject builder castToBox ("leftVBox" :: String)
       sequence_ [ do
+                    r <- hBoxNew False 1
+                    i <- imageNew
+                    imageSetFromFile i ((unpack $ pic t) :: FilePath) 
                     b <- buttonNew
                     l <- labelNew (Just $ description t)
                     cat <- catScript $ script t
                     widgetSetTooltipText b $ Just cat
-                    addClass (toWidget l) "daily-item-label-pending"
+                    addClass (toWidget l) "things-item-label"
                     containerAdd b l
-                    addClass (toWidget b) "daily-item-pending"
+                    addClass (toWidget b) "things-item-button"
                     b `on` buttonActivated $ do
-                      removeClass (toWidget b) "daily-item-pending"
-                      removeClass (toWidget l) "daily-item-label-pending"
-                      addClass (toWidget b) "daily-item-visited"
-                      addClass (toWidget l) "daily-item-label-visited"
                       liftIO (runScript $ script t )
-                    containerAdd vboxLeft b
+                      widgetDestroy window
+                      liftIO mainQuit
+                    containerAdd r i
+                    containerAdd r b
+                    containerAdd vboxLeft r
                 | t <- y
                 ]
       vboxRight <- builderGetObject builder castToBox ("rightVBox" :: String)
@@ -112,11 +116,10 @@ main = do
       editBtn `on` buttonActivated $ liftIO selfEdit
       yamlBtn <- builderGetObject builder castToButton ("yamlButton" :: String)
       yamlBtn `on` buttonActivated $ liftIO yamlEdit
-      restartBtn <- builderGetObject builder castToButton ("restartButton" :: String)
-      restartBtn `on` buttonActivated $ do
+      exitBtn <-  builderGetObject builder castToButton ("exitButton" :: String)
+      exitBtn `on` buttonActivated $ do
         widgetDestroy window
         liftIO mainQuit
-        liftIO main
       widgetShowAll window
       mainGUI
       

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 22fbb020cfb09bf7c352a06f91a0c52bc82b3f135d1c5bb47cea75fa494c6858
+-- hash: 7b08d5d54cec28b4087389cd4235cbcaec3561bb13cf3e21edd353591bbe6e36
 
 name:           amkhlv-tools
 version:        0.1.0.0
@@ -36,13 +36,53 @@ library
       base >=4.7 && <5
   default-language: Haskell2010
 
+executable a
+  main-is: a.hs
+  other-modules:
+      Paths_amkhlv_tools
+  hs-source-dirs:
+      app
+  ghc-options: -main-is AYaml -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HsYAML
+    , amkhlv-tools
+    , ansi-terminal
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , directory
+    , filepath
+    , process
+    , text
+    , yaml
+  default-language: Haskell2010
+
 executable daily-exe
   main-is: daily.hs
   other-modules:
       Paths_amkhlv_tools
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -main-is Daily -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      amkhlv-tools
+    , base >=4.7 && <5
+    , bytestring
+    , directory
+    , filepath
+    , gtk3
+    , process
+    , text
+    , yaml
+  default-language: Haskell2010
+
+executable things-exe
+  main-is: things.hs
+  other-modules:
+      Paths_amkhlv_tools
+  hs-source-dirs:
+      app
+  ghc-options: -main-is Things -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       amkhlv-tools
     , base >=4.7 && <5

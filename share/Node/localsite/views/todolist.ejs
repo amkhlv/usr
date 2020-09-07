@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="refresh" content="180">
     <title>TODO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <%- include("style", {}) %>
@@ -26,7 +27,8 @@
                 Go back to MAIN
             </button>
         </form>
-        <h1 class="header">TODO</h1>
+        <hr/>
+        <h4 class="header">TODO</h4>
         <form action="<%= prefix %>/todoadd" method="post">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <!-- <input type="hidden" name="_csrf" value="JmrD14AJ-q-6KcYm0_6ExNEQC9X4V45q8njI"> -->
@@ -42,6 +44,7 @@
             <button type="submit"
                 class="entxt waves-effect waves-light submit-btn">SUBMIT</button>
         </form>
+        <hr/>
         <ul>
             <% rows.forEach(function(row) { %>
             <li>
@@ -66,6 +69,34 @@
             </li>
             <% }); %>
         </ul>
+        <ul>
+            <% urgent.forEach(function(loc) { %>
+            <li>
+              <form action="<%= prefix %>/timestamps" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="item" value="<%= loc['title'] %>">
+                <input type="hidden" name="url" value="<%= loc['url'] %>">
+                <% if (timestamps.hasOwnProperty(loc['title']) && hoursNow < timestamps[loc['title']] + interval) { %>
+                  <button type="submit"><%= loc['title'] %></button>
+                  <% } else { %>
+                  <button type="submit" class="attention-btn"><%= loc['title'] %></button>
+                <% } %>
+              </form>
+            </li>
+            <% }); %>
+        </ul>
+        <% if (ok) { %>
+        <ul>
+            <% Object.keys(myaml).forEach(function(sec) { %>
+            <li>
+                <h4><%= sec %></h4>
+                  <% myaml[sec].forEach(function(lnk) { %>
+                  &nbsp;&nbsp;⋄&nbsp;<a class="deep-orange lighten-5 brown-text text-darken-4" href="<%= lnk['url'] %>">&nbsp;<%= lnk['title'] %>&nbsp;</a>
+                  <% }); %>
+            </li>
+            <% }); %>
+        </ul>
+        <% } %>
     </div>
 </body>
 

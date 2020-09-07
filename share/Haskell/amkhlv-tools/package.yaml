@@ -30,6 +30,7 @@ executables:
     main:                daily.hs
     source-dirs:         app
     ghc-options:
+    - -main-is Daily
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
@@ -42,6 +43,42 @@ executables:
     - process
     - directory
     - filepath
+  things-exe:
+    main:                things.hs
+    source-dirs:         app
+    ghc-options:
+    - -main-is Things
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - amkhlv-tools
+    - text
+    - gtk3
+    - yaml
+    - bytestring
+    - process
+    - directory
+    - filepath      
+  a:
+    main:                a.hs
+    source-dirs:         app
+    ghc-options:
+    - -main-is AYaml
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - amkhlv-tools
+    - text
+    - yaml
+    - bytestring
+    - process
+    - directory
+    - filepath
+    - HsYAML
+    - containers
+    - ansi-terminal
 
 tests:
   amkhlv-tools-test:
