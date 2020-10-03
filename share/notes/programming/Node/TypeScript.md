@@ -1,17 +1,50 @@
 # Using TypeScript
 
-## Installing TypeScript and TSLint
+## Installing TypeScript and ESLint
 
-    npm install -D typescript ts-node tslint @types/node
+    npm install --save-dev typescript @types/node ts-node eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin
 
     node_modules/.bin/tsc --init
 
-    node_modules/.bin/tslint --init
+    npx eslint --init
+    
+    npm install --save @types/node
+
+
+
+`package.json` would contain scripts:
+
+    "scripts": {
+    "lint": "eslint . --ext .ts"
+    , "build": "tsc *.ts"
+    }
+
+
+Then, to link: 
+
+    npm run lint
+
+to build:
+
+    npm run build
 
 Have to install types for individual modules, _e.g._ :
 
     npm install -D selenium-webdriver
     npm install -D @types/selenium-webdriver
+
+
+## Using ES6
+
+To use `ES6` things like `Map<>` etc need file `tsconfig.json` containing:
+
+    {
+      "compilerOptions": {
+        "target": "es5",
+        "downlevelIteration": true
+      }
+    }
+
 
 ## Scripts
 

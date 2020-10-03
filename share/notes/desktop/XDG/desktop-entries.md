@@ -1,9 +1,13 @@
-Location of .desktop files
-==========================
+# .desktop files
 
 The `.desktop` files should be put in `~/.local/share/applications/`
 
 The autostarted ones should be put in `~/.config/autostart/`
+
+## GUI program for creation of desktop files
+
+    exo-desktop-item-edit --create-new ~/.local/share/applications
+
 
 Specifications and manuals
 ==========================
@@ -15,7 +19,9 @@ Specifications and manuals
 Minimal example
 ===============
 
-`pdq.desktop`:
+It is best to create __using GUI__ : `exo-desktop-item-edit --create-new ~/.local/share/applications`
+
+Example for `pdq`
 
     [Desktop Entry]
     Version=1.0
