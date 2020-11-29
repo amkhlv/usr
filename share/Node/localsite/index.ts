@@ -160,7 +160,7 @@ app.get("/",
 app.get("/music",
   (req, res) => {
     const myaml = yaml.safeLoad(fs.readFileSync(musPath, 'utf8'))
-    res.render("bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3, 'prefix': prefix });
+    res.render("music-bookmarks", { 'ttl': 'Music', 'myaml': myaml, 'ncols': 3, 'prefix': prefix });
   });
 app.get("/calendar",
   (req, res) => {
@@ -457,7 +457,8 @@ app.post("/listdelitem",
 )
 app.get("/bookmarks",
         (req,res) => {
-          res.sendFile(bmPath);
+          const myaml = yaml.safeLoad(fs.readFileSync(bmPath, 'utf8'))
+          res.render('bookmarks', {'myaml': myaml, 'prefix': prefix})
         }
        )
 app.get("/daily",

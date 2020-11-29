@@ -42,25 +42,29 @@ ApplicationWindow {
         onEntryfontsizeChanged: txtfield.font.pointSize = entryfontsize
 
     }
-
-        GridLayout {
-            id: lt;
-            columns: 1;
-            Layout.fillWidth: true
-            Label {
-                id: lbl;
-                text: "enter below:"
-                font.family: "Courier"
-            }
-            TextField {
-                id: txtfield
-                Layout.fillWidth: true
-                onAccepted: function () { putStr(text); mainwin.close(); }
-            }
-            Button {
-                id: btn;
-                text: "Enter"
-                onClicked: function () { putStr(txtfield.text) ; mainwin.close() ; }
-            }
-        }
+    onAfterRendering: function () {
+        txtfield.focus = true
     }
+
+    GridLayout {
+        id: lt;
+        columns: 1;
+        Layout.fillWidth: true
+        Label {
+            id: lbl;
+            text: "enter below:"
+            font.family: "Courier"
+        }
+        TextField {
+            id: txtfield
+            Layout.fillWidth: true
+            onAccepted: function () { putStr(text); mainwin.close(); }
+        }
+        Button {
+            id: btn;
+            text: "Enter"
+            onClicked: function () { putStr(txtfield.text) ; mainwin.close() ; }
+        }
+   }
+
+}

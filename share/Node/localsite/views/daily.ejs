@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Links</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include("style", {}) %>
+    <style scoped>
+        body {
+            background-color: lightskyblue;
+            color: brown;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <link rel="shortcut icon" href="/music.ico">
+</head>
+
+<body>
+    <div class="container">
+        <form action="<%= prefix %>/" method="get">
+            <button type="submit" class="entxt waves-effect waves-light submit-btn">
+                Go back to MAIN
+            </button>
+        </form>
+        <ul>
+            <% Object.keys(myaml).forEach(function(sec) { %>
+            <li>
+                <h3><%= sec %></h3>
+                <ul>
+                  <% myaml[sec].forEach(function(lnk) { %>
+                  <li><a class="black" href="<%= lnk['url'] %>"><%= lnk['title'] %></a></li>
+                  <% }); %>
+                </ul>
+            </li>
+            <% }); %>
+        </ul>
+    </div>
+</body>
+
+</html>

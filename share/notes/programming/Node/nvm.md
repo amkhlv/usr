@@ -24,3 +24,12 @@ Install Node using NVM
 
     nvm install node
     nvm use node
+
+
+Update
+------
+
+    nvm install node --reinstall-packages-from=node
+    
+    nvm install-latest-npm
+

@@ -31,7 +31,6 @@
         <h4 class="header">TODO</h4>
         <form action="<%= prefix %>/todoadd" method="post">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <!-- <input type="hidden" name="_csrf" value="JmrD14AJ-q-6KcYm0_6ExNEQC9X4V45q8njI"> -->
             <div class="input-field col s12">
                 <label for="td" class="entxt">TODO:</label><br>
                 <input type="text" class="entxt" name="td">
@@ -69,9 +68,10 @@
             </li>
             <% }); %>
         </ul>
-        <ul>
+        <table>
+          <tr>
             <% urgent.forEach(function(loc) { %>
-            <li>
+            <td>
               <form action="<%= prefix %>/timestamps" method="POST">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <input type="hidden" name="item" value="<%= loc['title'] %>">
@@ -82,9 +82,10 @@
                   <button type="submit" class="attention-btn"><%= loc['title'] %></button>
                 <% } %>
               </form>
-            </li>
+            </td>
             <% }); %>
-        </ul>
+          </tr>
+        </table>
         <% if (ok) { %>
         <ul>
             <% Object.keys(myaml).forEach(function(sec) { %>

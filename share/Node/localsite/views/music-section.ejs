@@ -3,7 +3,7 @@
     <div class="row">
         <% for (j = 0 ; j < ncols ; j++) { 
             if (s['bookmarks'][ncols * i + j]) { %> 
-                <%- include('bookmark', {b : s['bookmarks'][ncols * i + j]}) %>
+                <%- include('music-bookmark', {b : s['bookmarks'][ncols * i + j]}) %>
             <% } 
         } %>
     </div>
