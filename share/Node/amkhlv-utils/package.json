@@ -1,10 +1,11 @@
 {
   "name": "@amkhlv/utils",
-  "version": "1.28.0",
+  "version": "1.51.0",
   "description": "some helpers",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p ."
   },
   "bin": {
     "amkhlv-hash-pwd": "./hashPassword.ts"
@@ -18,6 +19,7 @@
   },
   "dependencies": {
     "@types/node": "^13.7.0",
+    "axios": "^0.21.0",
     "ts-node": "^8.6.2",
     "tslint": "^6.1.1",
     "xml2js": "^0.4.23"
