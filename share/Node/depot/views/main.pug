@@ -1,0 +1,50 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible' content='IE=edge')
+    title #{page_title}
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js")
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css')
+    link(rel='stylesheet' href='https://fonts.googleapis.com/icon?family=Material+Icons')
+    style(type="text/css").
+      td.checksum {
+        font-size: x-small;
+        font-family: monospace;
+        }
+  body
+    .container
+      h1.header #{ttl}
+    div(class="row")
+      form(class="col s12" action=`${prefix}/upload?_csrf=${csrfToken}` enctype="multipart/form-data" method='post')
+        div(class="row")
+          input(type='file' name='filetoupload' multiple)
+        div(class="row")
+          div(class="input-field col s6")
+            label(for='comment') comment
+            input(type='text' name='comment')
+        div(class="row")
+          input(type='submit' value='Upload')
+
+
+    table
+      tr
+        th filename
+        th sha256
+        th delete
+        th time
+        th comment
+      each file in files
+        tr
+          td 
+            a(href=`${prefix}/download?sha=${file.sha256}`) #{file.filename}
+          td(class="checksum")= file.sha256
+          td 
+            form(action=`${prefix}/delete?_csrf=${csrfToken}`  enctype="multipart/form-data" method='post')
+              input(type="hidden" name="sha" value=`${file.sha256}`)
+              input(type="hidden" name="filename" value=`${file.filename}`)
+              input(type="submit" value="DELETE")
+          td= file.dt
+          td= file.comment
+
