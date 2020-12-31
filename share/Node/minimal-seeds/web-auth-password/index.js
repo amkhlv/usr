@@ -1,40 +1,33 @@
 "use strict";
 exports.__esModule = true;
+var passportLocal = require("passport-local");
 var express = require("express");
 var path = require("path");
 var yaml = require("js-yaml");
 var fs = require("fs");
 var passport = require("passport");
-var passportLocal = require("passport-local");
-var LocalStrategy = passportLocal.Strategy;
 var session = require("express-session");
 var bodyParser = require("body-parser");
 var csrf = require("csurf");
 var crypto = require("crypto");
 var sql = require("sqlite3");
 var sqlStore = require("connect-sqlite3");
-// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-// ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-var conf = yaml.safeLoad(fs.readFileSync("config.yaml", "utf8"));
+var LocalStrategy = passportLocal.Strategy;
+var conf = yaml.safeLoad(fs.readFileSync('config.yaml', 'utf8'));
 var prefix = conf.prefix;
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: Project Specific Header ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ===================== config =====================================
 var sessionSecret = conf.sessionSecret;
-var port = conf.port; // default port to listen
-var User = /** @class */ (function () {
-    function User() {
-    }
-    return User;
-}());
+var port = conf.port;
 var users = conf.users;
 var logins = users.map(function (u) { return u.login; });
 var db = new sql.Database(path.join(conf.workingPath, conf.sqliteFile));
 var SQLiteStore = sqlStore(session);
 // ====================== App init ===================================
 var app = express();
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "ejs");
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
 // ====================== Passport.js config =========================
 passport.use(new LocalStrategy(function (username, password, done) {
     if (logins.includes(username)) {
@@ -43,14 +36,14 @@ passport.use(new LocalStrategy(function (username, password, done) {
             return (u.login === username) && (h === u.hash);
         });
         if (a === undefined) {
-            return done(null, false, { message: "wrong password" });
+            return done(null, false, { message: 'wrong password' });
         }
         else {
             return done(null, username);
         }
     }
     else {
-        return done(null, false, { message: "no such user" });
+        return done(null, false, { message: 'no such user' });
     }
 }));
 passport.serializeUser(function (user, cb) {
@@ -58,10 +51,10 @@ passport.serializeUser(function (user, cb) {
 });
 passport.deserializeUser(function (id, cb) {
     if ((typeof id === 'string') && (logins.includes(id))) {
-        cb(null, id);
+        cb(null, { username: id });
     }
     else {
-        cb('ERROR: User Not Found...');
+        cb(new Error('ERROR: User Not Found...'));
     }
 });
 var parseForm = bodyParser.urlencoded({ extended: false });
@@ -91,22 +84,22 @@ app.use(function (err, req, res, next) {
     res.send('form tampered with');
 });
 app.use(function (req, res, next) {
-    if (req.path === "/login" || checkPWD(req.user)) {
+    if (req.path === '/login' || (req.user !== undefined && checkPWD(req.user.username))) {
         next();
     }
     else {
-        console.log("DISALLOWING " + req.user);
-        res.redirect(prefix + "/login");
+        console.log("DISALLOWING " + (req.user ? req.user.username : 'UNKNOWN'));
+        res.redirect(prefix + '/login');
     }
 });
 // ====================== Authentication routes ======================
 app.get('/login', function (req, res) {
-    res.render('login', { csrfToken: req.csrfToken(), 'prefix': prefix });
+    res.render('login', { csrfToken: req.csrfToken(), prefix: prefix });
 });
 app.post('/login', parseForm, passport.authenticate('local', { failureRedirect: prefix + '/login' }), function (req, res) {
     // If this function gets called, authentication was successful.
     // `req.user` contains the authenticated user.
-    console.log("AUTH OK");
+    console.log('AUTH OK');
     res.redirect(prefix + '/');
 });
 app.get('/logout', function (req, res) {
@@ -115,20 +108,20 @@ app.get('/logout', function (req, res) {
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ START: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮
-app.get("/", function (req, res) {
-    res.render("main", {
-        'ttl': "Welcome " + req.user + "!",
-        'msg': "Hi " + req.user + " !",
-        'prefix': prefix,
-        'csrfToken': req.csrfToken()
+app.get('/', function (req, res) {
+    res.render('main', {
+        ttl: "Welcome " + (req.user ? req.user.username : 'UNKNOWN') + "!",
+        msg: "Hi " + (req.user ? req.user.username : 'UNKNOWN') + " !",
+        prefix: prefix,
+        csrfToken: req.csrfToken()
     });
 });
-app.post("/input", parseForm, function (req, res) {
-    res.render("main", {
-        'prefix': prefix,
-        'csrfToken': req.csrfToken(),
-        'ttl': "Welcome " + req.user + "!",
-        'msg': "I heard: " + req.body.msg
+app.post('/input', parseForm, function (req, res) {
+    res.render('main', {
+        prefix: prefix,
+        csrfToken: req.csrfToken(),
+        ttl: "Welcome " + (req.user ? req.user.username : 'UNKNOWN') + "!",
+        msg: "I heard: " + req.body.msg
     });
 });
 // ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮ END: project specific routes ▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮

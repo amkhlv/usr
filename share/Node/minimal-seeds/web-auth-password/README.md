@@ -45,6 +45,6 @@ The configuration file `config.yaml` should be to the scheme:
 
 The password hash is obtained by running:
 
-    npm run-script hash SALT
+    node amkhlv-hash-pwd.js SOMESALT
 
 (it will ask for the password, which will then be hashed with `SALT`)
