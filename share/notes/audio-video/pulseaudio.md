@@ -172,4 +172,15 @@ Virtual sound card
 
 creates a virtual sound card called `Loopback 1`
 
+Network devices discovery
+=========================
 
+First have to enable network using `paprefs` 
+
+    pactl load-module module-tunnel-sink "server=192.168.1.105 sink=alsa_output.pci-0000_00_1b.0.analog-stereo sink_name=home_theater"
+
+where `alsa_output.pci-0000_00_1b.0.analog-stereo` was obtained by running, on that machine:
+
+    pacmd list-sinks
+
+Same with sources.

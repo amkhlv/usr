@@ -17,7 +17,7 @@ html
     .container
       h1.header #{ttl}
     div(class="row")
-      form(class="col s12" action=`${prefix}/upload?_csrf=${csrfToken}` enctype="multipart/form-data" method='post')
+      form(class="col s12" action=`${prefix}/upload?_csrf=${encodeURIComponent(csrfToken)}` enctype="multipart/form-data" method='post')
         div(class="row")
           input(type='file' name='filetoupload' multiple)
         div(class="row")
@@ -41,7 +41,7 @@ html
             a(href=`${prefix}/download?sha=${file.sha256}`) #{file.filename}
           td(class="checksum")= file.sha256
           td 
-            form(action=`${prefix}/delete?_csrf=${csrfToken}`  enctype="multipart/form-data" method='post')
+            form(action=`${prefix}/delete?_csrf=${encodeURIComponent(csrfToken)}`  enctype="multipart/form-data" method='post')
               input(type="hidden" name="sha" value=`${file.sha256}`)
               input(type="hidden" name="filename" value=`${file.filename}`)
               input(type="submit" value="DELETE")

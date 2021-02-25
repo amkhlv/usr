@@ -40,21 +40,21 @@ to:
         <!-- Input stage volume -->
         <!-- media input volume -->
         <path name="gain-media-mic">
-                <ctl name="MIC1 Volume" value="70" />
+                <ctl name="MIC1 Volume" value="89" />
                 <ctl name="MIC1 Boost Volume" value="2" />
                 <ctl name="ADC Left Gain" value="150" />
                 <ctl name="ADC Right Gain" value="150" />
         </path>
 
         <path name="gain-media-headset-mic">
-                <ctl name="MIC2 Volume" value="70" />
+                <ctl name="MIC2 Volume" value="89" />
                 <ctl name="MIC2 Boost Volume" value="2" />
                 <ctl name="ADC Left Gain" value="127" />
                 <ctl name="ADC Right Gain" value="127" />
         </path>
 
         <path name="gain-media-headphone-mic">
-                <ctl name="MIC1 Volume" value="70" />
+                <ctl name="MIC1 Volume" value="89" />
                 <ctl name="MIC1 Boost Volume" value="2" />
                 <ctl name="ADC Left Gain" value="127" />
                 <ctl name="ADC Right Gain" value="127" />

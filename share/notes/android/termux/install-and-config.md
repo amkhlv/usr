@@ -15,6 +15,10 @@ Termux Android API
 
 This installs many commands, all starting with `termux-` .
 
+But for them to work, need also to install `Termux:API` from Google Play
+and then go to App Info and allow `Change System Settings`. Also, in App Info,
+allow Camera, Contacts, Location, Microphone and Phone.
+
 Enable access to Android storage
 ================================
 
