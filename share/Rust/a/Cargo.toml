@@ -1,0 +1,15 @@
+[package]
+name = "a"
+version = "0.1.0"
+authors = ["Andrei Mikhailov <amkhlv@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pancurses = "0.16"
+dirs = "1.0.5"
+linked-hash-map = "0.5.3"
+
+[dependencies.yaml-rust]
+git = "https://github.com/chyh1990/yaml-rust.git"
