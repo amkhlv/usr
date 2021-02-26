@@ -63,7 +63,7 @@ fn step(w: Window, h: &LinkedHashMap<Yaml,Yaml>) ->  Result<(), Box<dyn std::err
     for k in h.keys() {
         match &k {
             Yaml::String(sec) => { 
-                w.mv(3 + 2*(i as i32/3), (i as i32 % 3) * (width / 5));
+                w.mv(3 + 3*(i as i32/3), (i as i32 % 3) * (std::cmp::min(width, 99) / 3));
                 w.attrset(COLOR_PAIR(1) | A_BOLD);
                 w.addstr(format!("{} ", (i + 97) as char));
                 w.attrset(A_NORMAL);
