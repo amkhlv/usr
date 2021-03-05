@@ -1,0 +1,19 @@
+[package]
+name = "things"
+version = "0.1.0"
+authors = ["Andrei Mikhailov <amkhlv@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gtk = "0.9.2"
+glib = "0.10.3"
+gdk = "0.13.2"
+gdk-sys = "0.10.0"
+gio = "0.9.1"
+dirs = "1.0.5"
+linked-hash-map = "0.5.3"
+
+[dependencies.yaml-rust]
+git = "https://github.com/chyh1990/yaml-rust.git"

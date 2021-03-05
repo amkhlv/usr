@@ -8,7 +8,7 @@ use gtk::prelude::*;
 use gio::prelude::*;
 use glib::clone;
 
-use gtk::{Application, ApplicationWindow, Button, Entry};
+use gtk::{Application, ApplicationWindow, Entry};
 
 fn main() {
     let application = Application::new(
@@ -28,11 +28,6 @@ fn main() {
             app.quit();
         }));
         window.add(&entry);
-        let button = Button::with_label("Click me!");
-        button.connect_clicked(|_| {
-            println!("Clicked!");
-        });
-        window.add(&button);
 
         window.show_all();
     });
