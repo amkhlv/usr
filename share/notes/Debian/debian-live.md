@@ -81,11 +81,11 @@ and then moving the resulting files into the root of the `live-build` folder. In
 ## Rebuilding
 
     lb clean --binary
-    rm -rf cache/ 
-    mkdir -p binary/install
+    btrfs subv del chroot
 
-correct the `chroot` filesystem, then again: 
+rebuild/correct the `chroot` filesystem, then again: 
 
+    lb installer
     lb binary
 
 
@@ -93,7 +93,7 @@ correct the `chroot` filesystem, then again:
 
     apt-get install  aptitude stow git screen btrfs-progs systemd-container ntfs-3g lshw dmidecode socat cryptsetup gparted gdisk refind grub-pc wpasupplicant traceroute curl wget
 
-    apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket xul-ext-noscript
+    apt-get install  xbindkeys gmrun xfonts-terminus emacs emacs-goodies-el shutter xfce4 xfce4-goodies xautomation xsel python3-markdown vim-gtk racket dbus-x11
 
 # Problems
 

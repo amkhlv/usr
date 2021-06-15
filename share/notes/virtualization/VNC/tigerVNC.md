@@ -25,47 +25,8 @@ This lets to choose a password, which is saved into `~/.vnc/passwd` (in a slight
 
 __For XFWM4 work__ need to first execute as root:
 
-    loginctl enable-linger andrei
-
-The file `~/.vnc/xstartup` contains a sequence of commands which are executed immediately after the start of the tiger's  Xserver.
-(Essentially, `xinitrc`). Mine is:
-
-    #!/bin/sh
-
-    xfwm4 &
-    xfce4-panel &
-    xrdb -merge /etc/X11/app-defaults/XTerm
-    xrdb -merge /etc/X11/app-defaults/XTerm-color
-    xrdb -merge /home/andrei/.Xdefaults
-    export PULSE_SERVER=/run/user/host/pulse/native
-
-    setxkbmap -layout us -print | sed -e 's,\+inet[^+"]*,,' | xkbcomp - $DISPLAY
-
-    uxterm &
-
-    monthly &
-
-    indicator /home/andrei/.config/amkhlv/indicator.xml &
-
-To run __xfwm4__ dont forget to install `dbus-x11`:
-
+    loginctl enable-linger USERNAME
     aptitude install dbus-x11
-
-
-The file `~/.vnc/config` contains a list of flags of the command `Xvnc`.
-
-Foreign layout problems
------------------------
-
-<a name="cyrillic"></a>
-
-__For cyrillic to function correctly__, as explained [here](https://www.linux.org.ru/forum/general/12531593),
-the file `~/.vnc/xstartup` should contain the line:
-
-    setxkbmap -layout us -print | sed -e 's,\+inet[^+"]*,,' | xkbcomp - $DISPLAY
-
-See also [here](https://github.com/TigerVNC/tigervnc/issues/93) and [here](https://github.com/TigerVNC/tigervnc/issues/339),
-and [my writeup](cyrillic.md), and eventually [Иван Паскаль](http://pascal.tsu.ru/other/xkb/setup.html).
 
 Launching server
 ----------------
@@ -95,12 +56,7 @@ Misc
 Keyboard layout switching
 -------------------------
 
-is done __on the client side__ (but probably would not hurt to `setxkbmap -layout ...` on the server side, too, just to make sure to load keysims)
-
-Clipboard
----------
-
-Need to have running `vncconfig --nowin` on the server side, in order to share clipboard.
+is done __on the client side__ 
 
 DPI
 ---

@@ -80,6 +80,9 @@ EFI shell
 EFI shell can be [downloaded at tianocore](https://github.com/tianocore/edk2/blob/master/ShellBinPkg/UefiShell/X64/Shell.efi).
 In order to be recognized by `rEFInd` it should be moved to `EFI/tools/shell.efi`.
 
+Or, `OpenShell.efi` can be obtained from [OpenCore bootloader](https://github.com/acidanthera/OpenCorePkg),
+by downloading release `zip` and copying `X64/EFI/OC/Tools/OpenShell.efi` to `EFI/tools/`
+
 ### Preliminary commands
 
 A nice description is at [Arch wiki](https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface#Important_UEFI_Shell_commands)

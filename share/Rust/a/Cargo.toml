@@ -10,6 +10,7 @@ edition = "2018"
 pancurses = "0.16"
 dirs = "1.0.5"
 linked-hash-map = "0.5.3"
+clap = "2.33.3"
 
 [dependencies.yaml-rust]
 git = "https://github.com/chyh1990/yaml-rust.git"

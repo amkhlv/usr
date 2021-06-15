@@ -147,8 +147,8 @@ There are two things you can do about this warning:
 
 (set-input-method "rfc1345")
 
-(set-frame-font "Terminus-12")
-(set-face-font 'menu "Terminus-12")
+;(set-frame-font "Terminus-12")
+;(set-face-font 'menu "Terminus-12")
 (transient-mark-mode 1)
 (scroll-bar-mode -1)
 (tool-bar-mode 0)
@@ -346,6 +346,8 @@ There are two things you can do about this warning:
  '(fricas-algebra ((t (:background "gainsboro" :foreground "black"))))
  '(fricas-message ((t (:foreground "light salmon"))))
  '(fricas-undefined ((t (:background "light grey" :foreground "blue"))))
+ '(markdown-pre-face ((t (:inherit font-lock-constant-face))))
+ '(markdown-inline-code-face ((t (:inherit font-lock-constant-face))))
  '(pod-mode-command-text-face ((((class color) (min-colors 88) (background dark)) (:foreground "chocolate1"))))
  '(pod-mode-head2-face ((t (:inherit pod-mode-head-face :height 1.3))))
  '(pod-mode-head2-text-face ((t (:inherit pod-mode-command-text-face :height 1.3))))

@@ -32,6 +32,16 @@ Database has to be updated
     update-desktop-database
 
 
+How to determine which MIME type a file corresponds to?
+=======================================================
+
+Note that `xdg-mime` can also determine the type of the file, _e.g._ :
+
+    xdg-mime query filetype mytext.pdf
+
+return `application/pdf`
+
+
 Setting the default application
 ===============================
 
@@ -45,52 +55,41 @@ To check that it was set:
 
     xdg-mime query default x-scheme-handler/tel
 
-
-<a name="XDGMadness"></a>
-
 Problem: many config files
 ==========================
 
 mimeapps and defaults
 ---------------------
 
-`xdg-mime` stores settings in `~/.local/share/applications/mimeapps.list`. 
+`xdg-mime` stores settings in `~/.config/mimeapps.list`. 
 
-<b><span style="color:red;">Problem:</span></b> there is another `mimeapps.list`, located in `~/.config/`.
-The `xdg-mime` does not use it. But many other programs use that one. In fact `~/.local/share/applications/mimeapps.list`
-is considered deprecated. In fact, people say that `~/.config/mimeapps.list` <b><span style="color:red;">overrides</span></b>
-`~/.local/share/applications/mimeapps.list` in many applications (sometimes including even `xdg-mime` itself!)
+Other configuration files  can be seen by running:
 
-In other words, there are <b><span style="color:red;">two conflicting</span></b>  configuration files:
+    XDG_UTILS_DEBUG_LEVEL=2 xdg-mime query default ...
+
+Some of them are:
+
 
 1. `~/.config/mimeapps.list`
 
 2. `~/.local/share/applications/mimeapps.list`
 
-Actually, sometimes there is also the <b><span style="color:red;">third one</span></b>:
+3. `~/.local/share/applications/defaults.list`
 
-    ~/.local/share/applications/defaults.list
+4. ...
 
-I guess the right solution would be to somehow synchronize all three, to be on the safe side.
-(But symlinking does not work, because all three can be written on!)
+XDG_UTILS_DEBUG_LEVEL=2
+=======================
 
-mailcap
--------
+is __very useful__, as an environment for `xdg-mime` and other `xdg-`...
 
-Actually, <b><span style="color:red;">some applications use</span></b> `~/.mailcap` instead.
-Moreover, <b><span style="color:red;">even `xdg-open`</span></b> seems to first read `~/.mailcap` !
 
-Problem: many alternatives to xdg-open
-======================================
+update-alternatives
+===================
 
-It is not clear which program actually is involved. There are also `gvfs-open` (for Gnome?) and `exo-open` (for XFCE4).
-Try all three. Maybe one of them will work correctly.
+This is another mechanism which sometimes interferes. For example, there is `/usr/bin/x-www-browser` which has to be
+updated in some way like this:
 
-How to determine which MIME type a file corresponds to?
-=======================================================
+    update-alternatives --install /usr/bin/x-www-browser x-www-browser /home/andrei/.local/bin/firefox 100
+    update-alternatives --set x-www-browser /home/andrei/.local/bin/firefox
 
-Note that `xdg-mime` can also determine the type of the file, _e.g._ :
-
-    xdg-mime query filetype mytext.pdf
-
-return `application/pdf`

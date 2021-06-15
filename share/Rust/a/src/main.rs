@@ -11,6 +11,7 @@ use dirs::home_dir;
 use linked_hash_map::LinkedHashMap;
 use std::io::{BufWriter, Write};
 use std::process::{Command, Stdio};
+use clap::{App,Arg};
 
 #[derive(Debug, Clone)]
 struct NoHomeDir;
@@ -91,6 +92,12 @@ fn step(w: Window, h: &LinkedHashMap<Yaml,Yaml>) ->  Result<(), Box<dyn std::err
                     writer.write(s.as_bytes()).unwrap();
                     endwin();
                     println!("{}\n\n\n", s);
+                    let home: Option<PathBuf> = home_dir() ;
+                    let home = match home {
+                        Some(h) => h,
+                        None => { return Err(Box::new(NoHomeDir)); }
+                    };
+                    std::fs::write(Path::join(Path::new(&home), ".local/var/run.sh"), s).unwrap();
                     Ok(())
                 },
                 Some(y) => { return Err(Box::new(BadSchema(format!("{:?}",y)))); },
@@ -102,19 +109,30 @@ fn step(w: Window, h: &LinkedHashMap<Yaml,Yaml>) ->  Result<(), Box<dyn std::err
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let matches = App::new("Explore YAML a-list")
+        .version("1.0")
+        .author("Andrei <a.mkhlv@gmail.com>")
+        .about("a:\n  b:\n    - c\n    ...\n  ...\n...")
+        .arg(Arg::with_name("yamlfile")
+             .multiple(true))
+        .get_matches();
     let home: Option<PathBuf> = home_dir() ;
     let home = match home {
         Some(h) => h,
         None => { return Err(Box::new(NoHomeDir)); }
     };
+    let iterator = matches.values_of("yamlfile");
 
-    let a_str = std::fs::read_to_string(Path::join(Path::new(&home), "a.yaml"))?;
+    let a_str = match iterator {
+        None => std::fs::read_to_string(Path::join(Path::new(&home), "a.yaml"))?,
+        Some(mut it) => std::fs::read_to_string(it.next().unwrap())?
+    };
     let a : Vec<Yaml> = YamlLoader::load_from_str(&a_str)?;
     println!("{:?}", a[0]);
 
     let window = initscr();
     window.refresh();
-    window.keypad(true);
+    window.keypad(false);
     noecho();
     curs_set(0);
     if has_colors() {

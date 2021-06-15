@@ -17,3 +17,13 @@ Use `pdftk` :
 
 --- this creates files named `pg_nnnn.pdf` and also creates the file `doc_data.txt`
 
+Convert to SVG
+==============
+
+    aptitude install pdf2svg
+
+Use it to convert multipage `pdf` to many `svg` files:
+
+    pdf2svg  lista.pdf  svgs/lista_p%d.svg  all
+
+
