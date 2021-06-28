@@ -85,9 +85,8 @@ application/mpeg4-muxcodetable; vlc '%s'; description="MPEG-4 Video"; test=test 
 image/vnd.djvu; /usr/bin/djview4 '%s'; test=test -n "$DISPLAY"; description=DjVu file; nametemplate=%s.djvu
 image/x.djvu; /usr/bin/djview4 '%s'; test=test -n "$DISPLAY"; description=DjVu file; nametemplate=%s.djvu
 image/x-djvu; /usr/bin/djview4 '%s'; test=test -n "$DISPLAY"; description=DjVu file; nametemplate=%s.djvu
-text/html; /usr/bin/sensible-browser '%s'; description=HTML Text; nametemplate=%s.html
-application/pdf; /usr/local/bin/pdq '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
-application/x-pdf; /usr/local/bin/pdq '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
+application/pdf; /home/andrei/.local/bin/pdq '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
+application/x-pdf; /home/andrei/.local/bin/pdq '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
 application/vnd.ms-xpsdocument; /usr/bin/evince '%s'; description=XML Paper Specification; nametemplate=%s.xps
 application/vnd.ms-word; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; nametemplate=%s.doc ; description="Microsoft Word Document" ; priority=2application/wordperfect; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; nametemplate=%s.wpd ; description="Corel WordPerfect Document"
 application/vnd.wordperfect; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; nametemplate=%s.wpd ; description="Corel WordPerfect Document"
@@ -121,8 +120,7 @@ image/jpeg; gthumb '%s'; test=test -n "$DISPLAY"
 image/gif; gthumb '%s'; test=test -n "$DISPLAY"
 application/postscript; /usr/bin/gv '%s'; test=test -n "$DISPLAY"; description=postscript
 application/ghostview; /usr/bin/gv '%s'; test=test -n "$DISPLAY"
-text/html; /usr/bin/iceweasel '%s'; description=HTML Text; test=test -n "$DISPLAY";  nametemplate=%s.html
-text/xml; /usr/bin/iceweasel '%s'; description=XML Text; test=test -n "$DISPLAY";  nametemplate=%s.xml
+text/html; /usr/bin/lynx -dump '%s' | more; nametemplate=%s.html; copiousoutput;  description=HTML Text; test=test -n "$DISPLAY";  nametemplate=%s.html
 application/x-ogg; /usr/bin/gmplayer '%s'; description="OggVorbis Audio"
 application/ogg; /usr/bin/gmplayer '%s'; description="OggVorbis Audio"
 audio/mpeg; /usr/bin/gmplayer '%s'; description="MPEG Audio Format"
@@ -161,7 +159,6 @@ image/x-portable-pixmap; /usr/bin/xloadimage '%s' ; test=test -n "$DISPLAY"
 image/x-xbitmap ; /usr/bin/xloadimage '%s' ; test=test -n "$DISPLAY"
 image/x-xpixmap ; /usr/bin/xloadimage '%s' ; test=test -n "$DISPLAY"
 image/x-xwindowdump ; /usr/bin/xloadimage '%s' ; test=test -n "$DISPLAY"
-text/html; /usr/bin/elinks -force-html '%s'; needsterminal; description=HTML Text; nametemplate=%s.html
 application/postscript; pstotext '%s'; test=test -z "$LYNX_VERSION"; copiousoutput; description="PostScript document"
 application/postscript; pstotext '%s'; test=test -n "$LYNX_VERSION"; description="PostScript document"
 application/ghostview;  pstotext '%s'; test=test -z "$LYNX_VERSION"; copiousoutput; description="PostScript document"
@@ -186,9 +183,6 @@ application/ogg; vlc '%s'; nametemplate=%s.ogg; description="Ogg stream"; test=t
 application/x-ogg; vlc '%s'; nametemplate=%s.ogg; description="Ogg stream"; test=test -n "$DISPLAY"
 application/x-ms-asf-plugin; vlc '%s'; description="Windows Media Video"; test=test -n "$DISPLAY"
 application/x-mplayer2; vlc '%s'; description="Windows Media"; test=test -n "$DISPLAY"
-text/html; /usr/bin/w3m -T text/html '%s'; needsterminal; description=HTML Text; nametemplate=%s.html
-text/html; /usr/bin/elinks -force-html -dump '%s'; copiousoutput; description=HTML Text; nametemplate=%s.html
-text/html; /usr/bin/lynx -force_html '%s'; needsterminal; description=HTML Text; nametemplate=%s.html
 text/csv; soffice  -calc '%s'; edit=soffice  -calc '%s'; test=test -n "$DISPLAY"; description="CSV Document"; nametemplate=%s.csv
 text/spreadsheet; soffice  -calc '%s'; edit=soffice  -calc '%s'; test=test -n "$DISPLAY"; description="Spreadsheet Interchange Document"; nametemplate=%s.slk
 application/x-quattropro; soffice  -calc '%s'; edit=soffice  -calc '%s'; test=test -n "$DISPLAY"; description="Quattro Pro 6 for Windows Spreadsheet"; nametemplate=%s.wb2
@@ -230,7 +224,6 @@ application/ogg; vlc -I rc -V caca '%s'; nametemplate=%s.ogg; needsterminal; des
 application/x-ogg; vlc -I rc -V caca '%s'; nametemplate=%s.ogg; needsterminal; description="Ogg stream"
 application/x-ms-asf-plugin; vlc -I rc -V caca '%s'; needsterminal; description="Windows Media Video"
 application/x-mplayer2; vlc -I rc -V caca '%s'; needsterminal; description="Windows Media"
-text/html; /usr/bin/w3m -dump -T text/html '%s'; copiousoutput; description=HTML Text; nametemplate=%s.html
 application/docbook+xml; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; description="DocBook XML Document"
 application/msword; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; description="Microsoft Word Document"
 application/rtf; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; description="Rich Text document"
@@ -304,7 +297,6 @@ image/x-xpixmap; display 'xpm:'%s''; test=test -n "$DISPLAY"
 image/x-xwindowdump; display 'xwd:'%s''; test=test -n "$DISPLAY"
 image/x-icon; display 'icon:'%s''; test=test -n "$DISPLAY"
 image/yuv; display 'yuv:'%s''; test=test -n "$DISPLAY"
-text/html; /usr/bin/lynx -dump -force_html '%s'; copiousoutput; description=HTML Text; nametemplate=%s.html
 text/*; less '%s'; needsterminal
 text/*; view '%s'; edit=vim '%s'; compose=vim '%s'; needsterminal
 text/*; gview -f '%s'; edit=gvim -f '%s'; compose=gvim -f '%s'; test=test "$DISPLAY" != ""

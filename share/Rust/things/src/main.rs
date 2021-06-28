@@ -88,6 +88,10 @@ fn run_command(x:&String) {
     std::process::Command::new(Path::new(&home_dir().unwrap()).join(".config/amkhlv/things/bin/").join(x)).spawn().unwrap();
 }
 
+fn get_command_source(x:&String) -> String {
+    return std::fs::read_to_string(Path::new(&home_dir().unwrap()).join(".config/amkhlv/things/bin/").join(x)).unwrap();
+}
+
 fn main()  {
 
     let application = Application::new(
@@ -196,6 +200,7 @@ fn main()  {
                 label.get_style_context().add_class("things-item-label");
                 button.add(&label);
                 button.get_style_context().add_class("things-item-button");
+                button.set_tooltip_text(Some(&get_command_source(&c.data)));
                 hbox.add(&image);
                 hbox.add(&charlabel);
                 hbox.add(&button);

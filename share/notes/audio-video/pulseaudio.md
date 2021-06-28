@@ -39,68 +39,7 @@ configuration in it's `client.conf` file. This file is located in either `/etc/p
 (Only one of the client.conf files is parsed. So if the user has their own one, the system one will not be parsed at all.)
 
 
-Forwarding across network
-=========================
 
-This requires the availability on `MachineB` of the `UNIX socket`:
-
-    /run/user/1000/pulse/native
-
-We will first explain how to obtain this socket
-
-
-Obtaining UNIX socket
----------------------
-
-Usually, `PulseAudio` uses `shm` istead of `UNIX socket`, so it is not available. This means that we need to __disable the use of shm__ by `PulseAudio`.
-
-As I [explained previously](#sectionColinGuthr) , this can be done by creating the file `/home/andrei/.pulse/daemon.conf` and putting a line in it:
-
-    disable-shm=yes
-
-Moreover, I need to export the environment variable:
-
-    export XDG_RUNTIME_DIR=/run/user/1000
-
-and make sure that it exists and has right permissions:
-
-    mkdir -p /run/user/1000/pulse
-    chown -R andrei:andrei /run/user/1000
-
-(I usually do it in `~/.bashrc`)
-
-Then, after the restart of `PulseAudio`, we get that `UNIX socket` available. 
-
-Tunnel
-------
-
-Suppose that `MachineA` (server) needs to run an application with sound but does not have speakers, while
-`MachineB` (client) has speakers.
-
-We modify the description on [Joshua Tauberer’s Blog](https://razor.occams.info/blog/2009/02/11/pulseaudio-sound-forwarding-across-a-network/)
-by running port forwarding in reverse and using the standard on Debian `PulseAudio` socket `/run/user/1000/pulse/native`:
-
-On `MachineB` (client):
-
-    ssh -N -f -R4000:localhost:4000 machineA.com
-    socat TCP-LISTEN:4000,fork,range=127.0.0.1/32 UNIX-CONNECT:/run/user/1000/pulse/native
-
-(__notice that__ the range restriction `xxx.xxx.xxx.xxx/32` imposes a restriction on the __remote__ address __from where__ comes the connection;
-this particular example  is very confusing because it creates the [remote port forwarding](../server/ssh.md) which is __incoming tunnel__)
-
-On `MachineA` (server):
-
-    PULSE_SERVER=localhost:4000  mysoundapplication
-
-
-Authentication
---------------
-
-I think it authenticates with a cookie. The file:
-
-    ~/.config/pulse/cookie
-
-should be __same on client and server__
 
 
 CLI
@@ -172,8 +111,11 @@ Virtual sound card
 
 creates a virtual sound card called `Loopback 1`
 
-Network devices discovery
-=========================
+Over network
+============
+
+Adding sink locally
+-------------------
 
 First have to enable network using `paprefs` 
 
@@ -184,3 +126,71 @@ where `alsa_output.pci-0000_00_1b.0.analog-stereo` was obtained by running, on t
     pacmd list-sinks
 
 Same with sources.
+
+
+Using remote PULSE_SERVER
+-------------------------
+
+This solution seems to be easier than [Adding sink locally], and works for microphone too. (But then, need to specify `PULSE_SERVER` when starting Firefox _etc_)
+
+Copy `/etc/pulse/default.pa` to `~/.pulse/default.pa` and add these lines there:
+
+    load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-cookie=/home/pi/.config/pulse/cookie
+
+Need also to run:
+
+    paprefs
+
+and allow discovery over network.
+
+Then, on the client, just say:
+
+    PULSE_SERVER=192.168.x.y whatever 
+
+For example, to test recording:
+
+    parecord -s 192.168.x.y output.wav
+
+(Here `192.168.x.y` is the address of the __server__)
+
+### Authentication
+
+I think it authenticates with a cookie. The file:
+
+    ~/.config/pulse/cookie
+
+should be __same on client and server__
+
+
+
+Using UNIX domain socket
+========================
+
+Usually, `PulseAudio` uses `shm` istead of `UNIX socket`, so it is not available. This means that we need to __disable the use of shm__ by `PulseAudio`.
+
+As I [explained previously](#sectionColinGuthr) , this can be done by creating the file `/home/andrei/.pulse/daemon.conf` and putting a line in it:
+
+    disable-shm=yes
+
+Moreover, I need to export the environment variable:
+
+    export XDG_RUNTIME_DIR=/run/user/1000
+
+and make sure that it exists and has right permissions:
+
+    mkdir -p /run/user/1000/pulse
+    chown -R andrei:andrei /run/user/1000
+
+(I usually do it in `~/.bashrc`)
+
+Then, after the restart of `PulseAudio`, we get that `UNIX socket` available. 
+
+
+Authentication
+==============
+
+I think it authenticates with a cookie. The file:
+
+    ~/.config/pulse/cookie
+
+should be __same on client and server__
