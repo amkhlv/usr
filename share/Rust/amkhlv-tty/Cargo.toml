@@ -1,0 +1,14 @@
+[package]
+name = "amkhlv-tty"
+version = "0.1.0"
+authors = ["Andrei Mikhailov <amkhlv@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+
+
+[dependencies]
+termios = "0.3"
+clap = "2.33.3"
