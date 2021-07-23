@@ -1,0 +1,10 @@
+title: >-
+  enter line
+width: 400
+height: 40
+enter: >-
+  ~/.config/amkhlv/line-input/bin/id.sh
+buttons:
+  - label: ok
+    callback: >-
+      cat

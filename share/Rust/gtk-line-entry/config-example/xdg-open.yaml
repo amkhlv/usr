@@ -1,0 +1,10 @@
+title: >-
+  XDG Open
+width: 800
+height: 40
+enter: >-
+  ~/.config/amkhlv/line-input/bin/xdg.sh
+buttons:
+  - label: pdq
+    callback: >-
+      ~/.config/amkhlv/line-input/bin/pdq.sh
