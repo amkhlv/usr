@@ -75,6 +75,9 @@ There are two things you can do about this warning:
 (use-package haskell-mode :mode "\\.hs$")
 (setq lsp-haskell-process-path-hie "hie-wrapper")
 
+;; To be able to paste from system clipboard on Ctrl-Y
+(setq x-select-enable-clipboard t)
+
 ;; For Scala:
 ;; Enable defer and ensure by default for use-package
 ;; Keep auto-save/backup files separate from source code:  https://github.com/scalameta/metals/issues/1027
@@ -147,8 +150,8 @@ There are two things you can do about this warning:
 
 (set-input-method "rfc1345")
 
-;(set-frame-font "Terminus-12")
-;(set-face-font 'menu "Terminus-12")
+(set-frame-font "DejaVu Sans Mono-10")
+(set-face-font 'menu "DejaVu Sans Mono-10")
 (transient-mark-mode 1)
 (scroll-bar-mode -1)
 (tool-bar-mode 0)

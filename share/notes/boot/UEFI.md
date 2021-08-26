@@ -37,6 +37,16 @@ And then:
 where `/dev/sdxY` is the `EFI` partition.
 
 Then mount `/dev/sdxY` somewhere and go there. The root will contain the folder named `EFI`.
+
+Need to copy drivers:
+
+    cp /usr/share/refind/refind/drivers_x64/* EFI/BOOT/drivers_x64/
+
+and also:
+
+    cp /usr/share/refind/refind/refind_x64.efi EFI/BOOT/
+
+
 In `EFI/BOOT` find `refind.conf` and edit it as [described here](http://www.rodsbooks.com/refind/configfile.html). 
 Namely, it should contain the stanza:
 
@@ -81,7 +91,8 @@ EFI shell can be [downloaded at tianocore](https://github.com/tianocore/edk2/blo
 In order to be recognized by `rEFInd` it should be moved to `EFI/tools/shell.efi`.
 
 Or, `OpenShell.efi` can be obtained from [OpenCore bootloader](https://github.com/acidanthera/OpenCorePkg),
-by downloading release `zip` and copying `X64/EFI/OC/Tools/OpenShell.efi` to `EFI/tools/`
+by downloading release `zip` and copying `X64/EFI/OC/Tools/OpenShell.efi` to `EFI/tools/`.
+(See [What the Heck is OpenCore Bootloader](https://kextcache.com/what-the-heck-is-opencore-bootloader-and-what-it-means-to-hackintosh-community/).)
 
 ### Preliminary commands
 

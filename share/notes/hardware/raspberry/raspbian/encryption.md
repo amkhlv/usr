@@ -21,8 +21,20 @@ Then copy:
 
 Then:
 
+Cryptsetup-initramfs
+--------------------
+
+To force `cryptsetup` into `initram`:
+
+    aptitude install cryptsetup-initramfs
+
+Therefore, this below is __probably not needed__ :
+
+
 Need crypttab entry
 -------------------
+
+(Maybe I dont need this if I install `cryptsetup-initramfs`...)
 
 __I assume that the name of the root device is /dev/mapper/rt__
 

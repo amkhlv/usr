@@ -200,3 +200,6 @@ nmap <Leader>x <Plug>BookmarkClearAll
 nmap <Leader>kk <Plug>BookmarkMoveUp
 nmap <Leader>jj <Plug>BookmarkMoveDown
 nmap <Leader>g <Plug>BookmarkMoveToLine
+
+set tags=tags;/,codex.tags;/
+

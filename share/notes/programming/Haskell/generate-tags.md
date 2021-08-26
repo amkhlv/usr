@@ -4,12 +4,14 @@ Tags for Vim
 Codex
 -----
 
-First install `codex`:
+Install __globally__ `hasktags` and `codex`:
 
+    cabal install hasktagss
     cabal install codex
 
 Then, in the project root directory:
 
+    hasktags --ctags .
     codex update
 
 Use tags in vim
