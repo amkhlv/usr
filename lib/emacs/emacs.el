@@ -75,6 +75,9 @@ There are two things you can do about this warning:
 (use-package haskell-mode :mode "\\.hs$")
 (setq lsp-haskell-process-path-hie "hie-wrapper")
 
+;; Set window title:
+(setq-default frame-title-format '("%f [%m]"))
+
 ;; To be able to paste from system clipboard on Ctrl-Y
 (setq x-select-enable-clipboard t)
 
