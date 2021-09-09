@@ -55,8 +55,10 @@ fn main() {
                 return Inhibit(true);
             } else { return Inhibit(false); }
         }));
+        let clipboard = gtk::Clipboard::get(&gdk::SELECTION_PRIMARY);
         let vbox = gtk::Box::new(gtk::Orientation::Vertical,10);
         let entry = Entry::new();
+        entry.set_text(&clipboard.wait_for_text().unwrap_or(glib::GString::from("")).lines().next().unwrap_or(""));
         entry.connect_activate(clone!(@weak entry, @weak app => move |_| {
             let p = Command::new(String::from(shellexpand::tilde(&*enter))).stdin(Stdio::piped()).spawn().unwrap();
             let mut stdin = p.stdin.unwrap();
