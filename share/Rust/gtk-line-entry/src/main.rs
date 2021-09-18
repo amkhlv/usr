@@ -37,11 +37,28 @@ fn main() {
                  .takes_value(true)
                  .help("YAML configuration file")
                  .short("c"))
+            .arg(Arg::with_name("style")
+                 .value_name("style")
+                 .takes_value(true)
+                 .help("CSS file")
+                 .short("s"))
             .get_matches();
         let default_config_file = Path::join(Path::new(&home_dir().unwrap()), ".config/amkhlv/line-input/id.yaml");
+        let default_css_file = Path::join(Path::new(&home_dir().unwrap()), ".config/amkhlv/line-input/style.css");
         let config_file = clops.value_of("conf").unwrap_or(default_config_file.to_str().unwrap());
         let configs = YamlLoader::load_from_str(&std::fs::read_to_string(Path::new(config_file)).unwrap()).unwrap();
         let conf: &Yaml = &configs[0];
+        let css_file = clops.value_of("style").unwrap_or(default_css_file.to_str().unwrap());
+        let provider = gtk::CssProvider::new();
+        match provider.load_from_path(css_file) {
+            Ok(_) => (),
+            Err(x) => { println!("ERROR: {:?}", x); }
+        }
+        let screen = gdk::Screen::get_default();
+        match screen {
+            Some(scr) => { gtk::StyleContext::add_provider_for_screen(&scr, &provider, 799); }
+            _ => ()
+        };
         let enter: Rc<String> = Rc::new(String::from(conf["enter"].as_str().unwrap()));
         let buttons: Rc<&Vec<Yaml>> = Rc::new(conf["buttons"].as_vec().unwrap());
         let window = ApplicationWindow::new(app);
@@ -72,6 +89,7 @@ fn main() {
             let btn = gtk::Button::new();
             let lbl = gtk::Label::new(Some(button["label"].as_str().unwrap()));
             btn.add(&lbl);
+            btn.get_style_context().add_class(button["class"].as_str().unwrap());
             hbox.add(&btn);
             let action = Rc::new(String::from(button["callback"].as_str().unwrap()));
             btn.connect_clicked(clone!(@weak entry, @weak app => move |_| {

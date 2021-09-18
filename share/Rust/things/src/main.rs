@@ -160,6 +160,7 @@ fn main()  {
         let grid = Grid::new();
         grid.set_row_spacing(10);
         grid.set_column_spacing(10);
+        grid.get_style_context().add_class("things-grid");
         window.add(&grid);
         let mut charhints : HashMap<u8, String> = HashMap::new();
         let mut i = 0u8;
@@ -167,6 +168,7 @@ fn main()  {
         for (subj, items) in &mut tophash.iter() {
             if j % 3 == 0 { grid.insert_row(j as i32 / 3); }
             let vbox = gtk::Box::new(gtk::Orientation::Vertical, 3);
+            vbox.get_style_context().add_class(&format!("things-vbox-{}",subj));
             grid.attach(&vbox, j as i32 % 3, j as i32 / 3, 1, 1);
             vbox.add(&Label::new(Some(subj)));
             for item in items {
