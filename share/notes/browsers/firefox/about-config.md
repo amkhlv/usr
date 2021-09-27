@@ -1,6 +1,13 @@
-# Tree Style Tab extension
+Cache easening
+==============
 
-## To hide native tab bar
+Set `browser.sessionstore.interval` to `600000`
+
+Moreover: `browser.cache.disk.enable` to `false` and `browser.cache.memory.enable` to `true`.
+
+
+Remove upper tabs
+=================
 
 First go to `about:config` and set `toolkit.legacyUserProfileCustomizations.stylesheets` to `true`
 
@@ -27,6 +34,3 @@ and feed to cat:
 
     #minimize-button, #restore-button, #close-button
     { display: none !important; }
-
-
-

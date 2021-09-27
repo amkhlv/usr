@@ -61,7 +61,6 @@ There are two things you can do about this warning:
 (autoload 'rnc-mode "rnc-mode")
 (require 'markdown-mode)
 (require 'bystroTeX-preview)
-(require 'bystroTeX-utils)
 
 (require 'use-package)
 (use-package flycheck

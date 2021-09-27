@@ -1,16 +1,11 @@
 Mount options
 =============
 
-For SSD:
+For example:
 
-    noatime,nodiratime,ssd_spread,autodefrag,compress=lzo,space_cache
+    subvol=/MyRoot,noatime,compress=zstd:9
 
-Compression options are:
-
-    compress=zlib - Better compression ratio. It's the default and safe for olders kernels.
-    compress=lzo  - Faster compression.
-    compress=no   - Disables compression (starting with kernel 3.6).
-
+Notice that the option `ssd` seems to be enabled automatically when using pendrive.
 
 Viewing free space
 ==================

@@ -2,7 +2,7 @@
 
 #lang at-exp racket
 
-(require bystroTeX/utils)
+(require bystroTeX/utils dirname)
 (define templates-dir (build-path (find-system-path 'home-dir) ".config" "inkscape" "templates"))
 
 (define newsvg (make-parameter #f))
@@ -26,7 +26,7 @@
       (outpdf opdf)]
      [("--to-svg")
       svgdir
-      "burst PDF to SVGs (provide input SVG file as a single argument)"
+      "burst PDF to SVGs (provide input PDF file as a single argument)"
       (outdir svgdir)]
      #:args fs
      fs
@@ -118,6 +118,6 @@
    (current-error-port)
    (find-executable-path "pdf2svg")
    (car input-files)
-   (path->string (build-path (outdir) (string-replace (car input-files) #rx"\\.pdf$" "_%d.svg")))
+   (path->string (build-path (outdir) (string-replace (basename (car input-files)) #rx"\\.pdf$" "_%03d.svg")))
    "all")
   )
