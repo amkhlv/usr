@@ -1,0 +1,4 @@
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : mathfrak capital
+# --
+${1:$$(concat (mapcar '(lambda (x) (if (< x 1000) (+ #x1d504 (- x 97)) x)) yas-text))}

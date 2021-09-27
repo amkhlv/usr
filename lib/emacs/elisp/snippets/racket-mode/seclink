@@ -1,0 +1,8 @@
+
+#contributor : Andrei Mikhailov <a.mkhlv@gmail.com>
+#name : insert seclink
+#expand-env: ((yas/indent-line 'fixed) (yas/wrap-around-region 'nil))
+# --
+〚@seclink["$1"]{@secref{$2}}〛 $0
+
+  
