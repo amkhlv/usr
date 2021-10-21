@@ -2,26 +2,29 @@
 USB passthrough
 ===============
 
-First define the USB device in XML file
----------------------------------------
+We determine `hostbus` and `hostport` by running:
 
-Suppose `lsusb` gives:
+    lsusb -t
 
-    Bus 001 Device 007: ID 03f0:0053 Hewlett-Packard
+Adding on running virtual machine 
+---------------------------------
 
-Then create a file 'hp.xml' with contents:
+via [QEMU Monitor](https://en.wikibooks.org/wiki/QEMU/Monitor):
 
-    <hostdev mode='subsystem' type='usb'>
-         <source>
-                 <vendor id='0x03f0'/>
-                 <product id='0x0053'/>
-         </source>
-     </hostdev>
+    device_add qemu-xhci,id=usb,bus=pci.0,addr=0x4 
+    device_add usb-host,hostbus=5,hostport=1.3.4,id=someid
 
-Then attach it
---------------
+(and then `device_del`)
 
-With `mymachine` __running__ :
+This can be confirmed by:
 
-    virsh attach-device   mymachine   hp.xml
+    info usb
+
+Adding via command line options
+-------------------------------
+
+    -device qemu-xhci,id=usb,bus=pci.0,addr=0x4 \
+    -device usb-host,hostbus=5,hostport=1.2.3 
+
+
 

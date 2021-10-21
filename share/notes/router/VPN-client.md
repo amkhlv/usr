@@ -1,52 +1,33 @@
 Setting up VPN client
 =====================
 
+Install packages
+----------------
+
     opkg install openvpn-openssl luci-app-openvpn 
 
-Then, it is better to configure manually. The file `/etc/config/openvpn` should contain lines:
+### Manual config
+
+ to configure manually. The file `/etc/config/openvpn` should contain lines:
 
     config openvpn 'my_client'
             option config '/etc/openvpn/my.ovpn'
             option enabled '1'
 
-It seems that the name should be of the form `SOMEWORD_client`, like that, with underscore!
+It seems that the name should be of the form `SOMEWORD_client`, like that, with underscore, and the last word is `client`
+
+### LuCI config
 
 It is in LuCI under `Services` tab.
 
-Routing through it
-==================
-
-Netfilter on the router
------------------------
-
-The VPN should be of layer-2 type, _i.e._ using `TAP`
-
-In `/etc/config/network` should be lines:
-
-    config interface 'myvpn'
-            option proto 'none'
-            option ifname 'tap0'
-
-In `/etc/config/firewall` :
-
-    config zone
-            option name 'myvpnzone'
-            option input 'ACCEPT'
-            option output 'ACCEPT'
-            option forward 'ACCEPT'
-            option network 'myvpn'
-
-    config forwarding
-            option src 'myvpnzone'
-            option dest 'wan'
-
-This should be enough for routing to happen.
-
-Doing this often requires __restarting the OpenVPN service on the server__
+It seems that the name should be of the form `SOMEWORD_client`, like that, with underscore, and the last word is `client`
 
 
-Routing table on the main computer
-----------------------------------
+Firewall config
+---------------
 
-See [writeup on IPrules](../server/iprules.md)
+Starting from `Openwrt 21...` there are some changes.
+The tunnel interface does not show any more in `LuCI`'s `Interfaces`.
+To add it to `LAN` zone, go to `Network` → `Firewall`, there edit the `lan` zone, in the `Advanced settings` tab, add it to `Covered devices`.
+(The `covered devices` list is typically empty; the existing wired interfaces are somehow configured differently ???)
 

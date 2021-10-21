@@ -27,12 +27,15 @@ Then disconnect and connect via `ssh`
      opkg update
      opkg install luci
 
-The file `/etc/config/uhttpd` should contain:
+To configure `LuCI` via `LuCI`, must install:
 
-         list listen_http '192.168.1.1:80'
-     #   list listen_http '[::]:80'
-         list listen_https '192.168.1.1:443'
-     #   list listen_https '[::]:443'
+    opkg install luci-app-uhttpd
+
+Then, in web interface, appears tab `services` → `uhttpd` where listening interface can be configured.
+
+Perhaps, __disable listening on WAN__.
+However, the only way of doing it seems to be restricting the list of web addresses where `uhttpd` listens.
+(And then, it should be changed each time when changing the LAN address.)
 
 ## Dropbear 
 

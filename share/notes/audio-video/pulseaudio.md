@@ -168,7 +168,7 @@ Using UNIX domain socket
 
 Usually, `PulseAudio` uses `shm` istead of `UNIX socket`, so it is not available. This means that we need to __disable the use of shm__ by `PulseAudio`.
 
-As I [explained previously](#sectionColinGuthr) , this can be done by creating the file `/home/andrei/.pulse/daemon.conf` and putting a line in it:
+As I [explained previously](#confusing-defuzzing) , this can be done by creating the file `/home/andrei/.pulse/daemon.conf` and putting a line in it:
 
     disable-shm=yes
 

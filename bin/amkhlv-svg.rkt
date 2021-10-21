@@ -8,6 +8,7 @@
 (define newsvg (make-parameter #f))
 (define outpdf (make-parameter #f))
 (define outdir (make-parameter #f))
+(define onepage (make-parameter "all"))
 
 (define-syntax (mkparser hs)
   (datum->syntax
@@ -28,6 +29,10 @@
       svgdir
       "burst PDF to SVGs (provide input PDF file as a single argument)"
       (outdir svgdir)]
+     [("--page")
+      page
+      "burst one page only"
+      (onepage page)]
      #:args fs
      fs
      )))
@@ -119,5 +124,5 @@
    (find-executable-path "pdf2svg")
    (car input-files)
    (path->string (build-path (outdir) (string-replace (basename (car input-files)) #rx"\\.pdf$" "_%03d.svg")))
-   "all")
+   (onepage))
   )
