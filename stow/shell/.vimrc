@@ -5,6 +5,11 @@ set nocompatible
 
 colorscheme koehler1
 
+set tabstop     =2
+set softtabstop =2
+set shiftwidth  =2
+set expandtab
+
 set guifont=Dejavu\ Sans\ Mono\ 11
 set guioptions-=m  "menu bar
 set guioptions-=T  "toolbar
@@ -19,6 +24,7 @@ Plug 'pedrohdz/vim-yaml-folds'
 Plug 'MattesGroeger/vim-bookmarks'
 Plug 'digitaltoad/vim-pug'
 Plug 'dart-lang/dart-vim-plugin'
+Plug 'purescript-contrib/purescript-vim'
 
 call plug#end()
 

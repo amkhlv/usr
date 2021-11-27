@@ -31,14 +31,29 @@ As explained [here](https://stackoverflow.com/questions/3918032/bash-serial-i-o-
 
 The `sleep` step is crucial, because opening the serial will reset the board. Need time to wait it to reset and settle down !
 
-Using GNU screen for testring
------------------------------
+Using GNU screen
+----------------
 
     screen /dev/ttyACM0 9600
 
 The transmission is keystroke-by-keystroke, no need to press `Enter`.
 
+Usint TIO
+---------
+
+     tio -b 9600 -m ODELBS /dev/ttyACM0
+
+
 USB to serial adapter
 =====================
 
+On USB2TTL adapter:
+
+    TX is green
+
+    RX is white
+
 Green wire should go to the RX of Arduino, and white to the TX for Arduino.
+
+__On Leonardo__ : connect TX ↔ RX and RX ↔ TX
+

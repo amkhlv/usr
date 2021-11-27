@@ -41,6 +41,10 @@
   @mkparser{
           _____________________________________________________________________________
             SVG staff
+          
+            templates should be in ~/.config/inkscape/templates/
+            
+            sudo aptitude install xmlstarlet
             _____________________________________________________________________________
             }
   )
@@ -123,6 +127,6 @@
    (current-error-port)
    (find-executable-path "pdf2svg")
    (car input-files)
-   (path->string (build-path (outdir) (string-replace (basename (car input-files)) #rx"\\.pdf$" "_%03d.svg")))
+   (path->string (build-path (outdir) (string-replace (basename (car input-files)) #rx"\\.pdf$" (case (onepage) [("all") "_%03d.svg"] [else (string-append "_p" (onepage) ".svg")]))))
    (onepage))
   )

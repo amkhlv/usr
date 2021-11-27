@@ -2,6 +2,10 @@ module Main where
 
 import qualified Options.Applicative as O
 import           Data.Semigroup ((<>))
+import qualified Data.Text as DT
+import qualified Data.Text.IO as TIO
+import qualified Control.Monad.IO.Class as CM
+import           Text.Pandoc.Class
 import           Text.Pandoc.Readers.Markdown
 import           Text.Pandoc.Writers.HTML
 import           Text.Pandoc.Options
@@ -9,6 +13,7 @@ import           Text.Pandoc.Definition
 import           Text.Pandoc.Walk
 import           Text.ParserCombinators.Parsec
 import           Text.ParserCombinators.Parsec.Error
+import qualified Text.Blaze.Html.Renderer.Pretty as BLZ
 import           Data.Set
 import           System.Directory
 
@@ -54,6 +59,4 @@ main = do
   mdTxt    <- readFile mdFile
   homedir  <- getHomeDirectory
   template <- readFile $ homedir ++ "/.config/amkhlv/pandoc/template.html"
-  case readMarkdown rdrOpts mdTxt of
-    Left _    -> putStrLn "=== ERROR parsing Markdown ==="
-    Right pan -> putStrLn $ writeHtmlString (wtrOpts template) (fltr pan)
+  runIOorExplode (readMarkdown rdrOpts (DT.pack mdTxt) >>= ( \pan -> writeHtml4 (wtrOpts template) (fltr pan) )) >>= putStrLn . BLZ.renderHtml

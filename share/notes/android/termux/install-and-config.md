@@ -3,6 +3,8 @@ Installing
 
 Via `F-Droid`, install `Termux` 
 
+__do not install from Google Play__ !
+
 Location of data folder
 -----------------------
 

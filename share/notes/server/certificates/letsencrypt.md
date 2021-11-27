@@ -12,7 +12,8 @@ Install certbot
 Temporary point webroot to the usual place
 ==========================================
 
-Edit `/etc/nginx/sites-available/default` or such, and make sure:
+Edit `/etc/nginx/sites-available/default` or such
+(__the one which controls__ `http:` and __not__ `https:` !), and make sure:
 
     root /var/www/;
 

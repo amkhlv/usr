@@ -13,12 +13,9 @@ To get:
 Dial a number
 =============
 
-via phone
----------
+    termux-telephony-call 111111...
 
-    termux-open-url tel:12345678
-
-(while `termux-telephony-call` does not seem to work...)
+(requires giving permissions)
 
 Message via WhatsApp
 ====================

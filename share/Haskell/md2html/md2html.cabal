@@ -25,3 +25,4 @@ executable md2html
                      , parsec
                      , containers
                      , directory
+                     , blaze-html

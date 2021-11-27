@@ -14,7 +14,11 @@ As user:
 Configuration
 =============
 
-    The file `~/a.yaml` should be of the form:
+First create directory:
+
+    mkdir ~/.local/var
+
+The file `~/a.yaml` should be of the form:
 
     SectionName:
       SomeName: >

@@ -12,6 +12,12 @@ To use:
     
 will listen on Port `8022`
 
+To __disable password authentication__, edit:
+
+    /data/data/com.termux/files/usr/etc/ssh/sshd_config
+
+(but, in any case, the password should be set using `passwd`)
+
 To log to console:
 
     logcat -s 'syslog:*'

@@ -5,15 +5,15 @@ On USB2TTL adapter:
 
 1. TX is green
 
-2. RX is white
+1. RX is white
 
 Connect three wires:
 
 1. TX ↔ RX 
 
-2. RX ↔ TX. 
+1. RX ↔ TX. 
 
-3. Ground (black on USB2TTL) to ground.
+1. Ground (black on USB2TTL) to ground.
 
 __Do not connect power (the red one, or "V")__ Only three wires are connected.
 

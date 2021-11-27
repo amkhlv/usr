@@ -64,5 +64,9 @@ to:
                 <ctl name="S2801 RMIX2_LVL" value="0" />
         </path>
 
-And __reboot__
+Then: 
+
+    adb unroot
+
+And __reboot__ cell phone
 

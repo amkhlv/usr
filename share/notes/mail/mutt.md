@@ -19,20 +19,24 @@ Press `c`
 
 To __tag__ an individual message, press `t`.
 
-To __tag__ multiple messages, press `T` then enter pattern then `ENTER`
+To __tag__ multiple messages, press `T` then enter [pattern](patterns) then `ENTER`
 
 To __untag__ messages, press `Ctrl-t` then pattern then `ENTER`
+
+## Patterns
 
 The patterns are [listed here](http://www.mutt.org/doc/manual/manual.html#patterns). 
 In particular:
 
 1. `~N` for new messages
 
-1. `~d [MIN]-[MAX]` for messages with “date-sent” in a Date range
+1. `~d 20201120-20210131` for messages with "date-sent" in a Date range
 
 1. `~D` for deleted messages
 
 1. `~e EXPR` for messages which contains EXPR in the "Sender" field
+
+
 
 ## Operations on many tagged messages
 
