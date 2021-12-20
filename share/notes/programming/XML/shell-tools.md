@@ -41,3 +41,23 @@ gives `b`
 
 --- here `--nl` prints newline after each match
 
+### XPath specifications 
+
+    echo '<a><a1>b</a1></a>' | xmlstarlet sel -t -v "/a/a1"
+
+or:
+
+    echo '<a><a1>b</a1></a>' | xmlstarlet sel -t -v "//a1"
+
+--- both give `b`. (Leading `//` means search all the way down.)
+
+Select value with given attribute value (in this case the attribute is called "key"):
+
+    xmlstarlet sel -t -v '//*[@key="upload-url"]' bystrotex.xml
+
+General rules:
+
+    nodename	Selects a node and all of its children
+    /	        Selects the document root
+    //	        Selects a node and all of its children; regardless of where it is located in the XML document hierarchy.
+    @	        Selects an attribute

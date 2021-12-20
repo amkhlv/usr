@@ -8,6 +8,7 @@
 (define kill (make-parameter #f))
 (define fileopen (make-parameter #f))
 (define sock (make-parameter #f))
+(define revive (make-parameter #f))
 
 (define-syntax (mkparser hs)
   (datum->syntax
@@ -16,9 +17,10 @@
      #:program "Emacs server interaction"
      #:usage-help ,(apply string-append (cdr (syntax->datum hs)))
      #:once-each
-     [("-l" "--list-sockets") "list Emacs sockets" (list-sockets #t)]
      [("-k" "--kill") k "kill socket" (kill k)]
+     [("-l" "--list-sockets") "list Emacs sockets" (list-sockets #t)]
      [("-o" "--open") f "open file (needs socket name!)" (fileopen f)]
+     [("-r" "--revive") r "\"revive\" the socket (needs socket name!)" (revive #t)]
      [("-s" "--socket") s "socket name" (sock s)]
      )))
 
@@ -61,5 +63,24 @@
     (current-error-port)
     ("emacsclient" "-s" (kill) "-e" "(kill-emacs)")))
 
-
+(when (fileopen)
+  (displayln (format "Opening file ~a with emacs server ~a" (fileopen) (sock)))
+  (with-subprocess-as
+    emacs-opener
+    #f
+    #f
+    (current-error-port)
+    ("emacsclient" "-s" (sock) (fileopen))
+    (subprocess-wait emacs-opener-process)
+    ))
       
+(when (revive)
+  (displayln (format "Creating window for socket ~a" (sock)))
+  (with-subprocess-as
+    emacs-reanimator
+    #f
+    #f
+    (current-error-port)
+    ("emacsclient" "-c" "-s" (sock))
+    (subprocess-wait emacs-reanimator-process)
+    ))
