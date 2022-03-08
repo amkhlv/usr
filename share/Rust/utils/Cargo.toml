@@ -1,0 +1,34 @@
+[package]
+name = "utils"
+version = "0.1.0"
+authors = ["Andrei Mikhailov <amkhlv@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "amkhlv-wkhtml2pdf"
+path = "src/wkhtml2pdf.rs"
+
+[[bin]]
+name = "amkhlv-svg"
+path = "src/svg.rs"
+
+[[bin]]
+name = "amkhlv-emacs-inter"
+path = "src/emacs-inter.rs"
+
+[[bin]]
+name = "amkhlv-psql"
+path = "src/psql.rs"
+
+
+[dependencies]
+clap = { version = "3.0.13", features = ["derive"] }
+clap_complete = "3.0.5"
+home = "0.5.3"
+regex = "1.5.4"
+serde = "1.0.132"
+serde_dhall = "0.11.0"
+dirs = "1.0.5"
+postgres = "0.19.2"
