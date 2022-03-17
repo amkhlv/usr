@@ -331,7 +331,9 @@ app.post("/addressedt",
     ` + sqlitecols.map((v, _) => `${v} = ?`).join(" , ") + `
       WHERE
       ` + sqlitecols.map((v, _) => `coalesce(${v},'') = ?`).join(" and ")
-    db.run(s, [...newvals, ...oldvals], err => { console.log(err) })
+    console.log(s)
+    console.log(oldvals)
+    db.run(s, [...newvals, ...oldvals].map(function(x) { return x.replace(/\r/gm, "") }), err => { console.log(err) })
     res.redirect(prefix + '/abk')
   })
 app.get("/addressdel",
@@ -465,6 +467,11 @@ app.get("/daily",
         (req,res) => {
           const myaml = yaml.safeLoad(fs.readFileSync(dailyPath, 'utf8'))
           res.render("daily", {'myaml': myaml, 'prefix': prefix})
+        }
+       )
+app.get("/dashboard",
+        (req,res) => {
+          res.render("dashboard", {})
         }
        )
 

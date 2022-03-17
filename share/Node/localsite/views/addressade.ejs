@@ -23,7 +23,7 @@
 
 <body>
     <div class="container">
-        <form action="<%= prefix %>/<%= role %>" method="post">
+        <form action="<%= prefix %>/<%= role %>" method="post" id="adeform">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <% if (role === "addressdel" || role === "addressedt") { %>
             <input type="hidden" name="dc" value="<%= prefill['dc'] %>">

@@ -1,12 +1,12 @@
 <div class="input-field col s12">
     <label for="<%= nm %>"><%= lbl %></label><br>
-    <input 
-        type="text" 
+    <textarea 
         name="<%= nm %>" 
-        <% if (role === "addressdel") { %> value="<%= prefill[nm] %>" readonly <% } %> 
-        <% if (role === "addressedt") { %> value="<%= prefill[nm] %>" <% } %> 
-        >
+        <% if (role === "addressdel") { %> readonly <% } %> 
+        <% if (role === "addressedt") { %>  <% } %> 
+        form="adeform"
+        ><%= prefill[nm] %></textarea>
     <% if (role === "addressedt") { %>
-        <input type="hidden" name="o<%= nm %>" value="<%= prefill[nm] %>">
+        <textarea style="visibility:hidden;position:absolute;" name="o<%= nm %>" form="adeform"><%= prefill[nm] %></textarea>
     <% } %>
 </div>

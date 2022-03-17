@@ -67,37 +67,13 @@
             <table>
                 <tr>
                     <td>
-                        <form action="<%= prefix %>/addressedt" method="get">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <%  Object.keys(row).forEach(function(k) { %>
-                            <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
-                            <% }); %>
-                            <button type="submit" class="entxt waves-effect waves-light submit-btn">
-                                Edit
-                            </button>
-                        </form>
+                      <a class="black-text" style="font-size:2.1em" href="<%= prefix %>/addressedt?<%- `_csrf=${csrfToken}` + Object.keys(row).map(function(k) { return `&${k}=${encodeURIComponent(row[k] || '')}` }).join('') %>">Edit</a>
                     </td>
                     <td>
-                        <form action="<%= prefix %>/addressdel" method="get">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <%  Object.keys(row).forEach(function(k) { %>
-                            <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
-                            <% }); %>
-                            <button type="submit" class="entxt waves-effect waves-light submit-btn">
-                                Delete
-                            </button>
-                        </form>
+                      <a class="black-text" style="font-size:2.1em" href="<%= prefix %>/addressdel?<%- `_csrf=${csrfToken}` + Object.keys(row).map(function(k) { return `&${k}=${encodeURIComponent(row[k] || '')}` }).join('') %>">Delete</a>
                     </td>
                     <td>
-                        <form action="<%= prefix %>/getvcf" method="get">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <%  Object.keys(row).forEach(function(k) { %>
-                            <input type="hidden" name="<%= k %>" value="<%= row[k] %>">
-                            <% }); %>
-                            <button type="submit" class="entxt waves-effect waves-light submit-btn">
-                                VCard
-                            </button>
-                        </form>
+                      <a class="black-text" style="font-size:2.1em" href="<%= prefix %>/getvcf?<%- `_csrf=${csrfToken}` + Object.keys(row).map(function(k) { return `&${k}=${encodeURIComponent(row[k] || '')}` }).join('') %>">VCard</a>
                     </td>
                 </tr>
             </table>
