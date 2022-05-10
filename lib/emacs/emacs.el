@@ -20,7 +20,7 @@ There are two things you can do about this warning:
 1. Install an Emacs version that does support SSL and be safe.
 2. Remove this warning from your init file so you won't see it again."))
   (add-to-list 'package-archives
-               (cons "melpa" (concat proto "://melpa.org/packages/"))
+               (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/"))
                ;;'("melpa-stable" . "https://stable.melpa.org/packages/")
                t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
@@ -64,15 +64,26 @@ There are two things you can do about this warning:
 
 (require 'use-package)
 (use-package flycheck
+  :ensure t
   :init (global-flycheck-mode))
 (use-package lsp-mode
-  ;; Optional - enable lsp-mode automatically in scala files
+  :ensure t
   :hook  (haskell-mode . lsp)
-         (scala-mode . lsp)
-         (lsp-mode . lsp-lens-mode)
-  :config (setq lsp-prefer-flymake nil))
-(use-package haskell-mode :mode "\\.hs$")
-(setq lsp-haskell-process-path-hie "hie-wrapper")
+  :commands lsp
+  :config (setq lsp-prefer-flymake nil)
+  )
+;(use-package haskell-mode :mode "\\.hs$")
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode)
+(use-package lsp-haskell
+  :ensure t
+  :config
+ (setq lsp-haskell-server-path "haskell-language-server-wrapper")
+ (setq lsp-haskell-server-args ())
+   ;; Comment/uncomment this line to see interactions between lsp client/server.
+  (setq lsp-log-io t))
+
 
 ;; Set window title:
 (setq-default frame-title-format '("%f [%m]"))

@@ -22,6 +22,12 @@ and change password (`passwd`)
 
 Then disconnect and connect via `ssh`
 
+# Change LAN address
+
+    uci set network.lan.ipaddr="192.168.2.1"
+    uci commit network
+    /etc/init.d/network restart
+
 ## Install and configure LuCI 
 
      opkg update

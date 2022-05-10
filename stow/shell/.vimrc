@@ -25,6 +25,12 @@ Plug 'MattesGroeger/vim-bookmarks'
 Plug 'digitaltoad/vim-pug'
 Plug 'dart-lang/dart-vim-plugin'
 Plug 'purescript-contrib/purescript-vim'
+Plug 'autozimu/LanguageClient-neovim', {
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
+Plug 'vmchale/dhall-vim'
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 
 call plug#end()
 

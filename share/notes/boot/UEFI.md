@@ -11,19 +11,7 @@ Create EFI partition on GPT disk
 It should have size `512M`, be formatted as `vfat`, and have GPT label `ef00` .
 
 
-First install GRUB with UEFI target
-===================================
-
-    aptitude install grub-efi
-
-(this is incompatible with `grub-pc`, so `aptitude` will suggest the removal of `grub-pc`)
-
-On pendrive:
-
-    grub-install -v --target x86_64-efi --efi-directory=X --boot-directory=Y --removable /dev/sdX
-
-
-Then install rEFInd
+Install rEFInd
 ===================
 
 Mount `/boot`
@@ -34,40 +22,14 @@ And then:
 
     refind-install --usedefault /dev/sdxY
 
-where `/dev/sdxY` is the `EFI` partition.
+where `/dev/sdxY` is the `EFI` partition. 
+The `--usedefault` flag means that `Refind` will be the default to boot.
+For that to be true, the executable and accompanying files should all go to `EFI/BOOT/`.
+Moreover, the executable will be called `bootx64.efi`; it is just a copy of `refind_x64.efi`.
 
-Then mount `/dev/sdxY` somewhere and go there. The root will contain the folder named `EFI`.
-
-Need to copy drivers:
+__If__ need to copy drivers:
 
     cp /usr/share/refind/refind/drivers_x64/* EFI/BOOT/drivers_x64/
-
-and also:
-
-    cp /usr/share/refind/refind/refind_x64.efi EFI/BOOT/
-
-
-In `EFI/BOOT` find `refind.conf` and edit it as [described here](http://www.rodsbooks.com/refind/configfile.html). 
-Namely, it should contain the stanza:
-
-
-    menuentry "MySystem" {
-        icon EFI/BOOT/icons/os_clover.png
-        volume xxxxxxxx-yyyy-zzzz-wwww-nnnnnnnnnnnn
-        loader grub/x86_64-efi/grub.efi 
-    }
-
-where `xxxxxxxx-yyyy-zzzz-wwww-nnnnnnnnnnnn` is the `PARTUUID` of the `/boot`.
-Notice that in the first line `EFI/BOOT/icons/os_clover.png` is relative to the root of the `EFI` partition.
-Then we "cd into volume" `/boot` and in the third line the  `loader` path is relative to the root of `/boot`.
-(There is the file `grub.efi` there because we configured `grub` for `EFI`.) Therefore, the `MySystem` stanza
-tells `EFI` to load `GRUB`. Then, the standard `GRUB` menu will appear (`grub.efi` knows where it is, so it
-knows where to find the `GRUB` config menu).
-
-Now __unmount__ the `EFI` partition.
-
-Maybe I need to run `refind-install --usedefault /dev/sdxY` again after that; I am not sure...
-
 
 Autodetected kernels
 ====================
@@ -110,7 +72,9 @@ If two arguments given, sets to number of cols and rows, _e.g._ :
 __Before running file system commands__ such as cd or ls, you need to change the shell to the appropriate file system by typing its name:
 
     Shell> fs0:
-    fs0:\> cd EFI/
+    fs0:\> cd EFI\BOOT
+    
+__PATH separator is \ and not / !!!__ (important for auto-completion)
 
 ### Basic commands
 
@@ -128,4 +92,11 @@ __Before running file system commands__ such as cd or ls, you need to change the
 
 ### Any .efi executable can be called
 
-just by typing its name and pressing `ENTER`. For example `EFI/BOOT/bootx64.efi` will just boot the operating system.
+just by typing its name and pressing `ENTER`. 
+
+### Booting Linux
+
+`EFISTUB` is the mechanism to boot by executing Linux kernel as an EFI executable. Something like this:
+
+    \vmlinuz-linux root=PARTUUID=...  rw  initrd=\initramfs-linux.img
+
