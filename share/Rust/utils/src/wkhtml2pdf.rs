@@ -28,6 +28,12 @@ struct Args {
     #[clap(long, default_value_t = String::from("20mm"))]
     margin_right: String,
     
+    #[clap(long)]
+    lowquality: bool,
+
+    #[clap(long)]
+    grayscale: bool,
+
     /// Generate bash completion
     #[clap(long)]
     completion: bool,
@@ -45,19 +51,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(())
     }
 
+    let mut clargs = vec![ "--margin-bottom"
+        , &clops.margin_bottom
+        , "--margin-top"
+        , &clops.margin_top
+        , "--margin-left"
+        , &clops.margin_left
+        , "--margin-right"
+        , &clops.margin_right
+        , "--enable-local-file-access"
+    ];
+    if clops.lowquality { clargs.push("--lowquality"); }
+    if clops.grayscale { clargs.push("--grayscale"); }
+
+    let output = clops.output.unwrap_or(clops.input.clone() + ".pdf");
+
+    clargs.append(&mut vec![&clops.input[..], &output[..]]);
+
+
     let status = Command::new("wkhtmltopdf")
-        .args([ "--margin-bottom"
-              , &clops.margin_bottom
-              , "--margin-top"
-              , &clops.margin_top
-              , "--margin-left"
-              , &clops.margin_left
-              , "--margin-right"
-              , &clops.margin_right
-              , "--enable-local-file-access"
-              , &clops.input 
-              , &clops.output.unwrap_or(clops.input.clone() + ".pdf")
-        ])
+        .args(clargs)
         .status()? ;
 
     println!("{}",status);

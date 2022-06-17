@@ -23,16 +23,46 @@ Hewlett-Packard
 HP is special, because it has a special tool `hplip`; see [my writeup](HPLIP.md)
 
 
-Finding INFO about printer
+Setting up Network Printer
 ==========================
+
+No need any more to specify driver
+----------------------------------
+
+Just say:
+
+    lpadmin -p myprintername -v lpd://172.16.10.140/queue  -L IFT-4th-floor -E
+
+Setting up USB Printer
+======================
+
+To obtain the list of devices, say:
+
+    lpinfo -v
+
+The corresponding device will go under `-v` flag.
+
+Test
+====
+
+    lpr -P myprintername /usr/share/cups/data/default-testpage.pdf
+
+Remove printer
+==============
+
+    lpadmin -x myprintername
+
+
+
+DEPRECATED
+==========
+
+__For older versions__, need to find INFO:
 
     lpinfo --make-and-model "LaserJet" -m
 
 This will give a long list of printers which can be `grep`ped.
 
-
-Setting up
-==========
 
 Laser Printer
 -------------
@@ -69,13 +99,4 @@ To obtain the list of devices, say:
 
 The corresponding device will go under `-v` flag.
 
-Test
-====
-
-    lpr -P myprintername /usr/share/cups/data/default-testpage.pdf
-
-Remove printer
-==============
-
-    lpadmin -x myprintername
 

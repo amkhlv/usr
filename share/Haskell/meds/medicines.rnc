@@ -17,7 +17,7 @@ start = element medicines {
             attribute name { text },
             element note { any_content }*,
             element periods { period* }*,
-            element tags { (element cur { text } | element old { text } | element q { text } ) }*
+            element tags { (element cur { empty } | element old { empty } | element q { empty } ) }*
          }*
       }
    }*
