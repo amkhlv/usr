@@ -19,7 +19,7 @@ use regex::Regex;
        ",
        long_about = None)]
 struct Args {
-    /// Specify the output file
+    /// SVG file name
     #[clap(short, long, value_name="new file name (without \".svg\")")]
     new: Option<String>,
 
@@ -103,18 +103,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     } else {
         if let Some(outdir) = clops.to_svg {
-            let in_filename : &str = clops.input.iter().next().unwrap();
+            let in_path_str : &str = clops.input.iter().next().unwrap();
+            let in_path : &Path = Path::new(in_path_str);
+            let in_filename = in_path.file_name().unwrap();
             let out_filename : String = Regex::new(".pdf$")
                 .unwrap()
                 .replace(
-                    in_filename,
-                    clops.page.map(|pg| { format!("_p{}",pg) }).unwrap_or("_%03d.svg".to_string()) 
+                    in_filename.to_str().unwrap(),
+                    clops.page.map(|pg| { format!("_p{:03}.svg",pg) }).unwrap_or("_%03d.svg".to_string()) 
                     )
                 .to_string();
             let out_path = Path::new(&outdir).join(out_filename);
-            let mut args = vec![in_filename, out_path.to_str().unwrap()];
+            let mut args = vec![in_path_str, out_path.to_str().unwrap()];
             let pgarg = if let Some(pg) = clops.page { pg.to_string() } else { String::from("all") };
             args.push(&pgarg);
+            println!("{} {:?}", "pdf2svg", &args);
             let pdftosvg = Command::new("pdf2svg").args(args).status();
             println!("pdf2svg: {:?}",pdftosvg);
             return Ok(());
