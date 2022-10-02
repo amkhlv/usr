@@ -85,8 +85,8 @@ application/mpeg4-muxcodetable; vlc '%s'; description="MPEG-4 Video"; test=test 
 image/vnd.djvu; /usr/bin/djview4 '%s'; test=test -n "$DISPLAY"; description=DjVu file; nametemplate=%s.djvu
 image/x.djvu; /usr/bin/djview4 '%s'; test=test -n "$DISPLAY"; description=DjVu file; nametemplate=%s.djvu
 image/x-djvu; /usr/bin/djview4 '%s'; test=test -n "$DISPLAY"; description=DjVu file; nametemplate=%s.djvu
-application/pdf; /home/andrei/.local/bin/pdq '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
-application/x-pdf; /home/andrei/.local/bin/pdq '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
+application/pdf; /home/andrei/.local/lib/amkhlv/mutt-view.sh '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
+application/x-pdf; /home/andrei/.local/lib/amkhlv/mutt-view.sh '%s'; test=test "$DISPLAY" != ""; description=Portable Document Format; nametemplate=%s.pdf
 application/vnd.ms-xpsdocument; /usr/bin/evince '%s'; description=XML Paper Specification; nametemplate=%s.xps
 application/vnd.ms-word; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; nametemplate=%s.doc ; description="Microsoft Word Document" ; priority=2application/wordperfect; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; nametemplate=%s.wpd ; description="Corel WordPerfect Document"
 application/vnd.wordperfect; abiword '%s' ; edit=abiword '%s' ; test=test "$DISPLAY" != "" ; nametemplate=%s.wpd ; description="Corel WordPerfect Document"

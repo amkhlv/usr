@@ -1,6 +1,10 @@
-# Additional info
+# Install Debian packages
 
-Additional info is [here](https://metacpan.org/pod/network::troubleshoot-wireless)
+    aptitude install  iw  rfkill  wireless-tools  wpasupplicant
+
+For non-free firmware:
+
+    aptitude install firmware-iwlwifi
 
 # Firmware in Debian
 
