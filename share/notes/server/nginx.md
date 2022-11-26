@@ -18,16 +18,17 @@ I will need:
 
 ## Preparing the password file
 
-Each location can have its own separate password file.
+    aptitude install apache2-utils
 
-The password file consists of the lines of the form:
+Then, to create the new password file:
 
-    username:hash
+    htpasswd -c  htpasswd_for_hidden  username
 
-Where hash is obtained by running the command:
+(this will ask to enter new password for `username`)
 
-    mkpasswd -m sha-512 -R 10000
+To add new user:password :
 
+    htpasswd  htpasswd_for_hidden  newusername
 
 # Running
 

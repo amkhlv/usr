@@ -26,6 +26,9 @@ path = "src/psql.rs"
 name = "amkhlv-mailaliases"
 path = "src/mailaliases.rs"
 
+[lib]
+name = "amkhlv"
+
 
 [dependencies]
 clap = { version = "3.0.13", features = ["derive"] }

@@ -1,0 +1,32 @@
+[package]
+name = "rem"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "rem"
+path = "src/rem.rs"
+
+[[bin]]
+name = "lst"
+path = "src/lst.rs"
+
+[lib]
+name = "listserv"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+utils = { path = "../utils" }
+dirs = "1.0.5"
+serde = "1.0.132"
+serde_dhall = "0.11.0"
+postgres = "0.19.4"
+postgres-openssl = "0.5.0"
+openssl = "0.10.42"
+
+[dependencies.cursive]
+version = "0.20.0"
+default-features = false
+features = ["termion-backend"]
+

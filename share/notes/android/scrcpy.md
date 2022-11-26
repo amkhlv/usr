@@ -3,6 +3,10 @@ For display to stay on
 
     scrcpy -w
 
+Keyboard layout
+===============
+
+`AltGr` does not work very well, so __do__ switch layout
 
 Keyboard shortcuts
 ==================
@@ -27,7 +31,7 @@ Keyboard shortcuts
 
     turn screen on 	Right-click²
 
-    paste computer clipboard to device 	Alt+v
+    paste computer clipboard to device 	Alt+Shift+v   (has to be in Clipboard, not just Selection!)
 
     enable/disable FPS counter (on stdout) 	Alt+i
 

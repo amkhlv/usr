@@ -6,6 +6,7 @@ use std::io;
 use serde::{Serialize, Deserialize};
 use serde_dhall::StaticType;
 use dirs::home_dir;
+use amkhlv::get_psql_conf;
 
 
 #[derive(Parser, Debug)]
@@ -30,19 +31,6 @@ struct Args {
     completion: bool,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone, StaticType)]
-struct DataBase {
-    host: String,
-    port: u64,
-    sslcert: String,
-    sslkey: String,
-    sslrootcert: String,
-    user: String
-}
-
-fn get_conf() -> Result<HashMap<String,DataBase>, serde_dhall::Error> {
-    serde_dhall::from_file(std::path::Path::new(&home_dir().unwrap()).join("a/Dhall/postgresql.dhall")).parse()
-}
 fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let clops = Args::parse();
@@ -50,7 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         generate(Bash, &mut Args::into_app(), "amkhlv-psql", &mut io::stdout());
         return Ok(())
     }
-    let conf = get_conf()?;
+    let conf = get_psql_conf()?;
     let base = conf.get(&clops.base).unwrap();
     let mut args = vec![format!("port={} host={} user={} sslcert={} sslkey={} sslrootcert={} sslmode=verify-ca", 
                                 base.port, 

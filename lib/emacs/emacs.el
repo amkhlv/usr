@@ -199,6 +199,16 @@ There are two things you can do about this warning:
 (global-set-key [f11] 'toggle-fullscreen)
 
 
+
+(defface hi-amkhlv-todo
+  '((((min-colors 88) (background dark))
+     (:background "red" :foreground "white" :weight bold))
+    (((background dark)) (:background "red" :foreground "white" :weight bold))
+    (((min-colors 88)) (:background "red" :foreground "white" :weight bold))
+    (t (:background "red" :foreground "white" :weight bold)))
+  "Face for hi-lock mode."
+  :group 'hi-lock-faces)
+
 (defmacro add-outline (hookname) 
   `(add-hook ,hookname '(lambda () (outline-minor-mode 1)
                           (local-set-key (kbd "C-c C-t") 'hide-body)
@@ -239,6 +249,7 @@ There are two things you can do about this warning:
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-tab>") 'bystroTeX-toggle-preview-and-recenter)))
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-M-tab>") 'bystroTeX-reveal)))
 (add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-`") 'bystroTeX-unindent)))
+(add-hook 'racket-mode-hook '(lambda () (highlight-regexp "TODO" 'hi-amkhlv-todo)))
 (defun mylambda () (interactive) (ucs-insert #x3bb))
 (add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)
