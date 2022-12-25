@@ -50,3 +50,20 @@ The `config_file` should contain:
     ssl_ca_file = '/var/lib/postgresql/9.6/main/root.crt'                   # (change requires restart)
 
 
+psql
+----
+
+### To show all databases
+
+First, choose your database
+
+    \c database_name
+
+Then, this shows all tables in the current schema:
+
+    \dt
+
+### To show schemas
+
+    \dn
+

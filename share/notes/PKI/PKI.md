@@ -4,15 +4,26 @@ Main references
 Instructions from [JamieLinux](https://jamielinux.com/docs/openssl-certificate-authority/index.html)
 
 
+Using Dhall
+===========
+
+[Dhall configuration program](https://github.com/jvanbruegge/dhall-openssl)
+
+Notice that SAN should be non-empty, 
+
 
 Setting up Root CA
 ==================
+
+__DEPRECATED__ use [Using Dhall]
 
 As described on [JamieLinux](https://jamielinux.com/docs/openssl-certificate-authority/create-the-root-pair.html)
 
 
 Create an intermediate authority
 ================================
+
+__DEPRECATED__ , see [Using Dhall]
 
 Again, as described in [JamieLinux](https://jamielinux.com/docs/openssl-certificate-authority/create-the-intermediate-pair.html)
 
@@ -21,6 +32,8 @@ Instead of `intermediate` use some reasonable name such as `myvpn`
 
 Useful commands
 ===============
+
+__DEPRECATED__ , see [Using Dhall]
 
 Create CA
 ---------
@@ -43,6 +56,13 @@ When signing __first time__ have to `-CAcreateserial`:
     openssl x509 -req -in server.csr -text -days 365 -CA root.crt -CAkey root.key -CAcreateserial -out server.crt
 
 __Attention:__ on next invocation, `-CAcreateserial` should be replaced with: `-CAserial root.srl`
+
+SAN
+---
+
+    openssl x509  -req -extfile <(printf "subjectAltName=DNS:minisite.ddns.net")   -in server.csr -text -days 365 -CA root.crt -CAkey root.key -CAcreateserial -out server.crt
+
+(but see [Using Dhall])
 
 Examining
 ---------

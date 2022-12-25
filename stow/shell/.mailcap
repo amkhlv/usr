@@ -120,7 +120,7 @@ image/jpeg; gthumb '%s'; test=test -n "$DISPLAY"
 image/gif; gthumb '%s'; test=test -n "$DISPLAY"
 application/postscript; /usr/bin/gv '%s'; test=test -n "$DISPLAY"; description=postscript
 application/ghostview; /usr/bin/gv '%s'; test=test -n "$DISPLAY"
-text/html; /usr/bin/lynx -dump '%s' | more; nametemplate=%s.html; copiousoutput;  description=HTML Text; test=test -n "$DISPLAY";  nametemplate=%s.html
+text/html; $HOME/.local/lib/amkhlv/ff-with-tmpfile.sh '%s' | more; nametemplate=%s.html; copiousoutput;  description=HTML Text; test=test -n "$DISPLAY";  nametemplate=%s.html
 application/x-ogg; /usr/bin/gmplayer '%s'; description="OggVorbis Audio"
 application/ogg; /usr/bin/gmplayer '%s'; description="OggVorbis Audio"
 audio/mpeg; /usr/bin/gmplayer '%s'; description="MPEG Audio Format"
