@@ -7,10 +7,6 @@ edition = "2021"
 name = "rem"
 path = "src/rem.rs"
 
-[[bin]]
-name = "lst"
-path = "src/lst.rs"
-
 [lib]
 name = "listserv"
 
@@ -21,9 +17,13 @@ utils = { path = "../utils" }
 dirs = "1.0.5"
 serde = "1.0.132"
 serde_dhall = "0.11.0"
-postgres = "0.19.4"
-postgres-openssl = "0.5.0"
 openssl = "0.10.42"
+rustls = "0.20.7"
+rustls-pemfile = "1.0.1"
+tokio-postgres-rustls = "0.9.0"
+tokio-postgres = "0.7.7"
+tokio = { version = "1", features = ["full"] }
+futures = "0.3.25"
 
 [dependencies.cursive]
 version = "0.20.0"
