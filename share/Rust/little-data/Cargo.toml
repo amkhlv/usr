@@ -1,0 +1,22 @@
+[package]
+name = "little-data"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "amkhlv-data"
+path = "src/data.rs"
+
+[dependencies]
+clap = { version = "3.0.13", features = ["derive"] }
+clap_complete = "3.0.5"
+json = "0.12.4"
+home = "0.5.3"
+dirs = "1.0.5"
+gtk = "0.16.2"
+glib = "0.16.7"
+gdk = "0.16.2"
+gio = "0.16.7"
+gdk-sys = "0.16.0"

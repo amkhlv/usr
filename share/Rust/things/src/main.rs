@@ -22,6 +22,27 @@ use std::path::{Path,PathBuf};
 use yaml_rust::{YamlLoader,Yaml};
 use linked_hash_map::{Iter, LinkedHashMap};
 use gtk::{Application, ApplicationWindow, Grid, Label, Button, Entry};
+use clap::{Parser,IntoApp};
+use clap_complete::{generate, shells::Bash};
+use std::io::stdout;
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+#[clap(author,
+       version,
+       about = "
+        application launcher
+        ",
+       long_about = None)]
+struct Args {
+    /// JSON file
+    #[clap(short, long, value_name="CONFIG_DIR")]
+    confdir: Option<String>,
+
+    /// Generate bash completion
+    #[clap(long)]
+    completion: bool,
+}   
 
 #[derive(Debug, Clone)]
 struct NoHomeDir;
@@ -84,15 +105,40 @@ impl Charhints {
     }
 }
 
-fn run_command(x:&String) {
-    std::process::Command::new(Path::new(&home_dir().unwrap()).join(".config/amkhlv/things/bin/").join(x)).spawn().unwrap();
+fn run_command(confdir: PathBuf, x:&String) {
+    let mut p = PathBuf::new();
+    p.push(confdir);
+    p.push("bin");
+    p.push(x);
+    std::process::Command::new(p).spawn().unwrap();
 }
 
-fn get_command_source(x:&String) -> String {
-    return std::fs::read_to_string(Path::new(&home_dir().unwrap()).join(".config/amkhlv/things/bin/").join(x)).unwrap();
+fn get_command_source(confdir: PathBuf, x:&String) -> String {
+    let mut p = PathBuf::new();
+    p.push(confdir);
+    p.push("bin");
+    p.push(x);
+    return std::fs::read_to_string(p).unwrap();
 }
 
 fn main()  {
+
+    let clops = Args::parse();
+    if clops.completion {
+        generate(Bash, &mut Args::into_app(), "amkhlv-data", &mut stdout());
+    }   
+    let confdirm : Option<String> = clops.confdir.map(String::from);    
+    let mut confdir = PathBuf::new();
+    if let Some(x) = confdirm {
+        confdir.push(Path::new(&x));
+    } else {
+        confdir.push(Path::new(&home_dir().unwrap()));
+        confdir.push(".config/amkhlv/things");
+    };
+    let yaml = Path::join(confdir.as_path(), "things.yaml");
+    let css = Path::join(confdir.as_path(), "style.css");
+
+    
 
     let application = Application::new(
         Some("com.andreimikhailov.things"),
@@ -100,8 +146,9 @@ fn main()  {
         ).expect("failed to initialize GTK application");
 
 
-    application.connect_activate(|app| {
-        let o_str = std::fs::read_to_string(Path::join(Path::new(&home_dir().unwrap()), ".config/amkhlv/things/things.yaml")).unwrap();
+    application.connect_activate(move |app| {
+        //let o_str = std::fs::read_to_string(Path::join(Path::new(&home_dir().unwrap()), ".config/amkhlv/things/things.yaml")).unwrap();
+        let o_str = std::fs::read_to_string(yaml.clone()).unwrap();
         let tophash = {
             let vyaml = YamlLoader::load_from_str(&o_str).unwrap();
             let mut hm: HashMap<String, Vec<HashMap<String,String>>> = HashMap::new();
@@ -139,7 +186,6 @@ fn main()  {
             hm
         };
 
-        let css = Path::join(Path::new(&home_dir().unwrap()), ".config/amkhlv/things/style.css");
         let provider = gtk::CssProvider::new();
         match css.to_str() {
             Some(x) => { 
@@ -189,9 +235,10 @@ fn main()  {
                 &charhints.insert(i+97,cmd.to_owned());
                 let c = Rc::new(Command::new(Rc::new(cmd.to_owned())));
                 let c1 = c.clone();
+                let confdir1 = confdir.clone();
                 button.connect_clicked(clone!(@weak app => move |_| {
                     println!("Running: {}",&c1.data);
-                    run_command(&c1.data);
+                    run_command(confdir1.clone(), &c1.data);
                     app.quit();
                 }));
                 let label = gtk::Label::new(
@@ -202,7 +249,7 @@ fn main()  {
                 label.get_style_context().add_class("things-item-label");
                 button.add(&label);
                 button.get_style_context().add_class("things-item-button");
-                button.set_tooltip_text(Some(&get_command_source(&c.data)));
+                button.set_tooltip_text(Some(&get_command_source(confdir.clone(),&c.data)));
                 hbox.add(&image);
                 hbox.add(&charlabel);
                 hbox.add(&button);
@@ -214,6 +261,7 @@ fn main()  {
         println!("{:?}", charhints);
         let hints = Rc::new(Charhints::new(Rc::new(charhints)));
         let hints1 = hints.clone();
+        let confdir1 = confdir.clone();
         window.connect_key_press_event(clone!(@weak app => @default-return Inhibit(false), move |_w,e| {
             let keyval = e.get_keyval(); 
             let keystate = e.get_state();
@@ -229,7 +277,7 @@ fn main()  {
                 Ok(aa) => {
                     if let Some(s) = &hints1.data.get(&aa) {
                         println!("Running: {}",&s);
-                        run_command(s);
+                        run_command(confdir1.clone(),s);
                         app.quit();
                         return Inhibit(true);
                     } else {
