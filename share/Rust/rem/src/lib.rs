@@ -8,6 +8,8 @@ use std::io::BufReader;
 use rustls::{PrivateKey,Certificate};
 use rustls_pemfile::{Item,read_one};
 use tokio_postgres_rustls::MakeRustlsConnect;
+use std::time::Duration;
+use tokio::time::timeout;
 
 use amkhlv::{get_psql_conf,PSQL};
 

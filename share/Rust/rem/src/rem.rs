@@ -1,7 +1,11 @@
 use cursive::views::{EditView,Dialog,LinearLayout,TextView,Button,Panel,PaddedView};
+use cursive::CbSink;
 use tokio_postgres::{Error,Row};
 use tokio::sync::mpsc;
 use futures::executor::block_on;
+use std::time::Duration;
+use tokio::time::{Timeout,timeout,error::Elapsed};
+use std::future::Future;
 
 use listserv::{wait,get_tls,get_db_conf};
 
@@ -22,6 +26,23 @@ enum DBComm {
     ConfirmDeleteItemFromList(String,String)
 }
 
+trait TimeoutPanic<T> {
+    fn check_timeout(self, s: &CbSink) -> T ;
+}
+
+impl<T> TimeoutPanic<T> for Result<T,Elapsed> {
+    fn check_timeout(self, s: &CbSink) -> T {
+        match self {
+            Err(_) => {
+                s.send(Box::new(move |s| { s.quit(); })).expect("unable to quit UI");        
+                panic!("TIMEOUT")
+            },
+            Ok(x) => x
+        }
+    }
+}
+fn patiently<T: Future>(f: T) -> Timeout<T> { timeout(Duration::from_secs(30), f) }
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let tls = get_tls().unwrap();
@@ -37,19 +58,21 @@ async fn main() -> Result<(), Error> {
     let mut siv = cursive::termion();
     let cb_sink = siv.cb_sink().clone();
 
+
     tokio::spawn(async move {
         let (client, cnctn) = tokio_postgres::connect(&confstring, tls).await.unwrap();
         tokio::spawn(async move {
-        if let Err(e) = cnctn.await {
-            eprintln!("connection error: {}", e);
-        }
+            if let Err(e) = cnctn.await {
+                eprintln!("connection error: {}", e);
+            }
         });
         tx_rows.send(vec![]).await.expect("could not send READY");
         loop {
             match rx_com.recv().await {
                 Some(DBComm::ShowToDos) => {
                     wait(&cb_sink, "SELECT-ing");
-                    let todos = client.query("select todo from todolist", &[]).await.expect("could not SELECT");
+                    let todos = patiently(client.query("select todo from todolist", &[]))
+                        .await.check_timeout(&cb_sink).expect("could not SELECT");
                     let tx2 = tx1.clone();
                     cb_sink.send(Box::new(move |s| {
                         let mut vbox = LinearLayout::vertical();
@@ -79,30 +102,32 @@ async fn main() -> Result<(), Error> {
                 Some(DBComm::InsertToDo(x)) => {
                     wait(&cb_sink, "INSERT-ing");
                     let tx2 = tx1.clone();
-                    client.execute("insert into todolist (todo) values ($1)", &[&x]).await.expect("could not INSERT");
+                    patiently(client.execute("insert into todolist (todo) values ($1)", &[&x]))
+                        .await.check_timeout(&cb_sink).expect("could not INSERT");
                     tx2.send(DBComm::ShowToDos).await.expect("could not send SELECT when inserting");
                 }
                 Some(DBComm::NewList(name)) => {
                     wait(&cb_sink, "INSERT-ing");
                     let tx2 = tx1.clone();
-                    client.execute("insert into lists (title, items) values ($1, '{}'::text[])", &[&name]).await.expect("failed to create new list");    
+                    patiently(client.execute("insert into lists (title, items) values ($1, '{}'::text[])", &[&name]))
+                        .await.check_timeout(&cb_sink).expect("failed to create new list");    
                     tx2.send(DBComm::ShowList(name)).await.expect("could not send SELECT when inserting");
                 }
                 Some(DBComm::InsertItemIntoList(itm,lst)) => {
                     wait(&cb_sink, "INSERT-ing");
-                    client.execute(
+                    patiently(client.execute(
                         "update lists set items = array_append(items,$1) where title = $2", 
                         &[&itm, &lst]
-                    ).await.expect("failed to add an item");    
+                    )).await.check_timeout(&cb_sink).expect("failed to add an item");    
                     let tx2 = tx1.clone();
                     tx2.send(DBComm::ShowList(lst)).await.expect("could not send SELECT when inserting");
                 }
                 Some(DBComm::DeleteItemFromList(itm,lst)) => {
                     wait(&cb_sink, "DELETE-ing");
-                    client.execute(
+                    patiently(client.execute(
                         "update lists set items = array_remove(items,$1) where title = $2", 
                         &[&itm,&lst]
-                    ).await.expect("failed to delete item from list");
+                    )).await.check_timeout(&cb_sink).expect("failed to delete item from list");
                     let tx2 = tx1.clone();
                     tx2.send(DBComm::ShowList(lst)).await.expect("could not send ShowList when deleting");
                 }
@@ -125,10 +150,10 @@ async fn main() -> Result<(), Error> {
                 }
                 Some(DBComm::DeleteList(name)) => {
                     wait(&cb_sink, "DELETE-ing");
-                    client.execute(
+                    patiently(client.execute(
                         "delete from lists where title = $1", 
                         &[&name]
-                    ).await.expect("failed to delete");
+                    )).await.check_timeout(&cb_sink).expect("failed to delete");
                     tx1.send(DBComm::ShowLists).await.expect("error sending ShowLists");
                 }
                 Some(DBComm::ConfirmDeleteList(name)) => {
@@ -170,13 +195,15 @@ async fn main() -> Result<(), Error> {
                 Some(DBComm::DeleteToDo(x)) => {
                     wait(&cb_sink, "DELETE-ing");
                     let tx2 = tx1.clone();
-                    client.execute("delete from todolist where todo = $1", &[&x]).await.expect("could not DELETE");
+                    patiently(client.execute("delete from todolist where todo = $1", &[&x]))
+                        .await.check_timeout(&cb_sink).expect("could not DELETE");
                     tx2.send(DBComm::ShowToDos).await
                     .expect("error sending ShowToDos via sink");
                 }
                 Some(DBComm::ShowLists) => {
                     wait(&cb_sink, "SELECT-ing");
-                    let rows = client.query("select * from lists", &[]).await.expect("could not SELECT");
+                    let rows = patiently(client.query("select * from lists", &[]))
+                        .await.check_timeout(&cb_sink).expect("could not SELECT");
                     let tx2 = tx1.clone();
                     let txnl = tx1.clone();
                     cb_sink.send(Box::new(move |s| {
@@ -211,7 +238,8 @@ async fn main() -> Result<(), Error> {
                 }
                 Some(DBComm::ShowList(listname)) => {
                     wait(&cb_sink, "SELECT-ing");
-                    let lsts = client.query("select * from lists where title = $1", &[&listname]).await.expect("could not SELECT");
+                    let lsts = patiently(client.query("select * from lists where title = $1", &[&listname]))
+                        .await.check_timeout(&cb_sink).expect("could not SELECT");
                     let tx2 = tx1.clone();
                     let tx3 = tx1.clone();
                     cb_sink.send(Box::new(move |s| {

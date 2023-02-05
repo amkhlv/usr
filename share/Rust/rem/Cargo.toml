@@ -16,7 +16,7 @@ name = "listserv"
 utils = { path = "../utils" }
 dirs = "1.0.5"
 serde = "1.0.132"
-serde_dhall = "0.11.0"
+serde_dhall = "0.12.1"
 openssl = "0.10.42"
 rustls = "0.20.7"
 rustls-pemfile = "1.0.1"
