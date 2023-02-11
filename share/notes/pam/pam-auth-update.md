@@ -18,4 +18,12 @@ is supposed to replace the default `pam_script`. Then we do:
     rm pam_script
     pam-auth-update
 
+Should be like this:
+
+    [*] amkhlv customized support for authentication by external scripts
+    [ ] Support for authentication by external scripts
+    [ ] Unix authentication
+    [*] Register user sessions in the systemd control group hierarchy
+    [ ] Create home directory on login
+
 Now go to `/etc/pam.d` and check.

@@ -7,7 +7,6 @@ use mail_parser::*;
 use tokio_postgres::{Client, NoTls};
 use postgres_types::{ToSql, FromSql};
 use std::borrow::Cow;
-use dirs::home_dir;
 use glob::glob;
 use regex::Regex;
 use chrono::naive::NaiveDate;
@@ -53,6 +52,8 @@ struct Args {
 
     /// dates interval, eg 2020-01-20,2020-02-27 
     /// separator ∈ [':' ',' '.'], date could be 20200120 or 2020-01 or 202001
+    /// "2020-01-01:" means since 2020-01-01 till now, ":2020-01-01" means from 1970-01-01 till
+    /// 2020-01-01
     #[clap(short, long, value_name="DATED")]
     dated: Option<String>,
 
@@ -79,6 +80,14 @@ struct Args {
     /// MIME types 
     #[clap(short, long, value_name="MIME")]
     mime: Option<String>,
+
+    /// print message text
+    #[clap(long)]
+    text: bool,
+
+    /// print message HTML
+    #[clap(long)]
+    html: bool,
 
     /// save to default search folder 
     #[clap(long)]
@@ -291,6 +300,14 @@ fn parse_date(x: &str, latest: bool) -> String {
     let re_yyyy_mm = Regex::new(r"^(?P<y>\d{4})-(?P<m>\d{2})$").unwrap();
     let ymd_caps = re_yyyy_mm_dd.captures(x).or(re_yyyymmdd.captures(x));
     let ym_caps = re_yyyy_mm.captures(x).or(re_yyyymm.captures(x));
+    if ymd_caps.is_none() && ym_caps.is_none() {
+        if latest {
+            let now = chrono::offset::Local::now() + Days::new(1);
+            return format!("{}", now.format("%Y-%m-%d"));
+        } else {
+            return "1970-01-01".to_owned();
+        }
+    }
     if let Some(caps) = ymd_caps {
         return format!("{}-{}-{}", caps.name("y").unwrap().as_str(), caps.name("m").unwrap().as_str(), caps.name("d").unwrap().as_str());
     }
@@ -352,7 +369,7 @@ fn search_terms(terms: SearchTerms) -> (String, Vec<String>) {
     };
     if let Some(subj) = terms.subject {
         j = j + 1;
-        let y = format!(" subjmatch(s, ${}) ", j);
+        let y = format!(" to_tsvector(s) @@ to_tsquery(${}) ", j);
         ps.push(subj.clone());
         let prevqs = if qs.len() > 0 { format!("{} and ", qs) } else { "".to_owned() };
         qs = format!("{} {}", prevqs, y);
@@ -470,6 +487,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // if !(clops.json || clops.path) {
                 //     println!("Path: {}",path.to_string_lossy());
                 // }
+                if clops.text {
+                    let rawmsg = fs::read(&path).unwrap();
+                    let msg = Message::parse(&rawmsg).ok_or("unable to parse message")?;
+                    for bi in msg.text_body {
+                        let body = &msg.parts[bi];
+                        body.text_contents().map(|txt| { println!("{}",txt); });
+                    }
+                }
+                if clops.html {
+                    let rawmsg = fs::read(&path).unwrap();
+                    let msg = Message::parse(&rawmsg).ok_or("unable to parse message")?;
+                    let mut htmls = msg.html_body;
+                    if htmls.is_empty() { htmls = msg.text_body; }
+                    for bi in htmls {
+                        let body = &msg.parts[bi];
+                        body.text_contents().map(|txt| { println!("{}",txt); });
+                    }
+                }
                 if clops.path { println!("{}",path.to_string_lossy()); }
                 if clops.save {
                         let mut save_path = PathBuf::new();

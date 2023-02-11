@@ -21,3 +21,8 @@ xmodmap -e "keysym Num_Lock = Num_Lock Pointer_EnableKeys"
 
 
 export PATH="$HOME/.cargo/bin:$PATH"
+
+# >>> JVM installed by coursier >>>
+export JAVA_HOME="/home/andrei/.cache/coursier/jvm/adopt@1.8.0-292"
+export PATH="$PATH:/home/andrei/.cache/coursier/jvm/adopt@1.8.0-292/bin"
+# <<< JVM installed by coursier <<<

@@ -3,10 +3,10 @@ Preparation
 
 <span style="color:red;font-weight:bold;">Remove lpr and install cups-bsd as follows:</span>
 
+
+    aptitude install cups
     aptitude remove lpr
     aptitude install cups-bsd
-
-(because otherwize the commans `lpr` will not work)
 
 Perhaps I also might need:
 
@@ -53,7 +53,6 @@ Remove printer
     lpadmin -x myprintername
 
 
-
 DEPRECATED
 ==========
 
@@ -73,7 +72,7 @@ Suppose that `lpinfo` gave us:
 
 We then say:
 
-    lpadmin -p myprintername -v lpd://172.16.10.13/queue -m drv:///hpcups.drv/hp-laserjet_p4515n.ppd -L IFT-3rd-floor -E
+    lpadmin -p myprintername -v lpd://172.16.10.130/queue -m drv:///hpcups.drv/hp-laserjet_p4515n.ppd -L IFT-3rd-floor -E
 
 Jet Printer
 -----------

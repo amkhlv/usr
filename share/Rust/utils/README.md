@@ -15,5 +15,3 @@ psql
 ----
 
     amkhlv-psql -b mini -c '\t' -c '\pset format unaligned' -c 'select * from mylist'
-
-

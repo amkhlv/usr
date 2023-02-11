@@ -78,3 +78,15 @@ In terms of `xfconf` :
     xfconf-query -c accessibility -p /BounceKeys -s true
     xfconf-query -c accessibility -p /BounceKeys/Delay -s 30
 
+Configuring the Compose key in any layout
+=========================================
+
+Choosing the compose key
+------------------------
+
+`setxkbmap  -layout us  -variant altgr-intl  -option nodeadkey  -option compose:paus`
+
+X client mappings for multi-key input sequences
+-----------------------------------------------
+
+`cp /usr/share/X11/locale/en_US.UTF-8/Compose ~/.XCompose`

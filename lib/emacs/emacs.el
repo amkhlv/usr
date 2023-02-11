@@ -20,7 +20,7 @@ There are two things you can do about this warning:
 1. Install an Emacs version that does support SSL and be safe.
 2. Remove this warning from your init file so you won't see it again."))
   (add-to-list 'package-archives
-               (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/"))
+               (cons "melpa" (concat proto "://melpa.org/packages/"))
                ;;'("melpa-stable" . "https://stable.melpa.org/packages/")
                t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
@@ -32,7 +32,6 @@ There are two things you can do about this warning:
 (add-to-list 'load-path "~/usr/lib/emacs/elisp/")
 ;(add-to-list 'load-path "~/usr/lib/emacs/elisp/auctex-12.1/")
 (add-to-list 'load-path "~/a/git/yasnippet/")
-(add-to-list 'load-path "~/a/git/rust-mode/")
 ;; needed for racket-mode:
 ;;(add-to-list 'load-path "~/melpa/s.el/")
 ;;(add-to-list 'load-path "~/melpa/faceup/")
@@ -63,26 +62,33 @@ There are two things you can do about this warning:
 (require 'bystroTeX-preview)
 
 (require 'use-package)
+;; dhall-mode highlight the syntax and run dhall format on save
+
+(use-package nix-mode
+  :mode "\\.nix\\'")
+
+(use-package dhall-mode
+  :ensure t
+  :config
+  (setq
+    ;; uncomment the next line to disable automatic format
+    ;; dhall-format-at-save nil
+
+    ;; comment the next line to use unicode syntax
+    dhall-format-arguments (\` ("--ascii"))
+
+    ;; header-line is obsoleted by lsp-mode
+    dhall-use-header-line nil))
+
+;; lsp-mode provides the lsp client and it configure flymake to explain errors
+(use-package lsp-mode
+  :ensure t
+  :init (setq lsp-keymap-prefix "C-c l")
+  :hook ((dhall-mode . lsp))
+  :commands lsp)
 (use-package flycheck
   :ensure t
   :init (global-flycheck-mode))
-(use-package lsp-mode
-  :ensure t
-  :hook  (haskell-mode . lsp)
-  :commands lsp
-  :config (setq lsp-prefer-flymake nil)
-  )
-;(use-package haskell-mode :mode "\\.hs$")
-(use-package lsp-ui
-  :ensure t
-  :commands lsp-ui-mode)
-(use-package lsp-haskell
-  :ensure t
-  :config
- (setq lsp-haskell-server-path "haskell-language-server-wrapper")
- (setq lsp-haskell-server-args ())
-   ;; Comment/uncomment this line to see interactions between lsp client/server.
-  (setq lsp-log-io t))
 
 
 ;; Set window title:
@@ -115,12 +121,6 @@ There are two things you can do about this warning:
    (setq sbt:program-options '("-Dsbt.supershell=false"))
 )
 ;; Enable nice rendering of diagnostics like compile errors.
-(use-package company-lsp)
-(use-package lsp-treemacs
-  :config
-  (lsp-metals-treeview-enable t)
-  (setq lsp-metals-treeview-show-when-views-received t)
-  )
 
 
 ;;------------- AUCTeX -----------------
@@ -210,9 +210,9 @@ There are two things you can do about this warning:
   :group 'hi-lock-faces)
 
 (defmacro add-outline (hookname) 
-  `(add-hook ,hookname '(lambda () (outline-minor-mode 1)
-                          (local-set-key (kbd "C-c C-t") 'hide-body)
-                          (local-set-key (kbd "C-c C-a") 'show-all)
+  `(add-hook ,hookname #'(lambda () (outline-minor-mode 1)
+                          (local-set-key (kbd "C-c C-t") 'outline-hide-body)
+                          (local-set-key (kbd "C-c C-a") 'outline-show-all)
                           (local-set-key (kbd "C-c p") 'outline-previous-heading)
                           (local-set-key (kbd "C-c n") 'outline-next-heading)
                           )))
@@ -226,41 +226,41 @@ There are two things you can do about this warning:
           (lambda ()
             (local-set-key (kbd "<s-mouse-2>") (quote xsel))))
 
-(add-hook 'python-mode-hook '(lambda () (setq python-indent 4)))
+(add-hook 'python-mode-hook #'(lambda () (setq python-indent 4)))
 
-(add-hook 'TeX-mode-hook '(lambda () (TeX-PDF-mode 1)))
-(add-hook 'TeX-mode-hook '(lambda () (TeX-fold-mode 1)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c C-t") 'hide-body)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c C-a") 'show-all)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c n") 'outline-next-heading)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c p") 'outline-previous-heading)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c d") 'tex-insert-date)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c j") 'amkhlv/jumplabel)))
-(add-hook 'TeX-mode-hook '(lambda () (local-set-key (kbd "C-c u") 'mytex/jumphref)))
+(add-hook 'TeX-mode-hook #'(lambda () (TeX-PDF-mode 1)))
+(add-hook 'TeX-mode-hook #'(lambda () (TeX-fold-mode 1)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c C-t") 'hide-body)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c C-a") 'show-all)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c n") 'outline-next-heading)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c p") 'outline-previous-heading)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c d") 'tex-insert-date)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c j") 'amkhlv/jumplabel)))
+(add-hook 'TeX-mode-hook #'(lambda () (local-set-key (kbd "C-c u") 'mytex/jumphref)))
 (setq TeX-outline-extra '(("\\\\section" 2)))
 (add-hook 'message-mode-hook 'mail-abbrevs-setup)
-(add-hook 'pod-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'mypod-compile)))
-(add-hook 'pod-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'mypod-view)))
+(add-hook 'pod-mode-hook #'(lambda () (local-set-key (kbd "C-c C-c") 'mypod-compile)))
+(add-hook 'pod-mode-hook #'(lambda () (local-set-key (kbd "C-c C-v") 'mypod-view)))
 (add-outline 'pod-mode-hook)
-(add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
-(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
-(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
-(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-tab>") 'bystroTeX-toggle-preview-and-recenter)))
-(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "<C-M-tab>") 'bystroTeX-reveal)))
-(add-hook 'racket-mode-hook '(lambda () (local-set-key (kbd "C-`") 'bystroTeX-unindent)))
-(add-hook 'racket-mode-hook '(lambda () (highlight-regexp "TODO" 'hi-amkhlv-todo)))
+(add-hook 'scribble-mode-hook #'(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
+(add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "C-c C-c") 'amkhlv/scribble/compile)))
+(add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "C-c C-v") 'amkhlv/scribble/view)))
+(add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "<C-tab>") 'bystroTeX-toggle-preview-and-recenter)))
+(add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "<C-M-tab>") 'bystroTeX-reveal)))
+(add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "C-`") 'bystroTeX-unindent)))
+(add-hook 'racket-mode-hook #'(lambda () (highlight-regexp "TODO" 'hi-amkhlv-todo)))
 (defun mylambda () (interactive) (ucs-insert #x3bb))
-(add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
+(add-hook 'scribble-mode-hook #'(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)
-(add-hook 'scribble-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide\\|@page\\|@subpage")))
+(add-hook 'scribble-mode-hook #'(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide\\|@page\\|@subpage")))
 (add-outline 'racket-mode-hook)
-(add-hook 'racket-mode-hook '(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide\\|@page\\|@subpage")))
+(add-hook 'racket-mode-hook #'(lambda () (setq outline-regexp "@section\\|@subsection\\|@subsubsection\\|@slide\\|@page\\|@subpage")))
 (defface scribble-slide-face
   '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.3)))
   "Basic face for highlighting the scribble slide title.")
 (add-hook 'scribble-mode-hook
-          '(lambda ()
+          #'(lambda ()
              (font-lock-add-keywords 'scribble-mode
                                      '(("@page\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
                                        ("@page\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
@@ -280,7 +280,7 @@ There are two things you can do about this warning:
   '((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold )))
   "Basic face for highlighting the scribble subsection title.")
 (add-hook 'racket-mode-hook
-          '(lambda ()
+          #'(lambda ()
              (font-lock-add-keywords 'racket-mode
                                      '(("@page\\[\"\\(.*?\\)\".*\\]" 1 'scribble-slide-face prepend)
                                        ("@page\\[@elem{\\(.*?\\)}.*\\]" 1 'scribble-slide-face prepend)
@@ -300,14 +300,14 @@ There are two things you can do about this warning:
                                        ("@subpage\\[3\s-*\"\\(.*?\\)\".*\\]"    1 'scribble-subsubsection-face prepend)
                                        ("@subpage\\[3\s-*@elem{\\(.*?\\)}.*\\]" 1 'scribble-subsubsection-face prepend)
                                        ))))
-(add-hook 'scribble-mode-hook '(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
+(add-hook 'scribble-mode-hook #'(lambda () (local-set-key (kbd "C-c m") 'maximize-tex-window)))
 
-(add-hook 'buffer-menu-mode-hook '(lambda () 
+(add-hook 'buffer-menu-mode-hook #'(lambda () 
                                     (highlight-regexp ".*[^_]\.tex" 'hi-green-b) 
                                     (highlight-regexp ".*\.scrbl" 'hi-pink)
                                     ))
 
-(add-hook 'markdown-mode-hook '(lambda () 
+(add-hook 'markdown-mode-hook #'(lambda () 
                                  (local-set-key (kbd "C-c C-c") 'markdown-to-html)
                                  (local-set-key (kbd "C-c C-v") 'markdown-view-html)))
 
@@ -345,44 +345,16 @@ There are two things you can do about this warning:
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-enabled-themes (quote (deeper-blue)))
- '(initial-buffer-choice t)
+ '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   (quote
-    (color-theme lsp-treemacs company-lsp yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode lsp-ui lsp-haskell flycheck))))
+   '(lsp-haskell nix-mode dhall-mode yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode lsp-ui lsp-treemacs flycheck)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(TeX-fold-folded-face ((((class color) (background dark)) (:foreground "green"))))
- '(diary ((((min-colors 88) (class color) (background dark)) (:foreground "chocolate1"))))
- '(diff-added ((t (:inherit diff-changed :foreground "goldenrod"))))
- '(diff-removed ((t (:inherit diff-changed :foreground "SteelBlue2"))))
- '(fixed-pitch ((t (:height 0.9 :family "monospace"))))
- '(font-latex-bold-face ((((class color) (background dark)) (:inherit bold :foreground "Orange"))))
- '(font-latex-italic-face ((((class color) (background dark)) (:inherit italic :foreground "Orange"))))
- '(font-latex-sectioning-2-face ((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "gold1" :weight bold :height 1.1))))
- '(font-latex-sectioning-3-face ((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "khaki2" :weight bold :height 1.0))))
- '(font-latex-sectioning-4-face ((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "lightgreen" :weight bold :height 0.9))))
- '(font-latex-sectioning-5-face ((((class color) (background dark)) (:inherit variable-pitch :family "Terminus" :foreground "NavajoWhite1" :weight bold :height 0.8))))
- '(font-latex-verbatim-face ((((class color) (background dark)) (:inherit fixed-pitch :foreground "burlywood" :height 0.9))))
- '(font-lock-doc-string-face ((t (:foreground "chartreuse1"))))
- '(font-lock-string-face ((t (:foreground "LightGoldenrod2"))))
- '(fricas-algebra ((t (:background "gainsboro" :foreground "black"))))
- '(fricas-message ((t (:foreground "light salmon"))))
- '(fricas-undefined ((t (:background "light grey" :foreground "blue"))))
- '(markdown-pre-face ((t (:inherit font-lock-constant-face))))
- '(markdown-inline-code-face ((t (:inherit font-lock-constant-face))))
- '(pod-mode-command-text-face ((((class color) (min-colors 88) (background dark)) (:foreground "chocolate1"))))
- '(pod-mode-head2-face ((t (:inherit pod-mode-head-face :height 1.3))))
- '(pod-mode-head2-text-face ((t (:inherit pod-mode-command-text-face :height 1.3))))
- '(pod-mode-head3-face ((t (:inherit pod-mode-head-face :height 1.1))))
- '(pod-mode-head3-text-face ((t (:inherit pod-mode-command-text-face :height 1.1))))
- '(pod-mode-head4-face ((t (:inherit pod-mode-head-face :height 1.0))))
- '(pod-mode-head4-text-face ((t (:inherit pod-mode-command-text-face :height 1.0))))
- '(scribble-link-text-face ((t (:foreground "lightblue" :underline t)))))
+ )
 
 (set-face-attribute 'font-lock-comment-face nil :background nil :foreground "dark orange")
 
@@ -397,7 +369,6 @@ There are two things you can do about this warning:
          ("\\.md\\'" . markdown-mode)
          ("\\.rnc\\'" . rnc-mode)
          ("\\.pdq\\'" . nxml-mode)
-         ("\\.rs\\'" . rust-mode)
          ("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)
          )

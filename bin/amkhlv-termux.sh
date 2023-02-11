@@ -1,7 +1,7 @@
 #!/bin/bash
 
-read TERMUX_IP < ~/.local/boi/termux
+eval $(cat ~/a/Dhall/system.dhall | dhall-to-bash --declare AMKHLV)
 
-ssh   -p 8022   -i ~/a/keys/for-android_rsa   "$TERMUX_IP"  "$1"
+ssh   -p 8022   -i ~/a/keys/for-android_rsa   "${AMKHLV[termux]}"  "$1"
 
 
