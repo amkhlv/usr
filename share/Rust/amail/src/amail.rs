@@ -57,29 +57,33 @@ struct Args {
     #[clap(short, long, value_name="DATED")]
     dated: Option<String>,
 
-    /// from 
+    /// from matches
     #[clap(short, long, value_name="FROM")]
     from: Option<String>,
 
-    /// to 
+    /// to matches
     #[clap(short, long, value_name="TO")]
     to: Option<String>,
 
-    /// subject 
+    /// subject matches
     #[clap(short, long, value_name="SUBJECT")]
     subject: Option<String>,
 
-    /// cc
+    /// cc matches
     #[clap(long, value_name="CC")]
     cc: Option<String>,
 
-    /// bcc
+    /// bcc matches
     #[clap(long, value_name="BCC")]
     bcc: Option<String>,
 
-    /// MIME types 
+    /// MIME types matches
     #[clap(short, long, value_name="MIME")]
     mime: Option<String>,
+
+    /// Regexp in body matches (slow)
+    #[clap(short, long, value_name="TEXT")]
+    body: Option<String>,
 
     /// print message text
     #[clap(long)]
@@ -369,7 +373,8 @@ fn search_terms(terms: SearchTerms) -> (String, Vec<String>) {
     };
     if let Some(subj) = terms.subject {
         j = j + 1;
-        let y = format!(" to_tsvector(s) @@ to_tsquery(${}) ", j);
+        let y = format!(" subjmatch(s, ${}) ", j);
+        //let y = format!(" to_tsvector(s) @@ to_tsquery(${}) ", j);
         ps.push(subj.clone());
         let prevqs = if qs.len() > 0 { format!("{} and ", qs) } else { "".to_owned() };
         qs = format!("{} {}", prevqs, y);
@@ -422,7 +427,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             subject : clopssubject, 
             mime_types : clopsmime.map(|x| { x.split(",").map(|y| y.to_owned()).collect() })
         });
-        if let Some(o) = clops.order_by { (format!("{} order by {}", q, o), p) } else { (q,p) }
+        if let Some(o) = clops.order_by { (format!("{} {} order by {}", 
+                                                   q, 
+                                                   if clops.json { "group by maildir,i,d,tw,cc,bcc,fw,s,p" } else { "" }, 
+                                                   o), 
+                                           p) } else { (q,p) }
     };
     if !(clops.json || clops.path) { println!("{:?}\n {:?}", quer, pmtrs); }
 
@@ -466,10 +475,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &format!("select maildir, i, CAST(d AS TEXT), tw, cc, bcc, fw, s, p from mail where {}",quer), 
                 &p[..] 
                 ).await?;
-        for r in q {
+        'rowiter: for r in q {
             let md = r.get::<usize,String>(0);
             let msgid = r.get::<usize,String>(1);
             let file = r.get::<usize,String>(8);
+            let mut no_body_match: bool = false;
+            let bdy = clops.body.clone();
+            let file1 = file.clone();
+            let path0 = glob(&format!("{}*",&file))
+                .map(|mut x| { 
+                    x.next().map(|r| { 
+                        let pth = r.expect(&format!("Glob error on {}, msgid {}", file1, msgid));
+                        if let Some(txt) = bdy {
+                            no_body_match = true;
+                            let rawmsg = fs::read(&pth).unwrap();
+                            let msg = Message::parse(&rawmsg).ok_or("unable to parse message").unwrap();
+                            let re = Regex::new(&txt).expect("could not parse Regex");
+                            for bi in msg.text_body { 
+                                msg.parts[bi].text_contents().map(|t| { 
+                                    if re.is_match(t) { no_body_match = false ; }
+                                });
+                            }
+                            for bi in msg.html_body {
+                                msg.parts[bi].text_contents().map(|t| { 
+                                    if re.is_match(t) { no_body_match = false ; }
+                                });
+                            }
+                        }
+                        pth
+                    }) 
+                });
+            if no_body_match { continue 'rowiter; }
             if !(clops.json || clops.path) {
                 println!("________________ {}", md);
                 println!("Date: {} rfc822msgid:{}",r.get::<usize,String>(2),msgid);
@@ -479,10 +515,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("From: {}",r.get::<usize,PGAddress>(6));
                 println!("Subj: {}",r.try_get::<usize,String>(7).unwrap_or("".to_owned()));
             }
-            let path0 = glob(&format!("{}*",&file))
-                .map(|mut x| { 
-                    x.next().map(|r| { r.expect(&format!("Glob error on path {:?} for msgid {}", file, msgid)) }) 
-                });
             if let Ok(Some(path)) = path0 {
                 // if !(clops.json || clops.path) {
                 //     println!("Path: {}",path.to_string_lossy());
