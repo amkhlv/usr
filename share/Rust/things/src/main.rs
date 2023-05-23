@@ -94,14 +94,14 @@ impl error::Error for NoVal {}
 struct Command { data: Rc<String> }
 impl Command {
     fn new(data: Rc<String>) -> Self {
-        Command { data: data }
+        Command { data }
     }
 }
 #[derive(Debug, Clone)]
 struct Charhints { data: Rc<HashMap<u8,String>> }
 impl Charhints {
     fn new(data: Rc<HashMap<u8,String>>) -> Self {
-        Charhints { data: data }
+        Charhints { data }
     }
 }
 

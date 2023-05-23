@@ -1,7 +1,7 @@
 use clap::{Parser,IntoApp};
 use std::process::Command;
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{PathBuf,Path};
 use clap_complete::{generate, shells::Bash};
 use std::{io,fs};
 use home::home_dir;
@@ -22,6 +22,10 @@ struct Args {
     /// SVG file name
     #[clap(short, long, value_name="new file name (without \".svg\")")]
     new: Option<String>,
+
+    /// Template
+    #[clap(short,long, value_name="template file")]
+    template: Option<String>,
 
     /// Staple to single PDF file (provide SVGs as arguments)
     #[clap(long,value_name="PDF_FILE")]
@@ -56,20 +60,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if clops.new.is_some() {
         let mut templates_dir = home_dir().unwrap();
         templates_dir.push(".config/inkscape/templates");
-        let templates = fs::read_dir(templates_dir).unwrap();
-        let mut hints = HashMap::new();
 
-        let mut i = 0;
-        for template in templates {
-            i = i + 1;
-            println!("{}. {}", i, template.as_ref().unwrap().path().file_name().unwrap().to_str().unwrap());
-            hints.insert(format!("{}",i),template.unwrap());
+        let template = if clops.template.is_none() {
+            let templates = fs::read_dir(templates_dir).unwrap();
+            let mut hints = HashMap::new();
+            let mut i = 0;
+            for template in templates {
+                i = i + 1;
+                println!("{}. {}", i, template.as_ref().unwrap().path().file_name().unwrap().to_str().unwrap());
+                hints.insert(format!("{}",i),template.unwrap());
+            };
+            let mut num_buf = String::new();
+            std::io::stdin().read_line(&mut num_buf).expect("should enter number");
+            println!("{:?}", hints.get(num_buf.trim()));
+            hints.get(num_buf.trim()).expect("index out of range").path()
+        } else {
+            let mut pb = PathBuf::new(); pb.push(&clops.template.unwrap()); pb
         };
-        let mut num_buf = String::new();
-        std::io::stdin().read_line(&mut num_buf).expect("should enter number");
-        println!("{:?}", hints.get(num_buf.trim()));
 
-        if let (Some(newfile), Some(template)) = (clops.new, hints.get(num_buf.trim())) {
+        if let Some(newfile) = clops.new {
             let xmltrans = Command::new("xmlstarlet")
                 .args([ "ed"
                       , "-N"
@@ -78,7 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                       , "//xmlns:svg/@sodipodi:docname"
                       , "-v"
                       , (newfile.clone() + ".svg").as_ref()
-                      , template.path().to_str().unwrap()
+                      , template.to_str().unwrap()
                 ])
                 .stdout(Stdio::from(File::create(newfile + ".svg").unwrap()))
                 .status();
