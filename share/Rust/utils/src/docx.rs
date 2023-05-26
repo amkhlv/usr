@@ -24,9 +24,13 @@ struct Args {
     #[clap(long)]
     completion: bool,    
 
+    /// List available addressess and signatures
+    #[clap(short,long)]
+    list: bool,
+
     /// Name of output file without .docx extension
-    #[clap(short)]
-    output: String,
+    #[clap(short,long)]
+    output: Option<String>,
 
     /// Title
     #[clap(long)]
@@ -116,7 +120,7 @@ fn dhall_to_paras(elts:&Vec<DhallElement>) -> Vec<Paragraph> {
                 para = Paragraph::new();
             }
             DhallElement::Img(image) => {
-                let mut img = std::fs::File::open(&image.path).unwrap();
+                let mut img = std::fs::File::open(&image.path).expect(&format!("image file {} not found", image.path));
                 let mut buf = Vec::new();
                 let _ = img.read_to_end(&mut buf).unwrap();
                 let pic = Pic::new(&buf);
@@ -138,15 +142,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(())
     }
 
-    let filename = format!("{}.docx",clops.output);
-    let path = std::path::Path::new(&filename);
-    let file = std::fs::File::create(&path).unwrap();
 
     let letters : DhallLetters = serde_dhall::from_file(std::path::Path::new(&home_dir().unwrap()).join("a/Dhall/letters.dhall")).parse().unwrap();
-    println!("{:?}",letters);
+    //println!("{:?}",letters);
+    if clops.list {
+        println!("Addresses:");
+        let addresses = &letters.addresses;
+        for a in addresses.keys() {
+            println!("- {}", a);
+        };
+        println!("\nSignatures:");
+        let signatures = &letters.signatures;
+        for s in signatures.keys() {
+            println!("- {}", s);
+        };
+        return Ok(());
+    }
 
-    let mut run = Run::new();
-    let lines = io::stdin().lines();
     let mut doc = Docx::new();
 
     if let Some(title) = clops.title { 
@@ -189,6 +201,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             doc = doc.add_paragraph(p);
     }
 
+    let filename = format!("{}.docx",clops.output.expect("missing --output"));
+    let path = std::path::Path::new(&filename);
+    let lines = io::stdin().lines();
+    let mut run = Run::new();
     for line in lines {
         run = run.add_text(line.unwrap()).size(clops.size);
     }
@@ -203,6 +219,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let file = std::fs::File::create(&path).unwrap();
     doc.build().pack(file)?;
     Ok(())
 }
