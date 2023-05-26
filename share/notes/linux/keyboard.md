@@ -89,4 +89,15 @@ Choosing the compose key
 X client mappings for multi-key input sequences
 -----------------------------------------------
 
-`cp /usr/share/X11/locale/en_US.UTF-8/Compose ~/.XCompose`
+Example of `~/.XCompose` :
+
+    include "%L"
+
+    <Multi_key> <g> <a> : "α"
+    <Multi_key> <g> <b> : "β"
+    <Multi_key> <g> <g> : "γ"
+    <Multi_key> <m> <i> <n> <t> : "∫"
+    <Multi_key> <underscore> <underscore> 	: "▁" U2581 # LOWER ONE EIGHTH BLOCK
+    <Multi_key> <bar> <bar> 	        : "║"  U2551 # BOX DRAWINGS DOUBLE VERTICAL
+
+(The first line `include "%L"` includes `/usr/share/X11/locale/en_US.UTF-8/Compose`)

@@ -42,3 +42,11 @@ First [Temporary point webroot to /var/www](#temporary-point-webroot-to-the-usua
 Then:
 
     certbot renew
+
+Troubleshooting
+===============
+
+There is an SSL test page on the Internet:
+
+[https://www.ssllabs.com/ssltest/analyze.html](https://www.ssllabs.com/ssltest/analyze.html)
+
