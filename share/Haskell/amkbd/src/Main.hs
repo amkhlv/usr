@@ -72,7 +72,8 @@ main :: IO ()
 main = do
   clops <- OA.execParser myOptParser
   s <- getContents  -- read text from stdin
-  kstbl <- readFile "/usr/local/lib/amkhlv/keysyms.txt"
+  home <- getHomeDirectory
+  kstbl <- readFile $ home ++ "/.local/lib/keysyms.txt"
   case (parse (keyTable Data.Map.empty) "" kstbl) of
     Left err  -> putStrLn $ "ERROR: " ++ show err
     Right m   -> do
