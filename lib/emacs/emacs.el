@@ -347,7 +347,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(lsp-haskell nix-mode dhall-mode yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode lsp-ui lsp-treemacs flycheck)))
+   '(sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

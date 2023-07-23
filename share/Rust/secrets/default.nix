@@ -5,7 +5,7 @@ rustPlatform.buildRustPackage rec {
   version = "1.0";
   src = builtins.path { path = ./.; name = "secrets"; };
 
-  cargoHash = "sha256-7coXOP/GObMLz5ZhEpRIT6tkOqCkTFvLWmLY7YuLV8Q=";
+  cargoHash = "sha256-rpQBAaTniVK4Wm2b4JVzgnuD3Eb8TzM80GQhkTUEoNg=";
   meta = with stdenv.lib; {
     description = "password  manager";
   };

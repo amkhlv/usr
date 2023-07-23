@@ -5,7 +5,7 @@ rustPlatform.buildRustPackage rec {
   version = "1.0";
   src = builtins.path { path = ./.; name = "things"; };
 
-  cargoHash = "sha256-Uv53DEySoL5vaUBYIinwcR1A3KXHGRGk/fJ1mM9h6yQ=";
+  cargoHash = "sha256-SqTXGvKxD8RSednN8RAoCpbc0JBkPh7J0lYp2A4iBcU=";
   meta = with stdenv.lib; {
     description = "launcher";
   };

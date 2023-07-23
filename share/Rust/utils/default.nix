@@ -5,7 +5,7 @@ rustPlatform.buildRustPackage rec {
   version = "1.0";
   src = builtins.path { path = ./.; name = "amkhlv-utils"; };
 
-  cargoHash = "sha256-QL0sa2oj/6SGt06pKd7eQg4LyJRUJU/9sl4Ns+MhJFI=";
+  cargoHash = "sha256-IqKuTzN2uT5e6xfYZ77OARx6IIObrVKz0h66uYNaXNg=";
   meta = with stdenv.lib; {
     description = "various utils";
   };
