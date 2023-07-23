@@ -41,77 +41,90 @@
     Mod4 + b 
 
 #kb-ru
-"/usr/bin/setxkbmap ru phonetic"
+"setxkbmap ru phonetic"
     m:0x40 + c:73
     Mod4 + F7 
 
 #kb-pt
-"/usr/bin/setxkbmap -model abnt2 -layout br -variant abnt2"
+"setxkbmap -model abnt2 -layout br -variant abnt2"
     m:0x40 + c:72
     Mod4 + F6 
 
 #kb-en
-"/usr/bin/setxkbmap -layout us -variant altgr-intl -option nodeadkeys"
+"setxkbmap -layout us -variant altgr-intl -option nodeadkey -option compose:caps"
     m:0x40 + c:74
     Mod4 + F8 
 
 #wmjump
-"/usr/bin/wmjump --rich"
+"winj >>/tmp/winterreise.log 2>&1"
     m:0x40 + c:45
     Mod4 + k 
 
 #wmjump-current
-"wmjump --rich --current"
+"winj -c >>/tmp/winterreise.log 2>&1"
     m:0x40 + c:44
     Mod4 + j 
-
-#td-pl
-"/home/andrei/bin/td.pl /home/andrei/a/list.txt"
-    m:0x41 + c:46
-    Shift+Mod4 + l 
 
 #paste
 "xte 'usleep 200000' 'mouseclick 2'"
     m:0x40 + c:29
     Mod4 + y 
 
-#gmrun
-"/home/andrei/usr/bin/amkhlv-gmrun.sh"
-    m:0x8 + c:68
-    Alt + F2 
-
-#mouse button 8
-"/home/andrei/usr/bin/amkhlv-mousebutton.sh 8"
-   b:8
-
-#mouse button 9
-"/home/andrei/usr/bin/amkhlv-mousebutton.sh 9"
-   b:9
-
 #insert-text
-"/usr/local/lib/amkhlv/xvkbd-trigger.sh"
+"sleep 0.5; echo go > /home/andrei/.amkhlv-keyboardpipe.fifo"
     m:0x40 + c:55
     Mod4 + v 
 
 #insert-text-clean
-"/usr/local/lib/amkhlv/xvkbd-cleaner.sh"
+"sleep 0.5; echo skip > /home/andrei/.amkhlv-keyboardpipe.fifo"
     m:0x41 + c:55
     Shift+Mod4 + v 
 
 #tile
-"uxterm -e wint"
+"wint"
     m:0x40 + c:28
     Mod4 + t 
 
-#open-scribblt
-"/usr/local/lib/amkhlv/open-scribble.sh"
+#bring-up-bother
+"echo show | socat - /home/andrei/.local/var/run/bother.sock"
     m:0x40 + c:39
     Mod4 + s 
 
 #my-xdg-open
-"/home/andrei/usr/bin/amkhlv_xdg-open.py"
+"gtk-line-entry -c /home/andrei/.config/amkhlv/line-input/xdg-open.yaml"
     m:0x40 + c:53
     Mod4 + x 
+
+#clipboard to primary
+"xsel -b | xsel -i"
+    m:0x40 + c:30
+    Mod4 + u 
+
+#invert
+"xcalib -i -a"
+    m:0x40 + c:31
+    Mod4 + i 
+
+#type xsel
+"sleep 0.2 ; xsel | amkbd"
+    m:0x40 + c:118
+    Mod4 + Insert 
+
+#things
+"bash -c things"
+    m:0x40 + c:68
+    Mod4 + F2 
+
+#data
+"amkhlv-data --dhall ~/a/Dhall/personal.dhall"
+    m:0x40 + c:40
+    Mod4 + d 
+
+#current-data
+"amkhlv-data --dhall ~/a/current.dhall"
+    m:0x40 + c:54
+    Mod4 + c 
+
 
 #
 # End of xbindkeys configuration
