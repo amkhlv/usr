@@ -16,7 +16,5 @@ dirs = "1.0.5"
 linked-hash-map = "0.5.3"
 clap = { version = "3.0.13", features = ["derive"] }
 clap_complete = "3.0.5"
+yaml-rust = "0.4"
 
-
-[dependencies.yaml-rust]
-git = "https://github.com/chyh1990/yaml-rust.git"

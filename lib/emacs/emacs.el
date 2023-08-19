@@ -347,7 +347,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
+   '(rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -413,4 +413,52 @@ There are two things you can do about this warning:
   )
 
 
+;; Eglot
+(use-package eglot
+  :ensure t
+  :config
+  :hook ((rust-mode nix-mode haskell-mode) . eglot-ensure)
+  :config
+  (setq-default eglot-workspace-configuration
+                '((haskell
+                   (plugin
+                    (stan
+                     (globalOn . :json-false))))))  ;; disable stan
+  (add-to-list 'eglot-server-programs
+	       `(rust-mode . ("rust-analyzer" :initializationOptions
+			      ( :procMacro (:enable t)
+					   :cargo ( :buildScripts (:enable t))))))
+  :custom
+  (eglot-autoshutdown t)  ;; shutdown language server after closing last file
+  (eglot-confirm-server-initiated-edits nil)  ;; allow edits without confirmation
+  )
 
+;;Golang
+
+(require 'go-mode)
+(add-hook 'go-mode-hook 'eglot-ensure)
+
+;; Optional: install eglot-format-buffer as a save hook.
+;; The depth of -10 places this before eglot's willSave notification,
+;; so that that notification reports the actual contents that will be saved.
+(defun eglot-format-buffer-on-save ()
+    (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
+(add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
+;;Haskell
+(require 'haskell-mode)
+;;Rust
+(require 'rust-mode)
+(add-hook 'rust-mode-hook 'eglot-ensure)
+
+(require 'project)
+
+(defun project-find-amkhlv-module (dir)
+    (if-let ((root (locate-dominating-file dir "go.mod")))
+	    (cons 'amkhlv-module root)
+      (when-let ((root (locate-dominating-file dir "Cargo.toml")))
+        (cons 'amkhlv-module root))))
+
+(cl-defmethod project-root ((project (head amkhlv-module)))
+  (cdr project))
+
+(add-hook 'project-find-functions #'project-find-amkhlv-module)
