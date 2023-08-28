@@ -12,7 +12,7 @@ use std::time::Duration;
 use tokio::time::{Timeout,timeout,error::Elapsed};
 use std::future::Future;
 use std::sync::Arc;
-
+use unix_named_pipe::create as create_pipe;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -145,6 +145,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let tx2 = tx1.clone();
                     let mut kbpipe = home::home_dir().expect("could not obtain home dir");
                     kbpipe.push(".amkhlv-keyboardpipe.fifo");
+                    std::fs::remove_file(kbpipe.clone()).expect(&format!("could not remove pipe >>>{:?}<<<",kbpipe));
+                    create_pipe(kbpipe.clone(),None).expect(&format!("could not create pipe >>>{:?}<<<",kbpipe));
                     let command = std::fs::read_to_string(kbpipe.as_path()).unwrap();
                     if command.trim() == "go" {
                         let amkbd = Command::new("amkbd").stdin(Stdio::piped()).spawn().expect("cannot run amkbd");
