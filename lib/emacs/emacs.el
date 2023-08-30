@@ -347,7 +347,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
+   '(purescript-mode lsp-metals rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -425,9 +425,11 @@ There are two things you can do about this warning:
                     (stan
                      (globalOn . :json-false))))))  ;; disable stan
   (add-to-list 'eglot-server-programs
-	       `(rust-mode . ("rust-analyzer" :initializationOptions
-			      ( :procMacro (:enable t)
-					   :cargo ( :buildScripts (:enable t))))))
+	           `(rust-mode . ("rust-analyzer" :initializationOptions
+			                  ( :procMacro (:enable t)
+					            :cargo ( :buildScripts (:enable t))))))
+  (add-to-list 'eglot-server-programs
+               '(purescript-mode  . ("purescript-language-server" "--stdio")))
   :custom
   (eglot-autoshutdown t)  ;; shutdown language server after closing last file
   (eglot-confirm-server-initiated-edits nil)  ;; allow edits without confirmation
@@ -450,13 +452,26 @@ There are two things you can do about this warning:
 (require 'rust-mode)
 (add-hook 'rust-mode-hook 'eglot-ensure)
 
+(require 'scala-mode)
+(add-hook 'scala-mode-hook 'eglot-ensure)
+
+(require 'purescript-mode)
+(add-hook 'purescript-mode-hook 'eglot-ensure)
+
+(require 'lsp-metals)
+
 (require 'project)
 
 (defun project-find-amkhlv-module (dir)
+  (if-let ((root (locate-dominating-file dir "Cargo.toml")))
+	  (cons 'amkhlv-module root)
     (if-let ((root (locate-dominating-file dir "go.mod")))
 	    (cons 'amkhlv-module root)
-      (when-let ((root (locate-dominating-file dir "Cargo.toml")))
-        (cons 'amkhlv-module root))))
+      (if-let ((root (locate-dominating-file dir "stack.yaml")))
+	      (cons 'amkhlv-module root)
+        (when-let ((root (locate-dominating-file dir "build.sbt")))
+	      (cons 'amkhlv-module root))
+        ))))
 
 (cl-defmethod project-root ((project (head amkhlv-module)))
   (cdr project))
