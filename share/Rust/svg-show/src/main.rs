@@ -10,28 +10,9 @@ use std::thread;
 use clap::{Parser,IntoApp};
 use gdk_pixbuf;
 use notify::{Watcher, RecommendedWatcher, RecursiveMode, Result, Event, event::{EventKind,AccessKind,AccessMode}};
+use mime_guess;
 
-const APP_ID: &str = "com.andreimikhailov.steamer";
-
-const ON: char = 'A';
-const OFF: char = 'B';
-
-#[derive(Clone,Copy)]
-struct CurrentRunSeries {
-    steaming: u16,
-    resting: u16,
-    n: u16
-}
-
-enum CurrentRun {
-    Steaming(u16),
-    Resting(u16)
-}
-
-enum State {
-    Running(u16, CurrentRunSeries, CurrentRun),
-    Idling
-}
+const APP_ID: &str = "com.andreimikhailov.svg-show";
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -80,12 +61,18 @@ fn main() -> glib::ExitCode {
     let mut watcher = notify::recommended_watcher(move |res:Result<Event>| {
         match res {
             Ok(event) => {
-                println!("detected: {:?}",event);
                 match event.kind {
                     EventKind::Access(AccessKind::Close(AccessMode::Write)) => {
                         let mut s = situation1.lock().unwrap();
-                        s.count += 1;
-                        s.path = Some(event.paths[0].clone());
+                        let p = event.paths[0].clone();
+                        let mime = mime_guess::from_path(&p).first_or_octet_stream();
+                        if mime.type_() == mime::IMAGE {
+                            s.path = Some(event.paths[0].clone());
+                            s.count += 1;
+                        } else {
+                            println!("--- MIME type = >>>{}<<<", mime.type_());
+                        }
+
                     },
                     _ => {}
                 }
@@ -94,12 +81,7 @@ fn main() -> glib::ExitCode {
         }
     }).unwrap();
     if let Some(dir) = maybe_dir {
-        println!("ABOUT TO START WATCHER");
-
-        println!("watching {}, watcher={:?}", dir, watcher);
         watcher.watch(Path::new(&dir), RecursiveMode::Recursive).unwrap();
-        println!("--- exited watcher.watch ---");
-
     }
 
     // Run the application
@@ -139,7 +121,7 @@ fn build_ui(app: &Application, clops: &Args, counter: Arc<Mutex<Situation>>) {
         std::time::Duration::from_millis(250), 
         move || {
             let s = counter1.lock().unwrap();
-            println!("counter is {}, update_counter is {}", s.count, update_counter1.borrow());
+            //println!("counter is {}, update_counter is {}", s.count, update_counter1.borrow());
             let i = update_counter1.replace(
                 s.count
             );

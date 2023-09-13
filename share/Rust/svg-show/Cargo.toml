@@ -13,3 +13,5 @@ clap = { version = "3.0.13", features = ["derive"] }
 home = "0.5.5"
 gdk-pixbuf = "0.18.0"
 notify = "6.1.1"
+mime_guess = "2.0.4"
+mime = "0.3.17"
