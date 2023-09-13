@@ -37,6 +37,7 @@ def prepare_pipeline(xs):
         else:
             pipeline.add(xs[i])
     for n in range(1, len(xs)):
+        print("linking " + str(n - 1) + " to " + str(n))
         xs[n-1].link(xs[n])
 
 if __name__ == '__main__' :

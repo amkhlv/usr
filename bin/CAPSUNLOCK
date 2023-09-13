@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from ctypes import *
 X11 = cdll.LoadLibrary("libX11.so.6")

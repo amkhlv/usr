@@ -6,6 +6,8 @@ use std::cell::RefCell;
 use std::io::Write;
 use serialport::{TTYPort, SerialPort, SerialPortBuilder};
 use clap::{Parser,IntoApp};
+use std::thread::sleep;
+use std::time::Duration;
 
 const APP_ID: &str = "com.andreimikhailov.steamer";
 
@@ -49,7 +51,13 @@ fn main() -> glib::ExitCode {
 
     let clops = Args::parse();
     // Connect to "activate" signal of `app`
-    let port = serialport::new(clops.device, 9600).timeout(std::time::Duration::from_millis(1000)).open_native().expect("failed to open TTY");
+    let mut port = serialport::new(clops.device, 9600).timeout(Duration::from_millis(1000)).open_native().expect("failed to open TTY");
+    sleep(Duration::from_millis(750));
+    port.write_all(&[ON as u8]).expect("could not write to port");
+    port.flush().expect("could not flush");
+    sleep(Duration::from_millis(750));
+    port.write_all(&[OFF as u8]).expect("could not write to port");
+    port.flush().expect("could not flush");
     let port0 = Rc::new(RefCell::new(port));
     let port1 = port0.clone();
     let port2 = port0.clone();
@@ -92,6 +100,7 @@ fn build_ui(app: &Application, port: Rc<RefCell<TTYPort>>) {
         .margin_start(12)
         .margin_end(12)
         .build();
+    button.set_css_classes(&["steam-down"]);
     let runs_label = Label::new(Some("remaining runs: --"));
     let timer_label = Label::new(Some("idle"));
 
@@ -138,6 +147,7 @@ fn build_ui(app: &Application, port: Rc<RefCell<TTYPort>>) {
         state.replace_with(move | st | { match st {
             State::Running(x, crs, cr) => {
                 button.set_label("run");
+                button.set_css_classes(&["steam-down"]);
                 rl.borrow_mut().set_text(" -- ");
                 tl.borrow_mut().set_text(" -- ");
                 port2.borrow_mut().write_all(&[OFF as u8]).expect("could not write to port");
@@ -146,6 +156,7 @@ fn build_ui(app: &Application, port: Rc<RefCell<TTYPort>>) {
             }
             State::Idling => {
                 button.set_label("stop");
+                button.set_css_classes(&["steam-up"]);
                 let n = ren.borrow().buffer().text().parse::<u16>().unwrap();
                 let steaming = uen.borrow().buffer().text().parse::<u16>().unwrap();
                 let resting = den.borrow().buffer().text().parse::<u16>().unwrap();
@@ -181,6 +192,7 @@ fn build_ui(app: &Application, port: Rc<RefCell<TTYPort>>) {
                         tl1.borrow_mut().set_text(&format!(" -- "));
                         rl1.borrow_mut().set_text(&format!(" -- "));
                         button.borrow_mut().set_label("start");
+                        button.borrow_mut().set_css_classes(&["steam-down"]);
                         port2.borrow_mut().write_all(&[OFF as u8]).expect("could not write to port");
                         port2.borrow_mut().flush().expect("could not flush");
                         State::Idling 

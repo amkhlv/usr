@@ -1,4 +1,5 @@
 #!/bin/bash
 
 
-/usr/bin/emacs -q --load /home/andrei/usr/lib/emacs/emacs.el $@  &
+emacs -q --load /home/andrei/usr/lib/emacs/emacs.el $@  &
+#/usr/bin/emacs -q --load /home/andrei/usr/lib/emacs/emacs.el $@  &

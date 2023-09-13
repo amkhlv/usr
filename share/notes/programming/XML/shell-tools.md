@@ -41,6 +41,15 @@ gives `b`
 
 --- here `--nl` prints newline after each match
 
+### Discovering the structure of the document
+
+    xmlstarlet el "example.xml"
+
+or, more concisely:
+
+    xmlstarlet el -u "example.xml"
+
+
 ### XPath specifications 
 
     echo '<a><a1>b</a1></a>' | xmlstarlet sel -t -v "/a/a1"

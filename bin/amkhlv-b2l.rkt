@@ -1,47 +1,35 @@
 #!/usr/bin/env racket
 
-#lang at-exp racket
+#lang racket
 
-(require shell/pipeline-macro)
+(require shell/pipeline-macro racket/cmdline)
 
-(define-syntax (mkparser hs)
-  (datum->syntax
-   hs
-   `(command-line
-     #:usage-help ,(apply string-append (cdr (syntax->datum hs)))
-     #:args (name)
-     name)))
-(define
-  name
-  @mkparser{
-          _____________________________________________________________________________
-            The argument is some name, e.g.: "TEXT".
-            The files TEXT.scrbl and header_TEXT.tex and footer_TEXT.tex must be present.
+(define header (make-parameter (path->string (build-path (find-system-path 'home-dir) "a" "tech" "racket" "header.tex"))))
+(define footer (make-parameter (path->string (build-path (find-system-path 'home-dir) "a" "tech" "racket" "footer.tex"))))
 
-            Sample header_TEXT.tex:
+(define filename-without-extension
+  (command-line
+   #:once-each
+   ["--header" h "header" (header h)]
+   ["--footer" f "header" (header f)]
+   #:args (name)
+   name))
 
-            \documentclass[11pt]{article}
-              \usepackage{graphicx}
-              \usepackage{hyperref}
-              \usepackage{xcolor}
-
-              \title{My Work}
-              \begin{document}
-              \maketitle 
-
-            Sample footer_TEXT.tex:
-
-              \end{document}
-            _____________________________________________________________________________
-            }
-  )
-
-(define scribble-file (string-append name ".scrbl"))
-(define tex-output-file (string-append name ".tex"))
-(define in-head (open-input-file #:mode 'text (string-append "header_" name ".tex")))
-(define in-foot (open-input-file #:mode 'text (string-append "footer_" name ".tex")))
+(define scribble-file (string-append filename-without-extension ".scrbl"))
+(define tex-output-file (string-append filename-without-extension ".tex"))
+(define in-head (open-input-file #:mode 'text (header)))
+(define in-foot (open-input-file #:mode 'text (footer)))
 
 (define out (open-output-file #:mode 'text #:exists 'replace tex-output-file))
+
+(define (sanitize-line ln)
+  (string-replace
+   (string-replace
+    (string-replace (string-replace ln "〚" "") "〛" "")
+    "❨" "(\\!(")
+   "❩" ")\\!)")
+  )
+
 
 (define (do-head)
   (let ([ln (read-line in-head)])
@@ -52,6 +40,8 @@
         (run-pipeline
          \|
          cat $scribble-file
+         =object-pipe=
+         sanitize-line
          \|
          b2l --get-abstract
          \|>>
@@ -60,13 +50,6 @@
         )
       (do-head))))
 
-(define (sanitize-line ln)
-  (string-replace
-   (string-replace
-    ln
-    "❨" "(\\!(")
-   "❩" ")\\!)")
-  )
    
 (define (process-tex in)
   (let main
@@ -87,12 +70,12 @@
   (run-pipeline
    \|
    cat $scribble-file
+   =object-pipe=
+   sanitize-line
    \|
    b2l
    \|
    tail -n "+2"
-   \|
-   tr -d "〚〛"
    \|>
    process-tex))
 
