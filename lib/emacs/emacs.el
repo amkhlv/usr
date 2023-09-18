@@ -347,7 +347,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(purescript-mode lsp-metals rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
+   '(nix-mode purescript-mode lsp-metals rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -451,6 +451,7 @@ There are two things you can do about this warning:
 ;;Rust
 (require 'rust-mode)
 (add-hook 'rust-mode-hook 'eglot-ensure)
+(setq rust-format-on-save t)
 
 (require 'scala-mode)
 (add-hook 'scala-mode-hook 'eglot-ensure)
@@ -469,11 +470,15 @@ There are two things you can do about this warning:
 	    (cons 'amkhlv-module root)
       (if-let ((root (locate-dominating-file dir "stack.yaml")))
 	      (cons 'amkhlv-module root)
-        (when-let ((root (locate-dominating-file dir "build.sbt")))
-	      (cons 'amkhlv-module root))
-        ))))
+        (if-let ((root (locate-dominating-file dir "spago.dhall")))
+	        (cons 'amkhlv-module root)
+          (when-let ((root (locate-dominating-file dir "build.sbt")))
+	        (cons 'amkhlv-module root))
+          )))))
 
 (cl-defmethod project-root ((project (head amkhlv-module)))
   (cdr project))
 
 (add-hook 'project-find-functions #'project-find-amkhlv-module)
+
+(require 'nix-mode)
