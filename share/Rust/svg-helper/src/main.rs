@@ -69,7 +69,7 @@ fn build_ui(app: &Application) {
     button_grid.set_css_classes(&["steam-down"]);
 
     let vbox = Box::new(gtk::Orientation::Vertical, 5);
-
+    // grid:
     let hbox_grid = Box::new(gtk::Orientation::Horizontal, 5);
     hbox_grid.append(&nx_entry_label);
     hbox_grid.append(&nx_entry);
@@ -107,13 +107,11 @@ fn build_ui(app: &Application) {
                 .move_to((marg, marg + stepy * y))
                 .line_by((nx * stepx, 0));
         }
-
         let path = Path::new()
             .set("fill", "none")
             .set("stroke", "black")
             .set("stroke-width", 1)
             .set("d", dat);
-
         let document = Document::new()
             .set(
                 "viewBox",
@@ -124,6 +122,7 @@ fn build_ui(app: &Application) {
         clipboard.borrow_mut().set_text(&document.to_string());
         app.quit();
     }));
+    // hyperlink:
     let hbox_href = Box::new(gtk::Orientation::Horizontal, 5);
     let label_href_txt = Label::new(Some(" Text:"));
     let en_href_txt = Entry::new();
@@ -134,7 +133,6 @@ fn build_ui(app: &Application) {
     hbox_href.append(&en_href_txt);
     hbox_href.append(&label_href_url);
     hbox_href.append(&en_href_url);
-
     vbox.append(&hbox_href);
     let rc_en_href_txt = Rc::new(RefCell::new(en_href_txt));
     let rc_en_href_url = Rc::new(RefCell::new(en_href_url));
@@ -154,6 +152,31 @@ fn build_ui(app: &Application) {
         app.quit();
     }));
     hbox_href.append(&btn_href);
+    // annotation:
+    let hbox_annot = Box::new(gtk::Orientation::Horizontal, 5);
+    let en_annot = Entry::new();
+    let btn_annot = Button::builder().label("annotation").build();
+    hbox_annot.append(&en_annot);
+    hbox_annot.append(&btn_annot);
+    let rc_en_annot = Rc::new(RefCell::new(en_annot));
+    let clipboard1 = clipboard.clone();
+    btn_annot.connect_clicked(clone!(@weak app => move |button| {
+        let clipboard = clipboard1.clone();
+        let rc_en_annot = rc_en_annot.clone();
+        // let annot = svg::node::element::Anchor::new().add(svg::node::Text::new(rc_en_annot.borrow().buffer().text().to_string()))
+        //     .set("style", "background-color:lightgreen")
+        //     .add(svg::node::element::Description::new().add(svg::node::Text::new(rc_en_annot.borrow().buffer().text().to_string())));
+        // let document = Document::new().add(annot);
+        let a = rc_en_annot.borrow().buffer().text().to_string();
+        clipboard.borrow_mut().set_text(&format!("
+<svg xmlns=\"http://www.w3.org/2000/svg\">
+<text fill=\"darkorange\" style=\"font-size:2em;\"><desc>{}</desc>{}</text>
+</svg>", a, a
+        ));
+        app.quit();
+    }));
+    hbox_annot.append(&btn_annot);
+    vbox.append(&hbox_annot);
     // Present window
     window.present();
 }
