@@ -69,7 +69,7 @@ fn build_ui(app: &Application) {
     button_grid.set_css_classes(&["steam-down"]);
 
     let vbox = Box::new(gtk::Orientation::Vertical, 5);
-
+    // grid:
     let hbox_grid = Box::new(gtk::Orientation::Horizontal, 5);
     hbox_grid.append(&nx_entry_label);
     hbox_grid.append(&nx_entry);
@@ -107,13 +107,11 @@ fn build_ui(app: &Application) {
                 .move_to((marg, marg + stepy * y))
                 .line_by((nx * stepx, 0));
         }
-
         let path = Path::new()
             .set("fill", "none")
             .set("stroke", "black")
             .set("stroke-width", 1)
             .set("d", dat);
-
         let document = Document::new()
             .set(
                 "viewBox",
@@ -124,6 +122,7 @@ fn build_ui(app: &Application) {
         clipboard.borrow_mut().set_text(&document.to_string());
         app.quit();
     }));
+    // hyperlink:
     let hbox_href = Box::new(gtk::Orientation::Horizontal, 5);
     let label_href_txt = Label::new(Some(" Text:"));
     let en_href_txt = Entry::new();
@@ -134,7 +133,6 @@ fn build_ui(app: &Application) {
     hbox_href.append(&en_href_txt);
     hbox_href.append(&label_href_url);
     hbox_href.append(&en_href_url);
-
     vbox.append(&hbox_href);
     let rc_en_href_txt = Rc::new(RefCell::new(en_href_txt));
     let rc_en_href_url = Rc::new(RefCell::new(en_href_url));
@@ -154,6 +152,32 @@ fn build_ui(app: &Application) {
         app.quit();
     }));
     hbox_href.append(&btn_href);
+    // annotation:
+    let hbox_annot = Box::new(gtk::Orientation::Horizontal, 5);
+    let en_annot = Entry::new();
+    hbox_annot.append(&en_annot);
+    let clipboard1 = clipboard.clone();
+    en_annot.connect_activate(clone!(@weak app => move |entry| {
+        let clipboard = clipboard1.clone();
+        let a = entry.buffer().text().to_string();
+        clipboard.borrow_mut().set_text(&format!("
+<svg xmlns=\"http://www.w3.org/2000/svg\">
+    <ellipse
+       style=\"fill:#ff8c00;stroke-width:0.8\"
+       cx=\"8\"
+       cy=\"-20\"
+       rx=\"4\"
+       ry=\"4\"><desc>{}</desc></ellipse>
+    <text
+       xml:space=\"preserve\"
+       style=\"fill:green;font-size:26.6667px;line-height:33.7036px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb\"
+       x=\"15\"
+       y=\"-12\"><tspan sodipodi:role=\"line\" x=\"20\" y=\"-32\">{}</tspan></text>
+</svg>", a, a
+        ));
+        app.quit();
+    }));
+    vbox.append(&hbox_annot);
     // Present window
     window.present();
 }
