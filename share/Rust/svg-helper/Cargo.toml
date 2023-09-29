@@ -11,4 +11,4 @@ gio = "0.18.1"
 gdk4 = "0.7.1"
 clap = { version = "3.0.13", features = ["derive"] }
 home = "0.5.5"
-svg = "0.13.1"
+svg = "0.14.0"

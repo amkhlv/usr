@@ -155,27 +155,29 @@ fn build_ui(app: &Application) {
     // annotation:
     let hbox_annot = Box::new(gtk::Orientation::Horizontal, 5);
     let en_annot = Entry::new();
-    let btn_annot = Button::builder().label("annotation").build();
     hbox_annot.append(&en_annot);
-    hbox_annot.append(&btn_annot);
-    let rc_en_annot = Rc::new(RefCell::new(en_annot));
     let clipboard1 = clipboard.clone();
-    btn_annot.connect_clicked(clone!(@weak app => move |button| {
+    en_annot.connect_activate(clone!(@weak app => move |entry| {
         let clipboard = clipboard1.clone();
-        let rc_en_annot = rc_en_annot.clone();
-        // let annot = svg::node::element::Anchor::new().add(svg::node::Text::new(rc_en_annot.borrow().buffer().text().to_string()))
-        //     .set("style", "background-color:lightgreen")
-        //     .add(svg::node::element::Description::new().add(svg::node::Text::new(rc_en_annot.borrow().buffer().text().to_string())));
-        // let document = Document::new().add(annot);
-        let a = rc_en_annot.borrow().buffer().text().to_string();
+        let a = entry.buffer().text().to_string();
         clipboard.borrow_mut().set_text(&format!("
 <svg xmlns=\"http://www.w3.org/2000/svg\">
-<text fill=\"darkorange\" style=\"font-size:2em;\"><desc>{}</desc>{}</text>
+    <ellipse
+       style=\"fill:#ff8c00;stroke-width:0.8\"
+       cx=\"8\"
+       cy=\"-20\"
+       rx=\"4\"
+       ry=\"4\"><desc>{}</desc></ellipse>
+    <text
+       xml:space=\"preserve\"
+       style=\"fill:green;font-size:26.6667px;line-height:33.7036px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb\"
+       x=\"15\"
+       y=\"-12\"><tspan sodipodi:role=\"line\" x=\"20\" y=\"-32\">{}</tspan></text>
+>>>>>>> dc94865bf18db9086640935e1de0d917bad558f4
 </svg>", a, a
         ));
         app.quit();
     }));
-    hbox_annot.append(&btn_annot);
     vbox.append(&hbox_annot);
     // Present window
     window.present();
