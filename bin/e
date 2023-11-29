@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 
 emacs -q --load /home/andrei/usr/lib/emacs/emacs.el $@  &

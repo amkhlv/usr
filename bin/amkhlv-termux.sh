@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 eval $(cat ~/a/Dhall/system.dhall | dhall-to-bash --declare AMKHLV)
 
