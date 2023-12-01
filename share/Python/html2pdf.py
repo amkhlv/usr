@@ -18,6 +18,8 @@ parser = argparse.ArgumentParser(
        prints html; the URLS should go line-by-line on stdin.
        The PDF output is determined by the --transformer function in hy lang. Example:
        -t "(fn [p] (+ p #[[.pdf]]))"
+       Transformer receives as argument the URI with stripped proto prefix (https:// or file:// is stripped)
+       and, in case of https://, with / replaced with -- 
     """,
             epilog='happy printing!')
 #parser.add_argument('-i','--input', help = 'URL')  
