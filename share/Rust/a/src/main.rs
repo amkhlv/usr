@@ -1,17 +1,20 @@
-extern crate yaml_rust;
-extern crate pancurses;
 extern crate dirs;
 extern crate linked_hash_map;
+extern crate pancurses;
 
-use std::path::{Path,PathBuf};
-use yaml_rust::{YamlLoader,Yaml};
-use pancurses::{initscr, endwin, Window, Input, init_pair, start_color, has_colors, noecho, A_BOLD, curs_set, COLOR_PAIR, COLOR_BLACK, COLOR_GREEN, A_NORMAL};
-use std::{error,fmt};
+use clap::{App, Arg};
 use dirs::home_dir;
-use linked_hash_map::LinkedHashMap;
+use pancurses::{
+    curs_set, endwin, has_colors, init_pair, initscr, noecho, start_color, Input, Window, A_BOLD,
+    A_NORMAL, COLOR_BLACK, COLOR_GREEN, COLOR_PAIR,
+};
+use serde::{Deserialize, Serialize};
+use serde_dhall;
+use std::collections::HashMap;
 use std::io::{BufWriter, Write};
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use clap::{App,Arg};
+use std::{error, fmt};
 
 #[derive(Debug, Clone)]
 struct NoHomeDir;
@@ -58,77 +61,99 @@ impl fmt::Display for NoVal {
 }
 impl error::Error for NoVal {}
 
-fn step(w: Window, h: &LinkedHashMap<Yaml,Yaml>) ->  Result<(), Box<dyn std::error::Error>> {
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+enum AData {
+    Leaf(String),
+    Branch(HashMap<String, AData>),
+}
+
+fn step(w: Window, h: &AData) -> Result<(), Box<dyn std::error::Error>> {
     let width = w.get_max_x();
     let mut i = 0u8;
-    for k in h.keys() {
-        match &k {
-            Yaml::String(sec) => { 
-                w.mv(3 + 3*(i as i32/3), (i as i32 % 3) * (std::cmp::min(width, 99) / 3));
-                w.attrset(COLOR_PAIR(1) | A_BOLD);
-                w.addstr(format!("{} ", (i + 97) as char));
-                w.attrset(A_NORMAL);
-                w.addstr(&sec) ; 
-                i += 1;
-            },
-            _ => { return Err(Box::new(BadKey(format!("{:?}", k)))) ; },
+    let hh = {
+        if let AData::Branch(x) = h {
+            x
+        } else {
+            panic!("internal error");
         }
     };
+    for k in hh.keys() {
+        w.mv(
+            3 + 3 * (i as i32 / 3),
+            (i as i32 % 3) * (std::cmp::min(width, 99) / 3),
+        );
+        w.attrset(COLOR_PAIR(1) | A_BOLD);
+        w.addstr(format!("{} ", (i + 97) as char));
+        w.attrset(A_NORMAL);
+        w.addstr(&k);
+        i += 1;
+    }
     match w.getch() {
         Some(Input::Character(c)) => {
             w.clear();
-            let ks = &mut (h.keys().skip(((c as u8) - 97) as usize));
+            let ks = &mut (hh.keys().skip(((c as u8) - 97) as usize));
             let key = match ks.next() {
                 Some(key) => key,
-                None => { return Err(Box::new(NoKey)); }
+                None => {
+                    return Err(Box::new(NoKey));
+                }
             };
-            match h.get(key) {
-                Some(Yaml::Hash(h)) => step(w,h),
-                Some(Yaml::String(s)) => {
+            match hh.get(key) {
+                Some(br @ AData::Branch(_)) => step(w, br),
+                Some(AData::Leaf(s)) => {
                     let a = vec!["-i"];
-                    let p = Command::new("xsel").args(&a).stdin(Stdio::piped()).spawn().unwrap();
+                    let p = Command::new("xsel")
+                        .args(&a)
+                        .stdin(Stdio::piped())
+                        .spawn()
+                        .unwrap();
                     let mut stdin = p.stdin.unwrap();
                     let mut writer = BufWriter::new(&mut stdin);
                     writer.write(s.as_bytes()).unwrap();
                     endwin();
                     println!("{}\n\n\n", s);
-                    let home: Option<PathBuf> = home_dir() ;
+                    let home: Option<PathBuf> = home_dir();
                     let home = match home {
                         Some(h) => h,
-                        None => { return Err(Box::new(NoHomeDir)); }
+                        None => {
+                            return Err(Box::new(NoHomeDir));
+                        }
                     };
                     std::fs::write(Path::join(Path::new(&home), ".local/var/run.sh"), s).unwrap();
                     Ok(())
-                },
-                Some(y) => { return Err(Box::new(BadSchema(format!("{:?}",y)))); },
-                None => { return Err(Box::new(NoVal)) ; },
+                }
+                None => {
+                    return Err(Box::new(NoVal));
+                }
             }
-        },
-        _ => Ok(())
+        }
+        _ => Ok(()),
     }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let matches = App::new("Explore YAML a-list")
+    let matches = App::new("Explore Dhall a-list")
         .version("1.0")
         .author("Andrei <a.mkhlv@gmail.com>")
         .about("a:\n  b:\n    - c\n    ...\n  ...\n...")
-        .arg(Arg::with_name("yamlfile")
-             .multiple(true))
+        .arg(Arg::with_name("dhallfile").multiple(true))
         .get_matches();
-    let home: Option<PathBuf> = home_dir() ;
+    let home: Option<PathBuf> = home_dir();
     let home = match home {
         Some(h) => h,
-        None => { return Err(Box::new(NoHomeDir)); }
+        None => {
+            return Err(Box::new(NoHomeDir));
+        }
     };
-    let iterator = matches.values_of("yamlfile");
+    let iterator = matches.values_of("dhallfile");
 
     let a_str = match iterator {
-        None => std::fs::read_to_string(Path::join(Path::new(&home), "a.yaml"))?,
-        Some(mut it) => std::fs::read_to_string(it.next().unwrap())?
+        None => std::fs::read_to_string(Path::join(Path::new(&home), "a.dhall"))?,
+        Some(mut it) => std::fs::read_to_string(it.next().unwrap())?,
     };
-    let a : Vec<Yaml> = YamlLoader::load_from_str(&a_str)?;
-    println!("{:?}", a[0]);
+
+    let a: AData = serde_dhall::from_str(&a_str).parse()?;
 
     let window = initscr();
     window.refresh();
@@ -140,11 +165,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         init_pair(1, COLOR_GREEN, COLOR_BLACK);
     };
 
-    let result = match &a[0] {
-        Yaml::Hash(htop) => step(window,htop),
-        _ => Ok(())
-    };
+    let result = step(window, &a);
+
     endwin();
     result
-
 }
