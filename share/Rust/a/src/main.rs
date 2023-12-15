@@ -2,6 +2,7 @@ extern crate dirs;
 extern crate linked_hash_map;
 extern crate pancurses;
 
+use amkhlv::declerr;
 use clap::{App, Arg};
 use dirs::home_dir;
 use pancurses::{
@@ -16,50 +17,11 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::{error, fmt};
 
-#[derive(Debug, Clone)]
-struct NoHomeDir;
-impl fmt::Display for NoHomeDir {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "could not find HOME dir")
-    }
-}
-impl error::Error for NoHomeDir {}
-
-#[derive(Debug, Clone)]
-struct NoKey;
-impl fmt::Display for NoKey {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "could not find key")
-    }
-}
-impl error::Error for NoKey {}
-
-#[derive(Debug, Clone)]
-struct BadKey(String);
-impl fmt::Display for BadKey {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BadKey: {}", self.0)
-    }
-}
-impl error::Error for BadKey {}
-
-#[derive(Debug, Clone)]
-struct BadSchema(String);
-impl fmt::Display for BadSchema {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BadSchema: {}", self.0)
-    }
-}
-impl error::Error for BadSchema {}
-
-#[derive(Debug, Clone)]
-struct NoVal;
-impl fmt::Display for NoVal {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "could not find key")
-    }
-}
-impl error::Error for NoVal {}
+declerr![NoHomeDir, "could not find HOME dir"];
+declerr![NoKey(char), "could not find key {}", 0];
+declerr![BadKey(String), "bad key: >>>{}<<<", 0];
+declerr![BadSchema(String), "BadSchema: {}", 0];
+declerr![NoVal(String), "no such key: {}", 0];
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
@@ -96,7 +58,7 @@ fn step(w: Window, h: &AData) -> Result<(), Box<dyn std::error::Error>> {
             let key = match ks.next() {
                 Some(key) => key,
                 None => {
-                    return Err(Box::new(NoKey));
+                    return Err(Box::new(NoKey(c)));
                 }
             };
             match hh.get(key) {
@@ -124,7 +86,7 @@ fn step(w: Window, h: &AData) -> Result<(), Box<dyn std::error::Error>> {
                     Ok(())
                 }
                 None => {
-                    return Err(Box::new(NoVal));
+                    return Err(Box::new(NoVal(String::from(key))));
                 }
             }
         }

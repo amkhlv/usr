@@ -13,3 +13,4 @@ linked-hash-map = "0.5.3"
 clap = "2.33.3"
 serde_dhall = "0.12.1"
 serde = "1.0.193"
+utils = { path = "../utils" }
