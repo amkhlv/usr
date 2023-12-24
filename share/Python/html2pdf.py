@@ -10,6 +10,7 @@ import sys
 import shutil
 import re
 
+default_transformer="(fn [p] (+ p #[[.pdf]]))"
 parser = argparse.ArgumentParser(
                     prog='html2pdf',
      formatter_class=RawTextHelpFormatter,
@@ -17,14 +18,15 @@ parser = argparse.ArgumentParser(
     """
        prints html; the URLS should go line-by-line on stdin.
        The PDF output is determined by the --transformer function in hy lang. Example:
-       -t "(fn [p] (+ p #[[.pdf]]))"
+       -t """ + default_transformer + 
+    """
        Transformer receives as argument the URI with stripped proto prefix (https:// or file:// is stripped)
        and, in case of https://, with / replaced with -- 
     """,
             epilog='happy printing!')
 #parser.add_argument('-i','--input', help = 'URL')  
 #parser.add_argument('-o','--output', help='absolute (!) path to output filename')  
-parser.add_argument('-t', '--transformer', help = 'transformer function')  
+parser.add_argument('-t', '--transformer', help = 'transformer function; default is ' + default_transformer, default=default_transformer)  
 parser.add_argument('-n', '--dry', action = "store_true", help='just show output paths')
 args = parser.parse_args()
 
