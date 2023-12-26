@@ -8,6 +8,8 @@ use home::home_dir;
 use std::fs::File;
 use std::process::Stdio;
 use regex::Regex;
+use steel::steel_vm::engine::Engine;
+use steel::rvals::SteelVal;
 
 #[derive(Parser, Debug)]
 #[clap(author, 
@@ -34,6 +36,10 @@ struct Args {
     /// burst PDF to SVGs (provide input PDF file as a single argument)    
     #[clap(long,value_name="SVG_COLLECTION_DIR")]
     to_svg: Option<String>,
+
+        /// name transformer, see pdf2svg manual, e.g. (lambda (x) (string-append x "_%03d.svg"))
+    #[clap(long,value_name="NAME_TRANSFORMER")]
+    transformer: Option<String>,
 
     /// process one page only
     #[clap(long)]
@@ -115,13 +121,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let in_path_str : &str = clops.input.iter().next().unwrap();
             let in_path : &Path = Path::new(in_path_str);
             let in_filename = in_path.file_name().unwrap();
-            let out_filename : String = Regex::new(".pdf$")
+            let out_filename : String = if let Some(trans) = clops.transformer {
+                let mut steel_vm = Engine::new();
+                match steel_vm.run(&format!("({} \"{}\")", trans, in_filename.to_str().unwrap())) {
+                    Ok(mut v) => {
+                        match v.pop().expect("transformer returned empty Vec") {
+                          SteelVal::StringV(x) => x.to_string(),
+                          steel_value => panic!("transformer returned not String, but: {:?}", steel_value)  
+                        }
+                    }
+                    Err(e) => {
+                        panic!("Steel error: {:?}",e);
+                    }
+                }
+            } else {
+                Regex::new(".pdf$")
                 .unwrap()
                 .replace(
                     in_filename.to_str().unwrap(),
                     clops.page.map(|pg| { format!("_p{:03}.svg",pg) }).unwrap_or("_%03d.svg".to_string()) 
                     )
-                .to_string();
+                .to_string()
+            };
             let out_path = Path::new(&outdir).join(out_filename);
             let mut args = vec![in_path_str, out_path.to_str().unwrap()];
             let pgarg = if let Some(pg) = clops.page { pg.to_string() } else { String::from("all") };
