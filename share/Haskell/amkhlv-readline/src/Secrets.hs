@@ -16,6 +16,7 @@ editAccount,
 insertAccount,
 newSite,
 validateSites,
+cleanupSite,
 edit,
 signalError,
 Nick,
@@ -30,7 +31,9 @@ import Dhall.Marshal.Encode (embed, inject)
 import Dhall.Pretty
 import Data.Void()
 import Data.Aeson
-import Data.Maybe (fromJust, fromMaybe)
+import Data.Maybe (fromJust, fromMaybe, maybeToList)
+import Data.Functor ((<&>))
+import Data.Traversable (traverse)
 import Data.Foldable (traverse_)
 import GHC.Generics
 import qualified Data.ByteString.Lazy.Char8 as DBLC
@@ -44,6 +47,7 @@ import qualified Prettyprinter.Render.Text as PrettyText
 import System.IO (withFile, hPutStrLn, IOMode(WriteMode))
 import System.Directory (getHomeDirectory)
 import Control.Concurrent
+import Control.Monad (join)
 
 data Config = Config { 
   qmlDir :: Text
@@ -205,6 +209,44 @@ editAccount acc  = do
   hClose stdout
   waitForProcess h >>= print
   return newacc
+
+deleteAccount :: Account -> IO (Maybe Account)
+deleteAccount acc = do
+  conf <- loadConfig
+  (Just stdin, Just stdout, Nothing, h) <- createProcess 
+    (proc "ioqml" [unpack (qmlDir conf) ++ "/confirmation.qml"])
+    { std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit }
+  hPutStrLn stdin $ DBLC.unpack (encode acc)
+  hFlush stdin
+  hClose stdin
+  yn <- hGetContents stdout 
+  putStrLn yn
+  hClose stdout
+  waitForProcess h >>= print
+  if strstrip yn == "yes" 
+  then putStrLn ("deleting " ++ unpack (login acc)) >> return Nothing 
+  else putStrLn ("keeping " ++ unpack (login acc)) >> return (Just acc)
+cleanupAccounts :: Site -> IO (Maybe Site)
+cleanupAccounts site = do
+  lmacc <- sequence [deleteAccount a | a <- accounts site]
+  let newlacc = join [maybeToList macc | macc <- lmacc]
+  if Prelude.null newlacc 
+  then putStrLn "removing site with no accounts" >> return Nothing 
+  else return (Just $ site { accounts = newlacc })
+cleanupSite :: Nick -> [Site] -> IO [Site]
+cleanupSite nk  = 
+  Prelude.foldr 
+  (\s accum -> 
+    if nk == nick s 
+    then do 
+      ms <- cleanupAccounts s
+      ac <- accum
+      return $ maybe ac (:ac) ms   
+    else do
+      ac <- accum  
+      return (s:ac) 
+   )
+  (return [])
 
 newAccount :: Maybe Text -> IO (Maybe Account)
 newAccount ml = do

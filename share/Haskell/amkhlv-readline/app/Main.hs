@@ -15,6 +15,7 @@ help = unlines [
     , "newacc <nick> [<login>]"
     , "new <nick> <url> [<login>]"
     , "search <subnick>"
+    , "clean <nick>"
     , "help"
     , "quit"
     ]
@@ -46,4 +47,5 @@ main  = do
                                           loop ss1
                 Just ("neu":s:u:ll)  -> liftIO (newSite s u (listToMaybe ll) >>= savess . maybe ss (:ss)) >>= loop
                 Just ["search",snk] -> liftIO (search ss snk) >> loop ss
+                Just ["clean",nk] -> liftIO (cleanupSite nk ss >>= savess) >>= loop
                 _ -> liftIO (putStrLn "-- I did not understand ...") >> loop ss
