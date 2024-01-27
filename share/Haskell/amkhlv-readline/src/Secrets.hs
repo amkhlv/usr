@@ -7,6 +7,7 @@ loadPasswords,
 savePasswords,
 amkbd,
 searchSites,
+searchSitesX,
 nicks,
 logins,
 arm,
@@ -19,6 +20,11 @@ validateSites,
 cleanupSite,
 edit,
 signalError,
+changeNick,
+changeURL,
+hidePassword,
+hideSecrets,
+showAll,
 Nick,
 URL,
 Account(..),
@@ -31,10 +37,11 @@ import Dhall.Marshal.Encode (embed, inject)
 import Dhall.Pretty
 import Data.Void()
 import Data.Aeson
-import Data.Maybe (fromJust, fromMaybe, maybeToList)
+import Data.Maybe (isJust, fromJust, fromMaybe, maybeToList)
 import Data.Functor ((<&>))
 import Data.Traversable (traverse)
 import Data.Foldable (traverse_)
+import Data.List (find)
 import GHC.Generics
 import qualified Data.ByteString.Lazy.Char8 as DBLC
 import Data.Text (Text,pack,unpack,append,strip,isInfixOf,concat)
@@ -143,14 +150,21 @@ strstrip = unpack . strip . pack
 searchSites :: [Site] -> Text -> [Site] 
 searchSites ss subnick = filter (Data.Text.isInfixOf subnick . nick) ss
 -- |Exact search; returns list of one element
--- searchSitesX :: [Site] -> Text -> [Site] 
--- searchSitesX ss subnick = filter (\s -> nick s == subnick) ss
+searchSitesX :: [Site] -> Text -> Maybe Site 
+searchSitesX ss subnick = find (\s -> nick s == subnick) ss
+
+showAll :: Text -> Site -> IO ()
+showAll l s  = let a = head [ acc | acc <- accounts s, login acc == l ] in 
+  do 
+    putStrLn (unpack(nick s) ++ "  " ++ unpack (url s))
+    print $ hidePassword a
 
 showAccount :: Account -> IO ()
 showAccount s = do
   putStrLn . unpack $ append (pack "  login: ") (login s)
   traverse_ (putStrLn . unpack . append (pack "    description: ")) (description s)
   traverse_ (putStrLn . unpack . append (pack "    notes:       ")) (notes s)
+  traverse_ (putStrLn . const "*** secret notes ***") (secretNotes s)
 
 search :: [Site] -> Text -> IO ()
 search ss nk = sequence_ [ 
@@ -181,17 +195,15 @@ chooser xs cb = do
   waitForProcess h
 
 hidePassword :: Account -> Account
-hidePassword a = Account {
-  login = login a,
+hidePassword a = a {
+  password = pack (map (const '*') (unpack $ password a))
+  }
+hideSecrets :: Account -> Account
+hideSecrets a = a {
   password = pack (map (const '*') (unpack $ password a)),
-  changedOn = Nothing, 
-  expiringOn = Nothing, 
-  description = Nothing, 
-  notes = Nothing, 
-  loginChallenge = Nothing, 
-  forgotPasswordChallenge = Nothing,
-  secretNotes = Nothing,
-  tags = []
+  loginChallenge = pack . (const '*' <$>) . unpack <$> loginChallenge a, 
+  forgotPasswordChallenge = pack . (const '*' <$>) . unpack <$> forgotPasswordChallenge a,
+  secretNotes = pack . (const '*' <$>) . unpack <$> secretNotes a
   }
   
 editAccount :: Account -> IO (Maybe Account)
@@ -205,7 +217,7 @@ editAccount acc  = do
   hClose stdin
   j <- hGetContents stdout 
   let newacc = decode $ DBLC.pack j 
-  maybe (putStrLn "-- edit cancelled") (print . hidePassword) newacc
+  maybe (putStrLn "-- edit cancelled") (print . hideSecrets) newacc
   hClose stdout
   waitForProcess h >>= print
   return newacc
@@ -259,7 +271,7 @@ newAccount ml = do
   hClose stdin
   j <- hGetContents stdout 
   let newacc = decode $ DBLC.pack j 
-  maybe (putStrLn "-- cancelled") (print . hidePassword) newacc
+  maybe (putStrLn "-- cancelled") (print . hideSecrets) newacc
   hClose stdout
   waitForProcess h >>= print
   return newacc
@@ -273,10 +285,7 @@ insertAccount ss nck ml =
       if 
       (login <$> nacc) `elem` (Just . login <$> accounts s)
       then signalError "ERROR: duplicate login" >> return s
-      else return Site {
-                        nick = nick s, 
-                        url = url s, 
-                        accounts = case nacc of 
+      else return $ s { accounts = case nacc of 
                           Just a -> a : accounts s 
                           Nothing -> accounts s
                         } 
@@ -286,14 +295,26 @@ newSite :: Nick -> URL -> Maybe Text -> IO (Maybe Site)
 newSite s u ml = do 
   nacc <- newAccount ml
   return ((\x -> Site { nick = s, url = u, accounts = [x] }) <$> nacc)
-  
+
+changeURL :: Nick -> URL -> [Site] -> [Site]
+changeURL nk newurl  =
+  foldr
+  (\s accum -> if nk == nick s then s {url = newurl}:accum else s:accum)
+  []
+
+changeNick :: Nick -> Nick -> [Site] -> [Site]
+changeNick nk newnick =
+  foldr
+  (\s accum -> if nk == nick s then s {nick = newnick}:accum else s:accum)
+  []
+
 editSite :: Site -> Text -> IO Site
 editSite s lgn = 
   let naccs = [ if login acc == lgn then fromMaybe acc <$> editAccount acc   else return acc | acc <- accounts s ]
   in
   do 
     aa <- sequence naccs 
-    return Site { nick = nick s, url = url s, accounts = aa }
+    return s { accounts = aa }
 
 edit :: [Site] -> Nick -> Text -> IO [Site]
 edit ss nck lgn = sequence [ if nck == nick s then editSite s lgn else return s | s <- ss ]

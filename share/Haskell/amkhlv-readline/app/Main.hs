@@ -16,6 +16,9 @@ help = unlines [
     , "new <nick> <url> [<login>]"
     , "search <subnick>"
     , "clean <nick>"
+    , "seturl <nick> <newurl>"
+    , "setnick <nick> <newnick>"
+    , "showAll <nick> <login>" --- will include secret notes
     , "help"
     , "quit"
     ]
@@ -34,7 +37,8 @@ main  = do
         loop ss = do
             minput <- getInputLine "% "
             case T.words . T.pack <$> minput of
-                Just [] -> return ()
+                Nothing -> return ()
+                Just [] -> loop ss
                 Just ["quit"] -> return ()
                 Just ["help"] -> liftIO (putStrLn help) >> loop ss
                 Just ["arm",nk]  -> liftIO (arm (searchSites ss nk)) >> loop ss
@@ -45,7 +49,13 @@ main  = do
                                                     newss <- maybe ss (: ss) <$> newSite s u (listToMaybe ll) 
                                                     if validateSites newss then savess newss else signalError "ERROR: duplicate nick" >> return ss
                                           loop ss1
-                Just ("neu":s:u:ll)  -> liftIO (newSite s u (listToMaybe ll) >>= savess . maybe ss (:ss)) >>= loop
+                Just ["seturl",nk,u] -> liftIO (savess (changeURL nk u ss)) >>= loop
+                Just ["setnick",nk,nk1] -> liftIO (
+                                                    let ss1= changeNick nk nk1 ss 
+                                                    in 
+                                                    if validateSites ss1 then savess ss1 else signalError "ERROR: that nick already exists" >> return ss
+                                                    ) >>= loop
                 Just ["search",snk] -> liftIO (search ss snk) >> loop ss
+                Just ["showAll",nk,l] -> liftIO (let ms = searchSitesX ss nk in maybe (putStrLn "nick not found") (showAll l) ms) >> loop ss
                 Just ["clean",nk] -> liftIO (cleanupSite nk ss >>= savess) >>= loop
                 _ -> liftIO (putStrLn "-- I did not understand ...") >> loop ss
