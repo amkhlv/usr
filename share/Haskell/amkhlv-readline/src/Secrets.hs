@@ -38,7 +38,7 @@ import Data.Foldable (traverse_)
 import GHC.Generics
 import qualified Data.ByteString.Lazy.Char8 as DBLC
 import Data.Text (Text,pack,unpack,append,strip,isInfixOf,concat)
-import Data.Set as DS
+import qualified Data.Set as DS
 import qualified Data.Text.IO as TIO
 import System.Process
 import GHC.IO.Handle
@@ -141,7 +141,7 @@ strstrip = unpack . strip . pack
 
 -- |Search sites by substring in nick
 searchSites :: [Site] -> Text -> [Site] 
-searchSites ss subnick = Prelude.filter (Data.Text.isInfixOf subnick . nick) ss
+searchSites ss subnick = filter (Data.Text.isInfixOf subnick . nick) ss
 -- |Exact search; returns list of one element
 -- searchSitesX :: [Site] -> Text -> [Site] 
 -- searchSitesX ss subnick = filter (\s -> nick s == subnick) ss
@@ -183,7 +183,7 @@ chooser xs cb = do
 hidePassword :: Account -> Account
 hidePassword a = Account {
   login = login a,
-  password = pack (Prelude.map (const '*') (unpack $ password a)),
+  password = pack (map (const '*') (unpack $ password a)),
   changedOn = Nothing, 
   expiringOn = Nothing, 
   description = Nothing, 
@@ -230,12 +230,12 @@ cleanupAccounts :: Site -> IO (Maybe Site)
 cleanupAccounts site = do
   lmacc <- sequence [deleteAccount a | a <- accounts site]
   let newlacc = join [maybeToList macc | macc <- lmacc]
-  if Prelude.null newlacc 
+  if null newlacc 
   then putStrLn "removing site with no accounts" >> return Nothing 
   else return (Just $ site { accounts = newlacc })
 cleanupSite :: Nick -> [Site] -> IO [Site]
 cleanupSite nk  = 
-  Prelude.foldr 
+  foldr 
   (\s accum -> 
     if nk == nick s 
     then do 
