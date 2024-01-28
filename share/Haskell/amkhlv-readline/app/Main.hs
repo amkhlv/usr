@@ -15,10 +15,12 @@ help = unlines [
     , "newacc <nick> [<login>]"
     , "new <nick> <url> [<login>]"
     , "search <subnick>"
+    , "tags <tag1> [<tag2> ...]"
     , "clean <nick>"
     , "seturl <nick> <newurl>"
     , "setnick <nick> <newnick>"
-    , "showAll <nick> <login>" --- will include secret notes
+    , "show <nick> <login>"
+    , "showAll <nick> <login> --- will include secret notes"
     , "help"
     , "quit"
     ]
@@ -56,6 +58,8 @@ main  = do
                                                     if validateSites ss1 then savess ss1 else signalError "ERROR: that nick already exists" >> return ss
                                                     ) >>= loop
                 Just ["search",snk] -> liftIO (search ss snk) >> loop ss
+                Just ["show",nk,l] -> liftIO (findAndShowAccount ss nk l) >> loop ss
+                Just ("tags":tgs) -> liftIO (withtags tgs ss) >> loop ss
                 Just ["showAll",nk,l] -> liftIO (let ms = searchSitesX ss nk in maybe (putStrLn "nick not found") (showAll l) ms) >> loop ss
                 Just ["clean",nk] -> liftIO (cleanupSite nk ss >>= savess) >>= loop
                 _ -> liftIO (putStrLn "-- I did not understand ...") >> loop ss

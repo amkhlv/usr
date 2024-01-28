@@ -12,6 +12,8 @@ nicks,
 logins,
 arm,
 search,
+findAndShowAccount,
+withtags,
 defaultAccount,
 editAccount,
 insertAccount,
@@ -153,6 +155,18 @@ searchSites ss subnick = filter (Data.Text.isInfixOf subnick . nick) ss
 searchSitesX :: [Site] -> Text -> Maybe Site 
 searchSitesX ss subnick = find (\s -> nick s == subnick) ss
 
+findAndShowAccount :: [Site] -> Nick -> Text -> IO ()
+findAndShowAccount ss nk l = 
+  let ms = searchSitesX ss nk in
+  maybe 
+  (return ()) 
+  (\s -> do
+    putStrLn (unpack(nick s) ++ "  " ++ unpack (url s))
+    sequence_ [ showAccount a | a <- accounts s, login a == l ]
+    )
+  ms
+  
+
 showAll :: Text -> Site -> IO ()
 showAll l s  = let a = head [ acc | acc <- accounts s, login acc == l ] in 
   do 
@@ -171,6 +185,20 @@ search ss nk = sequence_ [
   do
     putStrLn (unpack (nick s)) >> putStrLn (unpack (url s)) >> sequence [ showAccount a | a <- accounts s ]
     | s <- searchSites ss nk
+    ]
+
+withtags :: [Text] -> [Site] -> IO ()
+withtags tgs ss = 
+  let f = (\a -> and [tg `elem` tags a | tg <- tgs])::Account -> Bool 
+  in 
+  sequence_ [
+    let accts1 = filter f (accounts s) 
+    in
+    if null accts1 then return () else do
+      putStr (unpack $ nick s)
+      putStrLn $ "  " ++ unpack (url s)
+      sequence_ [ putStrLn $ "  " ++ unpack (login a) | a <- accts1 ]
+    | s <- ss
     ]
  
 newtype OptionsJSON = OptionsJSON { options :: [Text] } deriving (Generic,Show)
