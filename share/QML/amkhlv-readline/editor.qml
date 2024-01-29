@@ -127,6 +127,7 @@ ApplicationWindow {
                           password: passwordField.text,
                           tags: tagsField.text.split(',')
                         }
+                        if (tagsField.text.length == 0) j['tags'] = []
                         if (changedOnField.text.length > 0) j['changedOn'] = changedOnField.text
                         if (expiringOnField.text.length > 0) j['expiringOn'] = expiringOnField.text
                         if (descriptionField.text.length > 0) j['description'] = descriptionField.text
