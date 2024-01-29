@@ -56,7 +56,7 @@ import qualified Prettyprinter.Render.Text as PrettyText
 import System.IO (withFile, hPutStrLn, IOMode(WriteMode))
 import System.Directory (getHomeDirectory)
 import Control.Concurrent
-import Control.Monad (join)
+import Control.Monad (join,(>=>))
 
 data Config = Config { 
   qmlDir :: Text
@@ -187,7 +187,12 @@ search ss nk = sequence_ [
     | s <- searchSites ss nk
     ]
 
+nulltags :: [Site] -> IO ()
+nulltags = withtags [""] 
+
 withtags :: [Text] -> [Site] -> IO ()
+withtags [] ss = 
+    let alltags = DS.fromList (ss >>= (accounts >=> tags)) in print alltags
 withtags tgs ss = 
   let f = (\a -> and [tg `elem` tags a | tg <- tgs])::Account -> Bool 
   in 
