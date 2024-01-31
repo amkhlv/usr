@@ -46,17 +46,20 @@ import Data.Foldable (traverse_)
 import Data.List (find)
 import GHC.Generics
 import qualified Data.ByteString.Lazy.Char8 as DBLC
+import qualified Data.ByteString as DB
 import Data.Text (Text,pack,unpack,append,strip,isInfixOf,concat)
+import Data.Text.Encoding (decodeUtf8)
 import qualified Data.Set as DS
 import qualified Data.Text.IO as TIO
 import System.Process
 import GHC.IO.Handle
 import GHC.IO.Exception
 import qualified Prettyprinter.Render.Text as PrettyText
-import System.IO (withFile, hPutStrLn, IOMode(WriteMode))
-import System.Directory (getHomeDirectory)
+import System.IO (withFile,  hPutStrLn, IOMode(WriteMode,ReadMode))
+import System.Directory (getHomeDirectory,removeFile,doesFileExist)
+import System.Posix.Files (createNamedPipe,unionFileModes,ownerReadMode,ownerWriteMode,groupReadMode,groupWriteMode)
 import Control.Concurrent
-import Control.Monad (join,(>=>))
+import Control.Monad (join,when,(>=>))
 
 data Config = Config { 
   qmlDir :: Text
@@ -126,6 +129,12 @@ savePasswords :: [Site] -> IO ()
 savePasswords sites = do 
   conf <- loadConfig
   withFile (unpack $ passwordsFile conf) WriteMode (`PrettyText.hPutDoc` Dhall.Pretty.prettyCharacterSet Unicode (embed inject sites))
+
+cleanPipe :: String -> IO ()
+cleanPipe x = do
+  withFile x ReadMode $ \h -> do
+    junk <- DB.hGetNonBlocking  h 100
+    print $ decodeUtf8 junk
 
 waitOnPipe :: String -> (String -> IO ExitCode) -> IO ExitCode
 waitOnPipe x f = do
@@ -379,6 +388,7 @@ logins aa =
 amkbd :: Text -> IO ExitCode
 amkbd s = do
   conf <- loadConfig
+  cleanPipe (unpack $ keyboardPipe conf)
   waitOnPipe 
     (unpack $ keyboardPipe conf)
     (\cmd -> 
@@ -395,6 +405,6 @@ amkbd s = do
           putStrLn "-- skipping"
           return ExitSuccess
         x -> do 
-          putStrLn $ "-- unknown command on keyboardpipe: " ++ x
+          putStrLn $ "-- unknown command on keyboardpipe: >>" ++ x ++ "<<"
           return (ExitFailure 1)
         )

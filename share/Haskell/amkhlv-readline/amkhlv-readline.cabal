@@ -79,6 +79,7 @@ library
                     , aeson
                     , bytestring
                     , haskeline 
+                    , unix
                      
     -- Directories containing source files.
     hs-source-dirs:   src
