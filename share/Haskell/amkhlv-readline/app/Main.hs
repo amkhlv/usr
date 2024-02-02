@@ -37,7 +37,7 @@ main  = do
     where
         loop :: [Site] -> InputT IO ()
         loop ss = do
-            minput <- getInputLine "% "
+            minput <- getInputLine "━━━━━━━┥"
             case T.words . T.pack <$> minput of
                 Nothing -> return ()
                 Just [] -> loop ss

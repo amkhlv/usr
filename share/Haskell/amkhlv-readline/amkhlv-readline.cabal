@@ -80,6 +80,7 @@ library
                     , bytestring
                     , haskeline 
                     , unix
+                    , strict-io
                      
     -- Directories containing source files.
     hs-source-dirs:   src

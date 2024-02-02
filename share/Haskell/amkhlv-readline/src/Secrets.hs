@@ -53,13 +53,16 @@ import qualified Data.Set as DS
 import qualified Data.Text.IO as TIO
 import System.Process
 import GHC.IO.Handle
+import GHC.IO.Handle.FD(withFileBlocking)
 import GHC.IO.Exception
 import qualified Prettyprinter.Render.Text as PrettyText
-import System.IO (withFile,  hPutStrLn, IOMode(WriteMode,ReadMode))
+import System.IO (withFile,   hPutStrLn, IOMode(WriteMode,ReadMode,ReadWriteMode))
 import System.Directory (getHomeDirectory,removeFile,doesFileExist)
 import System.Posix.Files (createNamedPipe,unionFileModes,ownerReadMode,ownerWriteMode,groupReadMode,groupWriteMode)
 import Control.Concurrent
-import Control.Monad (join,when,(>=>))
+import Control.Monad (join,when,(>=>),(<=<))
+import qualified System.IO.Strict as SIO
+
 
 data Config = Config { 
   qmlDir :: Text
@@ -132,9 +135,21 @@ savePasswords sites = do
 
 cleanPipe :: String -> IO ()
 cleanPipe x = do
-  withFile x ReadMode $ \h -> do
-    junk <- DB.hGetNonBlocking  h 100
-    print $ decodeUtf8 junk
+  (Nothing, Nothing, Nothing, hrm) <- createProcess
+    (proc "rm" [x])
+    { std_in  = Inherit
+    , std_out = Inherit
+    , std_err = Inherit
+    }
+  _ <- waitForProcess hrm
+  (Nothing, Nothing, Nothing, hmk) <- createProcess
+    (proc "mkfifo" [x])
+    { std_in  = Inherit
+    , std_out = Inherit
+    , std_err = Inherit
+    }
+  _ <- waitForProcess hmk
+  return ()
 
 waitOnPipe :: String -> (String -> IO ExitCode) -> IO ExitCode
 waitOnPipe x f = do
@@ -229,8 +244,8 @@ chooser xs cb = do
   hFlush stdin
   hClose stdin
   forkIO $ do
-    n <- read <$> hGetContents stdout 
-    print n
+    n <- (SIO.run $ read <$> SIO.hGetContents stdout)
+    -- print n
     hClose stdout
     cb n
     return ()
@@ -257,9 +272,9 @@ editAccount acc  = do
   hPutStrLn stdin $ DBLC.unpack (encode acc)
   hFlush stdin
   hClose stdin
-  j <- hGetContents stdout 
+  j <- SIO.run $ SIO.hGetContents stdout 
   let newacc = decode $ DBLC.pack j 
-  maybe (putStrLn "-- edit cancelled") (print . hideSecrets) newacc
+  -- maybe (putStrLn "-- edit cancelled") (print . hideSecrets) newacc
   hClose stdout
   waitForProcess h >>= print
   return newacc
@@ -273,8 +288,7 @@ deleteAccount acc = do
   hPutStrLn stdin $ DBLC.unpack (encode acc)
   hFlush stdin
   hClose stdin
-  yn <- hGetContents stdout 
-  putStrLn yn
+  yn <- SIO.run $ SIO.hGetContents stdout 
   hClose stdout
   waitForProcess h >>= print
   if strstrip yn == "yes" 
@@ -311,9 +325,9 @@ newAccount ml = do
   hPutStrLn stdin $ DBLC.unpack (encode $ defaultAccount ml (defaultLogin conf))
   hFlush stdin
   hClose stdin
-  j <- hGetContents stdout 
+  j <- SIO.run $ SIO.hGetContents stdout 
   let newacc = decode $ DBLC.pack j 
-  maybe (putStrLn "-- cancelled") (print . hideSecrets) newacc
+  -- maybe (putStrLn "-- cancelled") (print . hideSecrets) newacc
   hClose stdout
   waitForProcess h >>= print
   return newacc
