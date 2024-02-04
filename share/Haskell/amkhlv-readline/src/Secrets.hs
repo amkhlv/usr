@@ -63,12 +63,27 @@ import Control.Concurrent
 import Control.Monad (join,when,(>=>),(<=<))
 import qualified System.IO.Strict as SIO
 
+-- #110D0E,#312728,#721415,#9B141B,#EDD8B9,#110D0E,#312728,#721415
 
 data Config = Config { 
   qmlDir :: Text
   , passwordsFile :: Text
   , keyboardPipe :: Text 
   , defaultLogin :: Text
+  , bgColorChooseSiteWindow :: Text
+  , bgColorChooseAccountWindow :: Text
+  , bgColorSiteIndex :: Text
+  , fgColorSiteIndex :: Text
+  , bgColorSiteChoice :: Text
+  , fgColorSiteChoice :: Text
+  , bgColorAccountIndex :: Text
+  , fgColorAccountIndex :: Text
+  , bgColorAccountChoice :: Text
+  , fgColorAccountChoice :: Text
+  , bgColorEditAccountWindow :: Text
+  , bgColorEditorNormalField :: Text
+  , bgColorEditorSecretField :: Text
+  , bgColorNewAccountWindow  :: Text
   }
     deriving (DH.Generic, Show)
 
@@ -230,17 +245,29 @@ withtags tgs ss =
     | s <- ss
     ]
  
-newtype OptionsJSON = OptionsJSON { options :: [Text] } deriving (Generic,Show)
+data OptionJSON = OptionJSON {
+  txt :: Text
+  , fgIndex :: Text
+  , bgIndex :: Text
+  , fgChoice :: Text
+  , bgChoice :: Text
+} deriving (Generic,Show)
+instance ToJSON OptionJSON
+
+data OptionsJSON = OptionsJSON { 
+   colorWindow :: Text,
+   options :: [OptionJSON] 
+  } deriving (Generic,Show)
 instance ToJSON OptionsJSON
 
 
-chooser :: [Text] -> (Int -> IO ExitCode) -> IO ExitCode 
+chooser :: OptionsJSON -> (Int -> IO ExitCode) -> IO ExitCode 
 chooser xs cb = do 
   conf <- loadConfig
   (Just stdin, Just stdout, Nothing, h) <- createProcess 
     (proc "ioqml" [unpack (qmlDir conf) ++ "/chooser.qml"])
     { std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit }
-  hPutStrLn stdin $ DBLC.unpack (encode (OptionsJSON { options = xs }))
+  hPutStrLn stdin $ DBLC.unpack (encode xs)
   hFlush stdin
   hClose stdin
   forkIO $ do
@@ -376,17 +403,36 @@ edit :: [Site] -> Nick -> Text -> IO [Site]
 edit ss nck lgn = sequence [ if nck == nick s then editSite s lgn else return s | s <- ss ]
 
 arm :: [Site] -> IO ExitCode
-arm ss = 
+arm ss = do
+  conf <- loadConfig
   chooser 
-  (nick <$> ss) 
-  (\n ->  
-    chooser 
-    (login <$> accounts (ss !! n))  
-    (\m -> do 
-      amkbd $ login (accounts (ss !! n) !! m)
-      amkbd $ password (accounts (ss !! n) !! m)
+    OptionsJSON { 
+      colorWindow = bgColorChooseSiteWindow conf,
+      options = [ 
+        OptionJSON {
+          txt = nick s 
+          , bgIndex = bgColorSiteIndex conf
+          , fgIndex = fgColorSiteIndex conf
+          , bgChoice = bgColorSiteChoice conf
+          , fgChoice = fgColorSiteChoice conf
+        } | s <- ss ] }
+    (\n ->  
+      chooser 
+      OptionsJSON { 
+        colorWindow = bgColorChooseAccountWindow conf,
+        options = [
+          OptionJSON {
+            txt = login a
+            , bgIndex = bgColorAccountIndex conf
+            , fgIndex = fgColorAccountIndex conf
+            , bgChoice = bgColorAccountChoice conf
+            , fgChoice = fgColorAccountChoice conf
+          } | a <- accounts (ss !! n)] }
+      (\m -> do 
+        amkbd $ login (accounts (ss !! n) !! m)
+        amkbd $ password (accounts (ss !! n) !! m)
+        )
       )
-    )
 
 nicks :: [Site] -> IO ()
 nicks ss = 

@@ -16,6 +16,7 @@ ApplicationWindow {
     signal putStr(string msg)
     signal killThread()
     onClosing: function() { if (control.dismiss == 0)  killThread(); }
+    color: "#503030";
 
     Item {
         id: control
@@ -31,19 +32,34 @@ ApplicationWindow {
 // things below this line can be changed:
 
         property var options: [];
+        property string colorWindow: "#000020";
+        onColorWindowChanged: function() {
+            mainwin.color = colorWindow;
+        }
+
         onOptionsChanged: function() {
             for (var i = 0; i < options.length ; i++) {
-                choices.model.append({"ind": i, "txt": options[i]})
+                choices.model.append({
+                                         "ind": i,
+                                         "txt": options[i]["txt"],
+                                         "bgIndex": options[i]["bgIndex"],
+                                         "fgIndex": options[i]["fgIndex"],
+                                         "bgChoice": options[i]["bgChoice"],
+                                         "fgChoice": options[i]["fgChoice"]
+                                     })
             }
         }
     }
+
 
     GridLayout {
         id: vbox
         columns: 1;
         focus: true
+        columnSpacing: 1;
+        rowSpacing: 2;
         Keys.onPressed: {
-            if (event.key == Qt.Key_Escape) {
+            if (event.key === Qt.Key_Escape) {
                 mainwin.close()
             } else {
                 putStr(event.key - Qt.Key_0)
@@ -56,9 +72,20 @@ ApplicationWindow {
             delegate:  RowLayout {
                 Label {
                     text: ind
+                    color: fgIndex
+                    font.pointSize: 14
+                    font.bold: true
+                    background: Rectangle { 
+                        color: bgIndex
+                        radius: 5
+                    }
                 }
                 Label {
                     text: txt
+                    color: fgChoice
+                    font.pointSize: 14
+                    font.family: "Monospace"
+                    background: Rectangle { color: bgChoice }
                 }
             }
         }
