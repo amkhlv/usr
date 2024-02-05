@@ -81,9 +81,19 @@ data Config = Config {
   , bgColorAccountChoice :: Text
   , fgColorAccountChoice :: Text
   , bgColorEditAccountWindow :: Text
-  , bgColorEditorNormalField :: Text
-  , bgColorEditorSecretField :: Text
   , bgColorNewAccountWindow  :: Text
+  , bgColorEditorNormalField :: Text
+  , fgColorEditorNormalField :: Text
+  , bgColorEditorSecretField :: Text
+  , fgColorEditorSecretField :: Text
+  , bgOKBtn :: Text
+  , fgOKBtn :: Text
+  , bgCancelBtn :: Text
+  , fgCancelBtn :: Text
+  , bgYesBtn :: Text
+  , fgYesBtn :: Text
+  , bgNoBtn :: Text
+  , fgNoBtn :: Text
   }
     deriving (DH.Generic, Show)
 
@@ -289,7 +299,19 @@ hideSecrets a = a {
   forgotPasswordChallenge = pack . (const '*' <$>) . unpack <$> forgotPasswordChallenge a,
   secretNotes = pack . (const '*' <$>) . unpack <$> secretNotes a
   }
-  
+data EditorStyleJSON = EditorStyleJSON {
+  bgEditorWindow :: Text
+  , bgNormalField :: Text
+  , fgNormalField :: Text
+  , bgSecretField :: Text
+  , fgSecretField :: Text
+  , bgOKButton :: Text
+  , fgOKButton :: Text
+  , bgCancelButton :: Text
+  , fgCancelButton :: Text
+  , isConfirmation :: Bool
+}  deriving (Generic,Show)
+instance ToJSON EditorStyleJSON
 editAccount :: Account -> IO (Maybe Account)
 editAccount acc  = do
   conf <- loadConfig
@@ -297,6 +319,19 @@ editAccount acc  = do
     (proc "ioqml" [unpack (qmlDir conf) ++ "/editor.qml"])
     { std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit }
   hPutStrLn stdin $ DBLC.unpack (encode acc)
+  let style = EditorStyleJSON {
+    bgEditorWindow = bgColorEditAccountWindow conf
+    , bgNormalField = bgColorEditorNormalField conf
+    , fgNormalField = fgColorEditorNormalField conf
+    , bgSecretField = bgColorEditorSecretField conf
+    , fgSecretField = fgColorEditorSecretField conf
+    , bgOKButton = bgOKBtn conf
+    , fgOKButton = fgOKBtn conf
+    , bgCancelButton = bgCancelBtn conf
+    , fgCancelButton = fgCancelBtn conf
+    , isConfirmation = False 
+  }
+  hPutStrLn stdin $ DBLC.unpack (encode style)
   hFlush stdin
   hClose stdin
   j <- SIO.run $ SIO.hGetContents stdout 
@@ -310,9 +345,22 @@ deleteAccount :: Account -> IO (Maybe Account)
 deleteAccount acc = do
   conf <- loadConfig
   (Just stdin, Just stdout, Nothing, h) <- createProcess 
-    (proc "ioqml" [unpack (qmlDir conf) ++ "/confirmation.qml"])
+    (proc "ioqml" [unpack (qmlDir conf) ++ "/editor.qml"])
     { std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit }
   hPutStrLn stdin $ DBLC.unpack (encode acc)
+  let style = EditorStyleJSON {
+    bgEditorWindow = bgColorEditAccountWindow conf
+    , bgNormalField = bgColorEditorNormalField conf
+    , fgNormalField = fgColorEditorNormalField conf
+    , bgSecretField = bgColorEditorSecretField conf
+    , fgSecretField = fgColorEditorSecretField conf
+    , bgOKButton = bgYesBtn conf
+    , fgOKButton = fgYesBtn conf
+    , bgCancelButton = bgNoBtn conf
+    , fgCancelButton = fgNoBtn conf
+    , isConfirmation = True 
+  }
+  hPutStrLn stdin $ DBLC.unpack (encode style)
   hFlush stdin
   hClose stdin
   yn <- SIO.run $ SIO.hGetContents stdout 
@@ -350,6 +398,19 @@ newAccount ml = do
     (proc "ioqml" [unpack (qmlDir conf) ++ "/editor.qml"])
     { std_in = CreatePipe, std_out = CreatePipe, std_err = Inherit }
   hPutStrLn stdin $ DBLC.unpack (encode $ defaultAccount ml (defaultLogin conf))
+  let style = EditorStyleJSON {
+    bgEditorWindow = bgColorNewAccountWindow conf
+    , bgNormalField = bgColorEditorNormalField conf
+    , fgNormalField = bgColorEditorNormalField conf
+    , bgSecretField = bgColorEditorSecretField conf
+    , fgSecretField = bgColorEditorSecretField conf
+    , bgOKButton = bgOKBtn conf
+    , fgOKButton = fgOKBtn conf
+    , bgCancelButton = bgCancelBtn conf
+    , fgCancelButton = fgCancelBtn conf
+    , isConfirmation = False 
+  }
+  hPutStrLn stdin $ DBLC.unpack (encode style)
   hFlush stdin
   hClose stdin
   j <- SIO.run $ SIO.hGetContents stdout 
