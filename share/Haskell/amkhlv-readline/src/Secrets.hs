@@ -224,17 +224,18 @@ showAll l s  = let a = head [ acc | acc <- accounts s, login acc == l ] in
 
 showAccount :: Account -> IO ()
 showAccount s = do
-  putStrLn . unpack $ append (pack "  login: ") (login s)
+  putStrLn ""
+  putStrLn . unpack $ append (pack " -- login: ") (login s)
   traverse_ (putStrLn . unpack . append (pack "    description: ")) (description s)
   traverse_ (putStrLn . unpack . append (pack "    notes:       ")) (notes s)
-  traverse_ (putStrLn . const "*** secret notes ***") (secretNotes s)
+  traverse_ (putStrLn . const "    *** secret notes ***") (secretNotes s)
 
 search :: [Site] -> Text -> IO ()
 search ss nk = sequence_ [ 
   do
-    putStrLn (unpack (nick s)) >> putStrLn (unpack (url s)) >> sequence [ showAccount a | a <- accounts s ]
+    putStrLn "" >> putStr (unpack (nick s) ++ "  ") >> putStrLn (unpack (url s)) >> sequence [ showAccount a | a <- accounts s ]
     | s <- searchSites ss nk
-    ]
+    ] >> putStrLn ""
 
 nulltags :: [Site] -> IO ()
 nulltags = withtags [""] 
@@ -401,9 +402,9 @@ newAccount ml = do
   let style = EditorStyleJSON {
     bgEditorWindow = bgColorNewAccountWindow conf
     , bgNormalField = bgColorEditorNormalField conf
-    , fgNormalField = bgColorEditorNormalField conf
+    , fgNormalField = fgColorEditorNormalField conf
     , bgSecretField = bgColorEditorSecretField conf
-    , fgSecretField = bgColorEditorSecretField conf
+    , fgSecretField = fgColorEditorSecretField conf
     , bgOKButton = bgOKBtn conf
     , fgOKButton = fgOKBtn conf
     , bgCancelButton = bgCancelBtn conf

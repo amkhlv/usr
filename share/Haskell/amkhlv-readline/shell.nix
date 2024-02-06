@@ -8,9 +8,9 @@ mkShell rec {
               zlib
               zlib.dev
               bintools
-              racket
               libedit
               editline
+              haskellPackages.hasktags
   ];
   LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
 }
