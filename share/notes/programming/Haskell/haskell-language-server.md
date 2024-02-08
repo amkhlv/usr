@@ -1,17 +1,8 @@
 Haskell Language Server
 =======================
 
-Installation
-------------
 
-    ghcup install hls
-
-Sometimes need hie-bios config
-------------------------------
-
-__It seems that this step is not needed__
-
-    stack install implicit-hie
+    cabal install implicit-hie
     
     gen-hie > hie.yaml
 

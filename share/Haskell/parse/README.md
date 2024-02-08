@@ -1,5 +1,0 @@
-# Installation
-
-    ./install.sh
-
-

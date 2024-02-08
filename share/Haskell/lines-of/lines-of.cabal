@@ -13,47 +13,59 @@ build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.md
 
-executable lines-of
+library
+  exposed-modules:     Common, GUI
+  build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process, optparse-applicative, hxt
   hs-source-dirs:      src
+  default-language:    Haskell2010
+
+executable lines-of
+  hs-source-dirs:      config, src
   ghc-options:         -main-is Main
   main-is:             Main.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process, optparse-applicative, hxt
+  other-modules:       Common, GUI
 
 executable lines-of-bancas
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is Bancas
   main-is:             Bancas.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-congressos
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is Congressos
   main-is:             Congressos.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-seminarios
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is Seminarios
   main-is:             Seminarios.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-visitas
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is Visitas
   main-is:             Visitas.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-SIMcards
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is SIMcards
   main-is:             SIMcards.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-example
   hs-source-dirs:      src, tables
@@ -61,20 +73,23 @@ executable lines-of-example
   main-is:             Example.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-monthly
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is Regevents
   main-is:             Regevents.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable lines-of-viagens
-  hs-source-dirs:      src, /home/andrei/.config/amkhlv/lines-of
+  hs-source-dirs:      config, src 
   ghc-options:         -main-is Viagens
   main-is:             Viagens.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, process
+  other-modules:       Common, GUI
 
 executable monthly
   hs-source-dirs:      src
@@ -82,6 +97,7 @@ executable monthly
   main-is:             Monthly.hs
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5, sqlite-simple, text, gtk3, time, split, process
+  other-modules:       Common, GUI
 
 test-suite mytest
   type:                exitcode-stdio-1.0
