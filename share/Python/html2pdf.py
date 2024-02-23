@@ -9,6 +9,7 @@ import hy
 import sys
 import shutil
 import re
+import os
 
 default_transformer="(fn [p] (+ p #[[.pdf]]))"
 parser = argparse.ArgumentParser(
@@ -63,13 +64,15 @@ options.set_preference("print.print_footercenter", "")
 options.set_preference("print.print_footerleft","")
 options.set_preference("print.print_footerright","")
 
-driver = start_firefox('https://www.google.com', options=options)
+driver = start_firefox('http://localhost/locals/', options=options)
 
 for pin in sys.stdin:
     p = prep_path(pin)
     driver.get(pin.rstrip())
     driver.execute_script('window.print();')
-    sleep(2)
+    sleep(1)
+    while not os.path.exists('/tmp/amkhlv-html2pdf.pdf'): sleep(1)
+    sleep(1)
     pout = hy.eval(hy.read_many(f'({args.transformer} p)'))
     shutil.move('/tmp/amkhlv-html2pdf.pdf',pout)
 
