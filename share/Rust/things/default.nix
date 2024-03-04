@@ -9,6 +9,6 @@ rustPlatform.buildRustPackage rec {
   meta = with stdenv.lib; {
     description = "launcher";
   };
-  nativeBuildInputs = [ pkgs.pkg-config pkgs.python3 pkgs.gcc ];
-  buildInputs = [ pkgs.pkgconfig pkgs.cairo pkgs.pango pkgs.gdk-pixbuf pkgs.gtk3 pkgs.glibc pkgs.glib  ];
+  nativeBuildInputs = [ pkgs.pkg-config pkgs.gcc ];
+  buildInputs = [ pkgs.pkg-config pkgs.gcc pkgs.cairo pkgs.pango pkgs.gdk-pixbuf pkgs.gtk3 pkgs.glibc pkgs.glib pkgs.xorg.libxcb pkgs.xorg.libXmu pkgs.xorg.xcbutilwm ];
 }

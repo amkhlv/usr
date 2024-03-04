@@ -5,10 +5,10 @@ rustPlatform.buildRustPackage rec {
   version = "1.0";
   src = builtins.path { path = ./.; name = "amkhlv-utils"; };
 
-  cargoHash = "sha256-2cTeLdwu2xHKYegCxFvnPf6R4WSrtEFJxrYIRWT+PZ4=";
+  cargoHash = "sha256-twskU8hBldKljfELBbQFAMaFZFx+h+wBzfFwmxzpoQk=";
   meta = with stdenv.lib; {
     description = "various utils";
   };
-  nativeBuildInputs = [ pkgs.pkg-config ];
-  buildInputs = [ pkgs.pkgconfig pkgs.glibc pkgs.glib pkgs.openssl ];
+  nativeBuildInputs = [ pkgs.pkg-config  pkgs.gcc ];
+  buildInputs = [ pkgs.pkg-config pkgs.glibc pkgs.glib pkgs.openssl ];
 }
