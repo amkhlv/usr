@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser(
 #parser.add_argument('-o','--output', help='absolute (!) path to output filename')  
 parser.add_argument('-t', '--transformer', help = 'transformer function; default is ' + default_transformer, default=default_transformer)  
 parser.add_argument('-n', '--dry', action = "store_true", help='just show output paths')
+parser.add_argument('-d', '--delay', help = "delay in seconds before starting printint", default = 1)
 args = parser.parse_args()
 
 def prep_path(p):
@@ -69,6 +70,7 @@ driver = start_firefox('http://localhost/locals/', options=options)
 for pin in sys.stdin:
     p = prep_path(pin)
     driver.get(pin.rstrip())
+    sleep(int(args.delay))
     driver.execute_script('window.print();')
     sleep(1)
     while not os.path.exists('/tmp/amkhlv-html2pdf.pdf'): sleep(1)
