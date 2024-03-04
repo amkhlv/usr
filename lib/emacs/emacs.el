@@ -250,6 +250,10 @@ There are two things you can do about this warning:
 (add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "<C-M-tab>") 'bystroTeX-reveal)))
 (add-hook 'racket-mode-hook #'(lambda () (local-set-key (kbd "C-`") 'bystroTeX-unindent)))
 (add-hook 'racket-mode-hook #'(lambda () (highlight-regexp "TODO" 'hi-amkhlv-todo)))
+(font-lock-add-keywords
+      'racket-mode
+      '(("\\(TODO\\)" 1 font-lock-warning-face t)))
+
 (defun mylambda () (interactive) (ucs-insert #x3bb))
 (add-hook 'scribble-mode-hook #'(lambda () (local-set-key (kbd "C-c l") 'mylambda)))
 (add-outline 'scribble-mode-hook)

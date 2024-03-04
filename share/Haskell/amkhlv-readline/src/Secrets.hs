@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 
 module Secrets (
 loadConfig,
@@ -27,6 +29,7 @@ changeURL,
 hidePassword,
 hideSecrets,
 showAll,
+showPassword,
 Nick,
 URL,
 Account(..),
@@ -281,13 +284,38 @@ chooser xs cb = do
   hPutStrLn stdin $ DBLC.unpack (encode xs)
   hFlush stdin
   hClose stdin
-  forkIO $ do
-    n <- (SIO.run $ read <$> SIO.hGetContents stdout)
-    -- print n
+  _ <- forkIO $ do
+    n <- SIO.run $ read <$> SIO.hGetContents stdout
     hClose stdout
-    cb n
+    _ <- cb n
     return ()
   waitForProcess h
+
+data PasswdJSON = PasswdJSON {
+  passwd :: Text
+} deriving (Generic, Show)
+instance ToJSON PasswdJSON
+showPassword :: [Site] -> Nick -> Text -> IO ()
+showPassword ss nk l = do
+  conf <- loadConfig
+  let ms = searchSitesX ss nk in
+    maybe 
+    (return ()) 
+    (\s -> 
+      sequence_ 
+      [ do 
+          (Just stdin, Nothing, Nothing, h) <- createProcess 
+            (proc "ioqml" [unpack (qmlDir conf) ++ "/show-password.qml"])
+            { std_in = CreatePipe, std_out = Inherit, std_err = Inherit }
+          hPutStrLn stdin $ DBLC.unpack (encode $ PasswdJSON { passwd = password a })
+          hFlush stdin
+          hClose stdin
+          _ <- waitForProcess h
+          return ()
+       | a <- accounts s, login a == l ]
+      )
+    ms
+    
 
 hidePassword :: Account -> Account
 hidePassword a = a {

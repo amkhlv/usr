@@ -21,6 +21,7 @@ help = unlines [
     , "setnick <nick> <newnick>"
     , "show <nick> <login>"
     , "showAll <nick> <login> --- will include secret notes"
+    , "showPassword <nick> <login>"
     , "help"
     , "quit"
     ]
@@ -61,5 +62,6 @@ main  = do
                 Just ["show",nk,l] -> liftIO (findAndShowAccount ss nk l) >> loop ss
                 Just ("tags":tgs) -> liftIO (withtags tgs ss) >> loop ss
                 Just ["showAll",nk,l] -> liftIO (let ms = searchSitesX ss nk in maybe (putStrLn "nick not found") (showAll l) ms) >> loop ss
+                Just ["showPassword",nk,l] -> liftIO (showPassword ss nk l) >> loop ss
                 Just ["clean",nk] -> liftIO (cleanupSite nk ss >>= savess) >>= loop
                 _ -> liftIO (putStrLn "-- I did not understand ...") >> loop ss
