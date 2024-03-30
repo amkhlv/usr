@@ -1,0 +1,15 @@
+[package]
+name = "xml2docx"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+docx-rs = "0.4.11"
+serde = {version="1.0.197", features=["derive"]}
+serde-xml-rs = "0.6.0"
+
+
+
