@@ -1,0 +1,25 @@
+grammar {
+         start = docx
+         run = element r {
+                   attribute size { xsd:float }?,
+                   attribute color { text }?,
+                   attribute b { text }?,
+                   attribute i { text }?,
+                   attribute u { text }?,
+                   text
+               }
+         hyperlink = element a { attribute href { text }, text }
+         image = element img { attribute src { text }, text }
+         paragraph = element p {
+                         attribute size { text }?,
+                         attribute color { text }?,
+                         attribute align { text }?,
+                         (run | hyperlink |image)*
+                     }
+         table = element table { element tr { element td { doc-child* }* }* }
+         doc-child = (paragraph | table)
+         docx = element root { (paragraph|table)* }
+}
+
+
+

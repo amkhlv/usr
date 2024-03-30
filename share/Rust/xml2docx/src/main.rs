@@ -53,6 +53,7 @@ struct Td {
 enum ParaChild {
     R(R),
     A(A),
+    Img(Img),
 }
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct R {
@@ -69,6 +70,12 @@ struct A {
     href: String,
     #[serde(rename = "$value")]
     value: String,
+}
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+struct Img {
+    src: String,
+    #[serde(rename = "$value")]
+    caption: String,
 }
 
 const ALIGN_CENTER: &str = "center";
@@ -141,6 +148,12 @@ fn mkpara(para: P) -> Paragraph {
                     &run_prop,
                 ));
                 p = p.add_hyperlink(h)
+            }
+            ParaChild::Img(img) => {
+                let run = Run::new()
+                    .add_image(Pic::new(&std::fs::read(img.src).unwrap()))
+                    .add_text(img.caption);
+                p = p.add_run(run);
             }
         }
     }
