@@ -10,7 +10,7 @@ use std::fs::File;
 struct Args {
     /// input XML file
     #[arg(short, long)]
-    input: String,
+    input: Option<String>,
 
     /// Number of times to greet
     #[arg(short, long)]
@@ -179,9 +179,11 @@ fn mktable(tbl: Table) -> docx_rs::Table {
 }
 fn main() -> Result<(), DocxError> {
     let args = Args::parse();
-    let input = File::open(args.input).expect("input file not found");
-
-    let doc: Root = from_reader(input).unwrap();
+    let doc: Root = if let Some(xmlfile) = args.input {
+        from_reader(File::open(xmlfile).expect("input file not found")).unwrap()
+    } else {
+        from_reader(std::io::stdin()).unwrap()
+    };
     let path = std::path::Path::new(&args.output);
     let output = std::fs::File::create(path).unwrap();
     let mut docx = Docx::new();
