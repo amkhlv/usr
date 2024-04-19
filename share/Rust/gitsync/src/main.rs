@@ -1,6 +1,7 @@
 use std::cell::{Cell, RefCell};
 use std::{env, io};
 
+use clap::{Parser, Subcommand};
 use cursive::direction::Orientation;
 use cursive::view::Nameable;
 use cursive::views::{
@@ -13,7 +14,19 @@ use std::io::prelude::*;
 use std::process::Command;
 use std::rc::Rc;
 
+#[derive(Parser)]
+struct Clops {
+    /// add new files
+    #[clap(short, long)]
+    add: bool,
+
+    /// branch name
+    #[clap(short, long, default_value = "main")]
+    branch: String,
+}
+
 fn main() {
+    let clops = Clops::parse();
     let mut siv = cursive::termion();
     let command: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let cmd = command.clone();
@@ -34,15 +47,15 @@ fn main() {
             .map(|line| line.trim())
         {
             let mut split = line.split_whitespace();
-            if split.next() == Some("M") {
+            if split.next() == Some(if clops.add { "??" } else { "M" }) {
                 let mut hbox = LinearLayout::new(Orientation::Horizontal);
                 hbox.add_child(Checkbox::new());
                 hbox.add_child(TextView::new(&format!("{}", split.next().unwrap())));
-                list = list.child("", hbox);
+                list = list.child(if clops.add { "?" } else { "M" }, hbox);
             }
         }
         mainwin.add_child(list.with_name("modified"));
-        mainwin.add_child(TextView::new(" mod↑"));
+        mainwin.add_child(TextView::new(if clops.add { " new↑" } else { " mod↑" }));
         mainwin.add_child(Button::new("push", move |s| {
             s.call_on_name("modified", |xs: &mut ListView| {
                 //let mut cmd = "git add ".to_owned();
@@ -98,7 +111,7 @@ fn main() {
                         let mut gitpush = Command::new("git")
                             .arg("push")
                             .arg("origin")
-                            .arg("main")
+                            .arg(clops.branch)
                             .spawn()
                             .expect("could not run git push");
                         if let Ok(exit_status_2) = gitpush.wait() {
