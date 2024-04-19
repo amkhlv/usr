@@ -8,8 +8,22 @@ grammar {
                    attribute u { text }?,
                    text
                }
-         hyperlink = element a { attribute href { text }, text }
-         image = element img { attribute src { text }, text }
+         hyperlink = element a { 
+		                 attribute href { text },
+                         attribute size { xsd:float }?,
+                         attribute color { text }?,
+                         attribute b { text }?,
+                         attribute i { text }?,
+                         text
+                     }
+         image = element img {
+                     attribute src { text },
+                     attribute size { xsd:float }?,
+                     attribute color { text }?,
+                     attribute b { text }?,
+                     attribute i { text }?,
+                     attribute u { text }?,
+                     text }
          paragraph = element p {
                          attribute size { text }?,
                          attribute color { text }?,

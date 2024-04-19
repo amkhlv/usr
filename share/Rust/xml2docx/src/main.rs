@@ -68,12 +68,21 @@ struct R {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct A {
     href: String,
+    size: Option<usize>,
+    color: Option<String>,
+    b: Option<String>,
+    i: Option<String>,
     #[serde(rename = "$value")]
     value: String,
 }
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Img {
     src: String,
+    textsize: Option<usize>,
+    textcolor: Option<String>,
+    b: Option<String>,
+    i: Option<String>,
+    u: Option<String>,
     #[serde(rename = "$value")]
     caption: String,
 }
@@ -139,10 +148,14 @@ fn mkpara(para: P) -> Paragraph {
                 let h = Hyperlink::new(a.href, HyperlinkType::External).add_run(mkrun(
                     R {
                         value: a.value,
-                        color: Some(String::from("0000FF")),
-                        size: None,
-                        b: None,
-                        i: None,
+                        color: if a.color.is_some() {
+                            a.color
+                        } else {
+                            Some(String::from("0000FF"))
+                        },
+                        size: a.size,
+                        b: a.b,
+                        i: a.i,
                         u: Some(String::from("")),
                     },
                     &run_prop,
@@ -150,9 +163,19 @@ fn mkpara(para: P) -> Paragraph {
                 p = p.add_hyperlink(h)
             }
             ParaChild::Img(img) => {
-                let run = Run::new()
-                    .add_image(Pic::new(&std::fs::read(img.src).unwrap()))
-                    .add_text(img.caption);
+                let run = mkrun(
+                    R {
+                        color: img.textcolor,
+                        size: img.textsize,
+                        b: img.b,
+                        i: img.i,
+                        u: img.u,
+                        value: String::from(""),
+                    },
+                    &run_prop,
+                )
+                .add_image(Pic::new(&std::fs::read(img.src).unwrap()))
+                .add_text(img.caption);
                 p = p.add_run(run);
             }
         }
