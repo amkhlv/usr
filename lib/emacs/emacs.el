@@ -351,7 +351,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(nix-mode purescript-mode lsp-metals rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
+   '(rnc-mode nix-mode purescript-mode lsp-metals rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

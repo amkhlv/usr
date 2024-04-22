@@ -26,6 +26,10 @@ path = "src/psql.rs"
 name = "amkhlv-docx"
 path = "src/docx.rs"
 
+[[bin]]
+name = "md2html"
+path = "src/md2html.rs"
+
 [lib]
 name = "amkhlv"
 
@@ -48,3 +52,4 @@ glob = "0.3.1"
 chrono = "0.4.23"
 docx-rs = "0.4.6"
 steel-core = "0.5.0"
+markdown = "0.3.0"
