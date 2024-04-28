@@ -3,6 +3,7 @@ use std::{env, io};
 
 use clap::{Parser, Subcommand};
 use cursive::direction::Orientation;
+use cursive::event::Key;
 use cursive::view::Nameable;
 use cursive::views::{
     Button, Checkbox, Dialog, EditView, LinearLayout, ListChild, ListView, PaddedView, Panel,
@@ -16,10 +17,6 @@ use std::rc::Rc;
 
 #[derive(Parser)]
 struct Clops {
-    /// add new files
-    #[clap(short, long)]
-    add: bool,
-
     /// branch name
     #[clap(short, long, default_value = "main")]
     branch: String,
@@ -28,6 +25,10 @@ struct Clops {
 fn main() {
     let clops = Clops::parse();
     let mut siv = cursive::termion();
+    siv.add_global_callback(Key::Esc, |s| s.quit());
+    let cancelled: Rc<RefCell<bool>> = Rc::new(RefCell::new(true));
+    let cancelled1 = cancelled.clone();
+
     let command: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let cmd = command.clone();
 
@@ -47,16 +48,19 @@ fn main() {
             .map(|line| line.trim())
         {
             let mut split = line.split_whitespace();
-            if split.next() == Some(if clops.add { "??" } else { "M" }) {
-                let mut hbox = LinearLayout::new(Orientation::Horizontal);
-                hbox.add_child(Checkbox::new());
-                hbox.add_child(TextView::new(&format!("{}", split.next().unwrap())));
-                list = list.child(if clops.add { "?" } else { "M" }, hbox);
+            if let Some(x) = split.next() {
+                if x.contains("M") || x.contains("?") {
+                    let mut hbox = LinearLayout::new(Orientation::Horizontal);
+                    hbox.add_child(Checkbox::new());
+                    hbox.add_child(TextView::new(&format!("{}", split.next().unwrap())));
+                    list = list.child(if x.contains("M") { "M" } else { "?" }, hbox);
+                }
             }
         }
         mainwin.add_child(list.with_name("modified"));
-        mainwin.add_child(TextView::new(if clops.add { " new↑" } else { " mod↑" }));
+        mainwin.add_child(TextView::new(" mod↑"));
         mainwin.add_child(Button::new("push", move |s| {
+            cancelled1.replace(false);
             s.call_on_name("modified", |xs: &mut ListView| {
                 //let mut cmd = "git add ".to_owned();
                 for x in xs.children() {
@@ -88,6 +92,14 @@ fn main() {
     });
 
     siv.run();
+    let was_cancelled = cancelled.borrow();
+    std::cell::Ref::map(was_cancelled, |x| {
+        if *x {
+            println!("user cancelled");
+            std::process::exit(0);
+        }
+        x
+    });
     let filelist = command.borrow();
     let mut gitadd = Command::new("git")
         .arg("add")
