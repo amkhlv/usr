@@ -26,8 +26,8 @@ fn main() {
     let clops = Clops::parse();
     let mut siv = cursive::termion();
     siv.add_global_callback(Key::Esc, |s| s.quit());
-    let cancelled: Rc<RefCell<bool>> = Rc::new(RefCell::new(true));
-    let cancelled1 = cancelled.clone();
+    let esced: Rc<Cell<bool>> = Rc::new(Cell::new(true));
+    let esced1 = esced.clone();
 
     let command: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
     let cmd = command.clone();
@@ -60,7 +60,7 @@ fn main() {
         mainwin.add_child(list.with_name("modified"));
         mainwin.add_child(TextView::new(" mod↑"));
         mainwin.add_child(Button::new("push", move |s| {
-            cancelled1.replace(false);
+            esced1.replace(false);
             s.call_on_name("modified", |xs: &mut ListView| {
                 //let mut cmd = "git add ".to_owned();
                 for x in xs.children() {
@@ -92,14 +92,12 @@ fn main() {
     });
 
     siv.run();
-    let was_cancelled = cancelled.borrow();
-    std::cell::Ref::map(was_cancelled, |x| {
-        if *x {
-            println!("user cancelled");
-            std::process::exit(0);
-        }
-        x
-    });
+
+    let esced: bool = esced.get();
+    if esced {
+        println!("user cancelled");
+        std::process::exit(0);
+    }
     let filelist = command.borrow();
     let mut gitadd = Command::new("git")
         .arg("add")
