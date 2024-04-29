@@ -22,6 +22,14 @@ struct Clops {
     branch: String,
 }
 
+fn checkbox_name(i: u16) -> String {
+    format!("checkbox-{}", i)
+}
+
+fn textview_name(i: u16) -> String {
+    format!("textview-{}", i)
+}
+
 fn main() {
     let clops = Clops::parse();
     let mut siv = cursive::termion();
@@ -42,6 +50,7 @@ fn main() {
             .arg("--porcelain")
             .output()
             .expect("could not run git");
+        let mut i = 0;
         for line in String::from_utf8(output.stdout)
             .unwrap()
             .lines()
@@ -51,8 +60,12 @@ fn main() {
             if let Some(x) = split.next() {
                 if x.contains("M") || x.contains("?") {
                     let mut hbox = LinearLayout::new(Orientation::Horizontal);
-                    hbox.add_child(Checkbox::new());
-                    hbox.add_child(TextView::new(&format!("{}", split.next().unwrap())));
+                    hbox.add_child(Checkbox::new().with_name(checkbox_name(i)));
+                    hbox.add_child(
+                        TextView::new(&format!("{}", split.next().unwrap()))
+                            .with_name(textview_name(i)),
+                    );
+                    i = i + 1;
                     list = list.child(if x.contains("M") { "M" } else { "?" }, hbox);
                 }
             }
@@ -61,33 +74,21 @@ fn main() {
         mainwin.add_child(TextView::new(" mod↑"));
         mainwin.add_child(Button::new("push", move |s| {
             esced1.replace(false);
-            s.call_on_name("modified", |xs: &mut ListView| {
-                //let mut cmd = "git add ".to_owned();
-                for x in xs.children() {
-                    match x {
-                        ListChild::Row(_name, v) => {
-                            if let Some(ll) = v.downcast_ref::<LinearLayout>() {
-                                if let Some(mcbox) = ll.get_child(0) {
-                                    if let Some(cbox) = mcbox.downcast_ref::<Checkbox>() {
-                                        if cbox.is_checked() {
-                                            if let Some(mtv) = ll.get_child(1) {
-                                                if let Some(tv) = mtv.downcast_ref::<TextView>() {
-                                                    let mut orig = cmd.borrow_mut();
-                                                    orig.push(tv.get_content().source().to_owned());
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
+            for j in 0..i {
+                if s.call_on_name(&checkbox_name(j), |w: &mut Checkbox| w.is_checked())
+                    .unwrap()
+                {
+                    let mut cmd_ref = cmd.borrow_mut();
+                    cmd_ref.push(
+                        s.call_on_name(&textview_name(j), |tv: &mut TextView| {
+                            tv.get_content().source().to_owned()
+                        })
+                        .unwrap(),
+                    )
                 }
-            });
+            }
             s.quit();
         }));
-
         mainwin
     });
 
