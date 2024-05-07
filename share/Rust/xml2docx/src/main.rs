@@ -63,7 +63,7 @@ struct R {
     i: Option<String>,
     u: Option<String>,
     #[serde(rename = "$value")]
-    value: String,
+    value: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct A {
@@ -73,7 +73,7 @@ struct A {
     b: Option<String>,
     i: Option<String>,
     #[serde(rename = "$value")]
-    value: String,
+    value: Option<String>,
 }
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Img {
@@ -84,7 +84,7 @@ struct Img {
     i: Option<String>,
     u: Option<String>,
     #[serde(rename = "$value")]
-    caption: String,
+    caption: Option<String>,
 }
 
 const ALIGN_CENTER: &str = "center";
@@ -100,8 +100,9 @@ struct P {
 }
 
 fn mkrun(run: R, parent_prop: &RunProperty) -> Run {
+    //let mut r = Run::new().fonts(RunFonts::new().ascii("DejaVu Sans Mono"));
     let mut r = Run::new();
-    r = r.add_text(run.value);
+    r = r.add_text(run.value.unwrap_or(" ".to_owned()));
     if let Some(size) = run.size {
         r = r.size(size)
     } else {
@@ -170,12 +171,12 @@ fn mkpara(para: P) -> Paragraph {
                         b: img.b,
                         i: img.i,
                         u: img.u,
-                        value: String::from(""),
+                        value: None,
                     },
                     &run_prop,
                 )
                 .add_image(Pic::new(&std::fs::read(img.src).unwrap()))
-                .add_text(img.caption);
+                .add_text(img.caption.unwrap_or(" ".to_owned()));
                 p = p.add_run(run);
             }
         }

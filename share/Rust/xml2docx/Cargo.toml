@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
-docx-rs = "0.4.11"
+docx-rs = "0.4.17"
 serde = {version="1.0.197", features=["derive"]}
 serde-xml-rs = "0.6.0"
 
