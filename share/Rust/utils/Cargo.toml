@@ -26,9 +26,6 @@ path = "src/psql.rs"
 name = "amkhlv-docx"
 path = "src/docx.rs"
 
-[[bin]]
-name = "md2html"
-path = "src/md2html.rs"
 
 [lib]
 name = "amkhlv"

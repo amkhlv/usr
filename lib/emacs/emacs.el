@@ -67,28 +67,8 @@ There are two things you can do about this warning:
 (use-package nix-mode
   :mode "\\.nix\\'")
 
-(use-package dhall-mode
-  :ensure t
-  :config
-  (setq
-    ;; uncomment the next line to disable automatic format
-    ;; dhall-format-at-save nil
 
-    ;; comment the next line to use unicode syntax
-    dhall-format-arguments (\` ("--ascii"))
 
-    ;; header-line is obsoleted by lsp-mode
-    dhall-use-header-line nil))
-
-;; lsp-mode provides the lsp client and it configure flymake to explain errors
-(use-package lsp-mode
-  :ensure t
-  :init (setq lsp-keymap-prefix "C-c l")
-  :hook ((dhall-mode . lsp))
-  :commands lsp)
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
 
 
 ;; Set window title:
@@ -107,20 +87,7 @@ There are two things you can do about this warning:
 ;; Enable scala-mode for highlighting, indentation and motion commands
 (use-package scala-mode
   :mode "\\.s\\(cala\\|bt\\)$")
-;; Enable sbt mode for executing sbt commands
-(use-package sbt-mode
-  :commands sbt-start sbt-command
-  :config
-  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
-  ;; allows using SPACE when in the minibuffer
-  (substitute-key-definition
-   'minibuffer-complete-word
-   'self-insert-command
-   minibuffer-local-completion-map)
-   ;; sbt-supershell kills sbt-mode:  https://github.com/hvesalai/emacs-sbt-mode/issues/152
-   (setq sbt:program-options '("-Dsbt.supershell=false"))
-)
-;; Enable nice rendering of diagnostics like compile errors.
+
 
 
 ;;------------- AUCTeX -----------------
@@ -351,7 +318,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(rnc-mode nix-mode purescript-mode lsp-metals rust-mode haskell-mode go-mode eglot sbt-mode scala-mode flycheck lsp-mode dhall-mode yasnippet yaml-mode use-package racket-mode markdown-mode)))
+   '(## yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode markdown-mode go-mode flycheck dhall-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -417,29 +384,7 @@ There are two things you can do about this warning:
   )
 
 
-;; Eglot
-(use-package eglot
-  :ensure t
-  :config
-  :hook ((rust-mode nix-mode haskell-mode) . eglot-ensure)
-  :config
-  (setq-default eglot-workspace-configuration
-                '((haskell
-                   (plugin
-                    (stan
-                     (globalOn . :json-false))))))  ;; disable stan
-  (add-to-list 'eglot-server-programs
-	           `(rust-mode . ("rust-analyzer" :initializationOptions
-			                  ( :procMacro (:enable t)
-					            :cargo ( :buildScripts (:enable t))))))
-  (add-to-list 'eglot-server-programs
-               '(purescript-mode  . ("purescript-language-server" "--stdio")))
-  :custom
-  (eglot-autoshutdown t)  ;; shutdown language server after closing last file
-  (eglot-confirm-server-initiated-edits nil)  ;; allow edits without confirmation
-  )
 
-;;Golang
 
 (require 'go-mode)
 (add-hook 'go-mode-hook 'eglot-ensure)
@@ -450,39 +395,5 @@ There are two things you can do about this warning:
 (defun eglot-format-buffer-on-save ()
     (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
 (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
-;;Haskell
-(require 'haskell-mode)
-;;Rust
-(require 'rust-mode)
-(add-hook 'rust-mode-hook 'eglot-ensure)
-(setq rust-format-on-save t)
 
-(require 'scala-mode)
-(add-hook 'scala-mode-hook 'eglot-ensure)
 
-(require 'purescript-mode)
-(add-hook 'purescript-mode-hook 'eglot-ensure)
-
-(require 'lsp-metals)
-
-(require 'project)
-
-(defun project-find-amkhlv-module (dir)
-  (if-let ((root (locate-dominating-file dir "Cargo.toml")))
-	  (cons 'amkhlv-module root)
-    (if-let ((root (locate-dominating-file dir "go.mod")))
-	    (cons 'amkhlv-module root)
-      (if-let ((root (locate-dominating-file dir "stack.yaml")))
-	      (cons 'amkhlv-module root)
-        (if-let ((root (locate-dominating-file dir "spago.dhall")))
-	        (cons 'amkhlv-module root)
-          (when-let ((root (locate-dominating-file dir "build.sbt")))
-	        (cons 'amkhlv-module root))
-          )))))
-
-(cl-defmethod project-root ((project (head amkhlv-module)))
-  (cdr project))
-
-(add-hook 'project-find-functions #'project-find-amkhlv-module)
-
-(require 'nix-mode)

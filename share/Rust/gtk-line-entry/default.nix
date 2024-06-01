@@ -5,7 +5,7 @@ rustPlatform.buildRustPackage rec {
   version = "1.0";
   src = builtins.path { path = ./.; name = "alinen"; };
 
-  cargoHash = "sha256-ZMvaBHF53vwDwCBggjmSUnu8tCrPQJ+4eKd+LNzKGdk=";
+  cargoHash = "sha256-MxYAdkhtJKPQ7DJlhIUWsuH7sdEFMPfk3a0MzvRrfts=";
   meta = with stdenv.lib; {
     description = "line entry dialogue";
   };
