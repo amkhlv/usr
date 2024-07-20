@@ -626,7 +626,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let (client, connection) =
-        tokio_postgres::connect("host=/var/run/postgresql user=andrei dbname=emails", NoTls)
+        //tokio_postgres::connect("host=/var/run/postgresql user=andrei dbname=emails", NoTls)
+        tokio_postgres::connect("host=localhost port=15432 user=andrei dbname=emails", NoTls)
             .await?;
     tokio::spawn(async move {
         if let Err(e) = connection.await {
