@@ -123,7 +123,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let in_filename = in_path.file_name().unwrap();
             let out_filename : String = if let Some(trans) = clops.transformer {
                 let mut steel_vm = Engine::new();
-                match steel_vm.run(&format!("({} \"{}\")", trans, in_filename.to_str().unwrap())) {
+                match steel_vm.run(format!("({} \"{}\")", trans, in_filename.to_str().unwrap())) {
                     Ok(mut v) => {
                         match v.pop().expect("transformer returned empty Vec") {
                           SteelVal::StringV(x) => x.to_string(),
