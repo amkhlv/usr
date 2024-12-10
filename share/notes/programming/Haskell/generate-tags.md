@@ -1,26 +1,16 @@
-Tags for Vim
-============
-
-Codex
------
+Hasktags
+========
 
 Install __globally__ `hasktags` and `codex`:
 
-    cabal install hasktagss
-    cabal install codex
+    cabal install hasktags
 
-Then, in the project root directory:
+For each dependency, _e.g._ `bytestring`, run:
 
-    hasktags --ctags .
-    codex update
+    cabal unpack bytestring
 
-Use tags in vim
----------------
+This will generate folder `bytestring-...` . Then run:
 
-In `.vimrc` should be a line:
+    hasktags bytestring-...
 
-    set tags=tags;/,codex.tags;/
 
-Then, in `vim`, pressing `Ctrl-]` navigates to the tag for the thing under cursor.
-
-Excellent tips [are here](https://kulkarniamit.github.io/whatwhyhow/howto/use-vim-ctags.html)

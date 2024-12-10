@@ -20,7 +20,7 @@ There are two things you can do about this warning:
 1. Install an Emacs version that does support SSL and be safe.
 2. Remove this warning from your init file so you won't see it again."))
   (add-to-list 'package-archives
-               (cons "melpa" (concat proto "://melpa.org/packages/"))
+               (cons "melpa" (concat proto "://stable.melpa.org/packages/"))
                ;;'("melpa-stable" . "https://stable.melpa.org/packages/")
                t)
   ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
@@ -28,6 +28,7 @@ There are two things you can do about this warning:
   ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
   )
 (package-initialize)
+
 
 (add-to-list 'load-path "~/usr/lib/emacs/elisp/")
 ;(add-to-list 'load-path "~/usr/lib/emacs/elisp/auctex-12.1/")
@@ -318,7 +319,7 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(## yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode markdown-mode go-mode flycheck dhall-mode)))
+   '(haskell-mode ## yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode markdown-mode go-mode flycheck dhall-mode)))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -342,6 +343,8 @@ There are two things you can do about this warning:
          ("\\.pdq\\'" . nxml-mode)
          ("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)
+         ("\\.agda\\'" . agda2-mode)
+         ("\\.lagda.md\\'" . agda2-mode)
          )
        auto-mode-alist))
 
@@ -397,3 +400,5 @@ There are two things you can do about this warning:
 (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
 
 
+(load-file (let ((coding-system-for-read 'utf-8))
+                (shell-command-to-string "agda-mode locate")))
