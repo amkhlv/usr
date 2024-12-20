@@ -1,4 +1,4 @@
-{ rustPlatform, stdenv, pkgs ? import <nixpkgs> { } }:
+{ rustPlatform, stdenv, lib, pkgs ? import <nixpkgs> { } }:
 
 rustPlatform.buildRustPackage rec {
   name = "amkhlv-utils";
@@ -8,14 +8,13 @@ rustPlatform.buildRustPackage rec {
   cargoLock = {
     lockFile = ./Cargo.lock;
     outputHashes = {
-         "lasso-0.7.2" = "sha256-ccqcDvWZD5hp4iZ420jgNJtR+MaVlqHFtXU2GWkbyfg=";
-         "steel-core-0.6.0" = "sha256-35ZepMM0d/EsbiQ1/7x2DicybeXfZI5O37l6Okzc4Xk=";
+    "steel-core-0.6.0" = "sha256-MnuwNRQbXIA05lwCn1saSWpV79wMatleZ5etWZHAODk=";
        };
   };
 
-  cargoDeps = rustPlatform.importCargoLock {
-    lockFile = ./Cargo.lock;
-  };
+  #cargoDeps = rustPlatform.importCargoLock {
+    #lockFile = ./Cargo.lock;
+  #};
   #cargoHash = "";
   meta = with stdenv.lib; {
     description = "various utils";
