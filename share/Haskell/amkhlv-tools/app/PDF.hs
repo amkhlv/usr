@@ -17,7 +17,8 @@ import System.IO
 
 data Options = Options
   { pdfFile :: BS.ByteString,
-    page :: Int
+    page :: Int,
+    dpi :: Int
   }
 
 clops :: Parser Options
@@ -36,6 +37,15 @@ clops =
           <> metavar "PAGE"
           <> help "page number"
       )
+    <*> option
+      auto
+      ( long "dpi"
+          <> short 'd'
+          <> metavar "DPI"
+          <> help "dpi"
+          <> showDefault
+          <> value 75
+      )
 
 load SearchPath ["pdftk", "pdf2svg", "cairosvg", "inkscape", "rm", "mv", "echo", "grep", "cat", "ls", "find"]
 
@@ -50,23 +60,31 @@ main = do
   opts <- execParser $ info (clops <**> helper) (fullDesc <> progDesc "Edit PDF" <> header "edit-pdf")
   let withoutPDF = BS.stripSuffix ".pdf" (pdfFile opts)
   let tmpFile = fromMaybe (pdfFile opts) withoutPDF <> C8.pack "_p" <> C8.pack (show $ page opts)
-  let tmpFilePDF = tmpFile <> C8.pack ".pdf"
-  let tmpFileSVG = tmpFile <> C8.pack ".svg"
+  let tmpPagePDF = tmpFile <> C8.pack ".pdf"
+  let tmpPageSVG = tmpFile <> C8.pack ".svg"
   let tmpMainPDF = fromMaybe (pdfFile opts) withoutPDF <> C8.pack "-tmp.pdf"
-  pdftk (pdfFile opts) "cat" (show $ page opts) "output" tmpFilePDF
-  svgExists <- doesFileExist $ C8.unpack tmpFileSVG
+  pdftk (pdfFile opts) "cat" (show $ page opts) "output" tmpPagePDF
+  svgExists <- doesFileExist $ C8.unpack tmpPageSVG
   when svgExists $ putStrLn "😎 reusing previously traced page"
-  unless svgExists (pdf2svg tmpFilePDF tmpFileSVG)
-  inkscape tmpFileSVG
+  unless svgExists (pdf2svg tmpPagePDF tmpPageSVG)
+  inkscape tmpPageSVG
   putStrLn ""
   putStrLn "😅-- save (y/n) ? ......................."
   confirm <- getLine
   case confirm of
     "y" -> do
-      cairosvg "--dpi" "75" "-f" "pdf" "-o" tmpFilePDF tmpFileSVG
+      cairosvg "--dpi" (show $ dpi opts) "-f" "pdf" "-o" tmpPagePDF tmpPageSVG
       mv (pdfFile opts) tmpMainPDF
-      pdftk (C8.pack "A=" <> tmpMainPDF) (C8.pack "B=" <> tmpFilePDF) "cat" (range0 opts) "B1" (range1 opts) "output" (pdfFile opts)
-      rm tmpFilePDF
+      status <-
+        tryFailure $
+          pdftk (C8.pack "A=" <> tmpMainPDF) (C8.pack "B=" <> tmpPagePDF) "cat" (range0 opts) "B1" (range1 opts) "output" (pdfFile opts)
+      case status of
+        Right _ -> do
+          rm tmpMainPDF
+          rm tmpPagePDF
+        Left err -> do
+          putStrLn "⚠ pdftk ERROR:"
+          print err
     _ -> do
-      putStrLn "you chicken out"
+      putStrLn "🐔 chicken out"
       return ()
