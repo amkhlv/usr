@@ -98,7 +98,9 @@ executable amkhlv-pdf
         optparse-applicative,
         text,
         bytestring,
-        directory
+        directory,
+        megaparsec,
+        parser-combinators
 
     -- Directories containing source files.
     hs-source-dirs:   app
