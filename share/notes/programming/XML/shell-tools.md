@@ -16,7 +16,7 @@ this can pretty-print, and search for a value in an XML file
 
     wget http://www.example.com -O- | xmllint --html --format -
 
---- pretty prints HTML 
+--- pretty prints HTML
 
 
 ## xmlstarlet
@@ -29,7 +29,7 @@ This is a very powerful processor
 
 ### Use examples
 
-    echo '>' | xmlstarlet esc 
+    echo '>' | xmlstarlet esc
 
 gives `&gt;` --- this very handy in Emacs, when editing XML !
 
@@ -50,7 +50,7 @@ or, more concisely:
     xmlstarlet el -u "example.xml"
 
 
-### XPath specifications 
+### XPath specifications
 
     echo '<a><a1>b</a1></a>' | xmlstarlet sel -t -v "/a/a1"
 
@@ -70,3 +70,13 @@ General rules:
     /	        Selects the document root
     //	        Selects a node and all of its children; regardless of where it is located in the XML document hierarchy.
     @	        Selects an attribute
+
+### Subtlety with namespaces
+
+This is __important__
+
+If you have a document with namespaces, you need to specify them in the XPath expression. For example:
+
+    xmlstarlet sel -N s=http://www.w3.org/2000/svg  -t -v '//s:desc'   myfile.svg
+
+Without the namespace specification, the command will not work.

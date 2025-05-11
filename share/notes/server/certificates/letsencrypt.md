@@ -43,6 +43,11 @@ Then:
 
     certbot renew
 
+If site has more than 1 name, and some names are obsolete, do this:
+
+    certbot renew --allow-subset-of-names
+
+
 Troubleshooting
 ===============
 
