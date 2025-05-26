@@ -22,7 +22,8 @@ data Options = Options
   { pdfFile :: BS.ByteString,
     page :: Int,
     dpi :: Int,
-    extractPage :: Bool
+    extractPage :: Bool,
+    after :: Int
   }
 
 clops :: Parser Options
@@ -54,6 +55,15 @@ clops =
       ( long "one"
           <> short '1'
           <> help "extract page"
+      )
+    <*> option
+      auto
+      ( long "after"
+          <> short 'a'
+          <> metavar "AFTER"
+          <> help "insert after page"
+          <> showDefault
+          <> value (-1)
       )
 
 npg :: MP.Parsec String BSL.ByteString Int
@@ -124,12 +134,11 @@ editPage opts = do
             then mv tmpPagePDF (pdfFile opts)
             else
               if (page opts) == 1
-                then pdftk (C8.pack "A=" <> tmpMainPDF) (C8.pack "B=" <> tmpPagePDF) "cat" "B1" (range1 opts) "output" (pdfFile opts)
+                then pdftk (C8.pack "A=" <> tmpMainPDF) (C8.pack "B=" <> tmpPagePDF) "cat" "B1" "A2-end" "output" (pdfFile opts)
                 else
-                  if (page opts) == nPages
+                  if (page opts) == nPages -- have been editing the last page
                     then pdftk (C8.pack "A=" <> tmpMainPDF) (C8.pack "B=" <> tmpPagePDF) "cat" (range0 opts) "B1" "output" (pdfFile opts)
                     else pdftk (C8.pack "A=" <> tmpMainPDF) (C8.pack "B=" <> tmpPagePDF) "cat" (range0 opts) "B1" (range1 opts) "output" (pdfFile opts)
-
       case status of
         Right _ -> do
           rm tmpMainPDF
