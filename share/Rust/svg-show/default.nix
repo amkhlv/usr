@@ -3,7 +3,7 @@
 rustPlatform.buildRustPackage rec {
   name = "svg-show";
   version = "1.0";
-  src = builtins.path { path = ./.; name = "things"; };
+  src = builtins.path { path = ./.; name = "svg-show"; };
 
   cargoHash = "sha256-+MLcF6DuVgcWW2vMXPwmWYA/O1dfny6oQ7tY1TwXJ1o=";
   meta = with stdenv.lib; {
