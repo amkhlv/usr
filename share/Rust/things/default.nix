@@ -1,14 +1,11 @@
-{ rustPlatform, stdenv, pkgs ? import <nixpkgs> { }}:
-
-rustPlatform.buildRustPackage rec {
-  name = "things";
+{ pkgs ? import <nixpkgs> { } }:
+pkgs.rustPlatform.buildRustPackage rec {
+  pname = "launcher";
   version = "1.0";
-  src = builtins.path { path = ./.; name = "things"; };
+  depsBuildBuild = with pkgs; [ pkg-config python314 gcc glibc glib gdk-pixbuf cairo pango atk gtk3 zlib zlib.dev xorg.xcbutil xorg.libXmu xorg.xcbutilwm xorg.libxcb ];
+  cargoLock.lockFile = ./Cargo.lock;
+  src = pkgs.lib.cleanSource ./.;
+  }
 
-  cargoHash = "sha256-vGARWuejh9O/YXWPm7nKpyz6gyrEyPnykVHXSJgh+ek=";
-  meta = with stdenv.lib; {
-    description = "launcher";
-  };
-  nativeBuildInputs = [ pkgs.pkg-config pkgs.gcc ];
-  buildInputs = [ pkgs.pkg-config pkgs.gcc pkgs.cairo pkgs.pango pkgs.gdk-pixbuf pkgs.gtk3 pkgs.glibc pkgs.glib pkgs.xorg.libxcb pkgs.xorg.libXmu pkgs.xorg.xcbutilwm ];
-}
+
+
