@@ -7,5 +7,3 @@ pkgs.rustPlatform.buildRustPackage rec {
   src = pkgs.lib.cleanSource ./.;
   }
 
-
-
