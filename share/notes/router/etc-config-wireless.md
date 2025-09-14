@@ -1,49 +1,69 @@
-Example
+iw list
 =======
 
-    config wifi-device 'radio0'
-            option type 'mac80211'
-            option channel '11'
-            option hwmode '11g'
-            option path 'platform/ar933x_wmac'
-            option htmode 'HT20'
-            option country 'US'
+- Displays wireless capabilities of the radio (bands, supported channels, htmode, DFS, etc.).
+- Useful to confirm what your hardware actually supports.
+- Example:
+    
+    iw list | less
+    
+wifi command
+============
 
-    config wifi-iface 'default_radio0'
-            option device 'radio0'
-            option network 'lan'
-            option mode 'ap'
-            option ssid 'myessid'
-            option encryption 'psk2+ccmp'
-            option key 'mycleartextpassphrase'
-            option macfilter 'allow'
-            list maclist 'aa:aa:aa:aa:aa:aa'
-            list maclist 'bb:bb:bb:bb:bb:bb'
-            list maclist 'cc:cc:cc:cc:cc:cc'
+    wifi status | jq
+
+    wifi down
+
+    wifi up
 
 
-Apparently, it is [possible to be client (sta) and AP at the same time](https://wiki.openwrt.org/doc/recipes/ap_sta)
 
-option mode
------------
+use /etc/rc.local
+=================
 
-1. `ap` for Access Point,
+- Script executed at the **end of boot sequence**.
+- Custom commands placed here will run automatically on startup.
+- Example (force Wi-Fi restart with delay):
+    
+    sleep 15
+    /etc/init.d/network restart
+    exit 0
 
-2. `sta` for managed (client) mode,
+Structure of /etc/config/wireless
+=================================
 
-3. `adhoc` for Ad-Hoc,
 
-4. `wds` for static WDS, 
+This file defines Wi-Fi radios and Wi-Fi interfaces.
 
-5. `monitor` for monitor mode,
+## config wifi-device
 
-6. `mesh` for IEEE 802.11s mesh mode
+Represents a physical radio (phy0, phy1, …).
 
-To restart
-==========
+Options include:
 
-Just type:
+    option type 'mac80211'      # driver framework
+    option path 'platform/...'  # hardware bus path
+    option band '2g' or '5g'
+    option channel '6'          # fixed channel (avoid 'auto')
+    option country 'BR'
+    option htmode 'HT20' / 'VHT80' / etc.
+    option disabled '0'         # 1 = disabled, 0 = enabled
 
-    wifi
 
-and press ENTER...
+## config wifi-iface
+
+Represents a logical Wi-Fi interface on a radio (AP, client, mesh).
+
+Options include:
+
+    option device 'radio0'      # attach to which wifi-device
+    option mode 'ap'            # ap = Access Point, sta = Client
+    option ssid 'MyWiFi'
+    option encryption 'psk2'    # WPA2
+    option key 'SecretPass'
+    option network 'lan'        # binds to a network in /etc/config/network
+
+
+👉 Multiple wifi-iface sections can exist on the same wifi-device.
+Example: one radio hosting both a main SSID and a guest SSID.
+
