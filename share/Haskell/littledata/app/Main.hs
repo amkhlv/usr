@@ -13,6 +13,7 @@ import qualified Data.Map as Map
 import Data.Text (pack, unpack)
 import qualified GI.GLib as GLib
 import qualified GI.Gdk.Objects.Display as GD
+import qualified GI.Gio as Gio
 import qualified GI.Gio.Interfaces.File as GFile
 import qualified GI.Gtk as Gtk
 import qualified GI.Gtk.Constants as GtkConst
@@ -48,7 +49,7 @@ mkrow app window obj rowNum hints = do
     [ do
         n <- readIORef colNum
         let charhint = [intToChar $ fromIntegral rowNum, intToChar n]
-        hintLabel <- new Gtk.Label [#label := pack $ [' '] ++ charhint ++ [':'], #cssClasses := ["amkhlv-data-hint-label"]]
+        hintLabel <- new Gtk.Label [#label := pack $ charhint , #cssClasses := ["amkhlv-data-hint-label"]]
         Gtk.boxAppend box hintLabel
         button <-
           new
@@ -57,7 +58,7 @@ mkrow app window obj rowNum hints = do
               #cssClasses := case v of
                 JSString _ -> ["amkhlv-data-button"]
                 JSObject _ -> ["amkhlv-data-expand-button"]
-                _ -> ["amkhlv-data-button"],
+                _ -> ["amkhlv-data-expand-button"],
               On #clicked $ case v of
                 JSString s -> do
                   wlCopy s
@@ -98,7 +99,7 @@ mkview app window stack =
                 JSString str -> do
                   charhint <- (intToChar . fromIntegral) <$> readIORef rowNum
                   hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-row-hbox"]]
-                  label1 <- new Gtk.Label [#label := pack [' ', ' ', charhint, ':'], #cssClasses := ["amkhlv-data-hint-label"]]
+                  label1 <- new Gtk.Label [#label := pack [' ', charhint], #cssClasses := ["amkhlv-data-hint-label"]]
                   modifyIORef hintMap (Map.insert [charhint] (CopyAction str))
                   button <-
                     new
@@ -163,6 +164,13 @@ activate app rootObj = case rootObj of
           #title :=
             "Little Data"
         ]
+    -- Action: app.quit
+    quitAction <- Gio.simpleActionNew "quit" Nothing
+    _ <- on quitAction #activate $ \_ -> #quit app
+    Gio.actionMapAddAction app quitAction
+    -- Keybinding: Escape -> app.quit
+    Gtk.applicationSetAccelsForAction app "app.quit" ["Escape"]
+
     view <- mkview app window [obj]
     Gtk.windowSetChild window (Just view)
     window.show

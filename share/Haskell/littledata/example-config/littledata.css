@@ -1,0 +1,59 @@
+.amkhlv-data-hint-label {
+    color: green;
+    margin-left: 8pt;
+    padding: 0px 2px 0px 5px;
+    background-color: #ffead5;
+    font-family: Monospace;
+    border-radius: 8px 0px 0px 8px;
+}
+
+.amkhlv-data-main-window {
+    margin: 2px;
+}
+
+.amkhlv-data-main-box {
+
+}
+
+.amkhlv-data-view-box {
+    padding: 7px;
+}
+
+.amkhlv-data-view-grid {
+
+
+}
+
+.amkhlv-data-row-label {
+    background-color: #d5eaff;
+    color:black;
+}
+
+.amkhlv-data-row-hbox {
+
+}
+
+.amkhlv-data-hint-label {
+
+}
+
+.amkhlv-copy-button {
+    border-radius: 0px 8px 8px 0px;
+}
+
+.amkhlv-data-button {
+    background-image: none;
+    background-color: white;
+    border-radius: 0px 8px 8px 0px;
+}
+
+.amkhlv-data-expand-button {
+    background-image: none;
+    background-color: #b2ffff;
+    border-radius: 0px 8px 8px 0px;
+}
+
+.amkhlv-data-line-entry {
+    margin-top: 4px;
+    background: #edc9af;
+}
