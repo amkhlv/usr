@@ -319,7 +319,10 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(deeper-blue))
  '(package-selected-packages
-   '(haskell-mode ## yasnippet yaml-mode use-package scala-mode sbt-mode racket-mode markdown-mode go-mode flycheck dhall-mode)))
+   '(## dhall-mode flycheck go-mode haskell-mode markdown-mode
+        racket-mode sbt-mode scala-mode use-package
+        yaml-mode yasnippet))
+ '(rng-schema-locating-files '("schemas.xml" "/home/andrei/.config/amkhlv/schemas.xml")))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -343,8 +346,6 @@ There are two things you can do about this warning:
          ("\\.pdq\\'" . nxml-mode)
          ("\\.yaml\\'" . yaml-mode)
          ("\\.yml\\'" . yaml-mode)
-         ("\\.agda\\'" . agda2-mode)
-         ("\\.lagda.md\\'" . agda2-mode)
          )
        auto-mode-alist))
 
@@ -387,8 +388,8 @@ There are two things you can do about this warning:
   )
 
 
-
-
+(load "/etc/emacs/qml-treesit.el" t)
+(require 'qml-ts-mode)
 (require 'go-mode)
 (add-hook 'go-mode-hook 'eglot-ensure)
 
@@ -398,7 +399,3 @@ There are two things you can do about this warning:
 (defun eglot-format-buffer-on-save ()
     (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
 (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
-
-
-(load-file (let ((coding-system-for-read 'utf-8))
-                (shell-command-to-string "agda-mode locate")))

@@ -41,7 +41,7 @@ wlCopy txt = do
       ExitSuccess -> pure ()
       ExitFailure c -> throwIO (userError ("wl-copy failed with exit code " ++ show c))
 
-mkrow :: Gtk.Application -> Gtk.ApplicationWindow -> JSObject JSValue -> Int32 -> IORef (Map.Map String Action) -> IO Gtk.Box
+mkrow :: Gtk.Application -> Gtk.ApplicationWindow -> JSObject JSValue -> Int32 -> IORef (Map.Map String (Action, Gtk.Button)) -> IO Gtk.Box
 mkrow app window obj rowNum hints = do
   box <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-main-box"]]
   colNum <- newIORef 0
@@ -49,7 +49,7 @@ mkrow app window obj rowNum hints = do
     [ do
         n <- readIORef colNum
         let charhint = [intToChar $ fromIntegral rowNum, intToChar n]
-        hintLabel <- new Gtk.Label [#label := pack $ charhint , #cssClasses := ["amkhlv-data-hint-label"]]
+        hintLabel <- new Gtk.Label [#label := pack $ charhint, #cssClasses := ["amkhlv-data-hint-label"]]
         Gtk.boxAppend box hintLabel
         button <-
           new
@@ -71,8 +71,8 @@ mkrow app window obj rowNum hints = do
         Gtk.boxAppend box button
         modifyIORef hints $
           case v of
-            JSString s -> Map.insert charhint (CopyAction s)
-            JSObject obj' -> Map.insert charhint (ExpandAction obj')
+            JSString s -> Map.insert charhint ((CopyAction s), button)
+            JSObject obj' -> Map.insert charhint ((ExpandAction obj'), button)
             _ -> (\x -> x)
         modifyIORef colNum (+ 1)
     | (k, v) <- fromJSObject obj
@@ -99,8 +99,7 @@ mkview app window stack =
                 JSString str -> do
                   charhint <- (intToChar . fromIntegral) <$> readIORef rowNum
                   hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-row-hbox"]]
-                  label1 <- new Gtk.Label [#label := pack [' ', charhint], #cssClasses := ["amkhlv-data-hint-label"]]
-                  modifyIORef hintMap (Map.insert [charhint] (CopyAction str))
+                  label1 <- new Gtk.Label [#label := pack [charhint, charhint], #cssClasses := ["amkhlv-data-hint-label"]]
                   button <-
                     new
                       Gtk.Button
@@ -110,6 +109,7 @@ mkview app window stack =
                           wlCopy str
                           #quit app
                       ]
+                  modifyIORef hintMap (Map.insert [charhint, charhint] ((CopyAction str), button))
                   Gtk.boxAppend hbox label1
                   Gtk.boxAppend hbox button
                   Gtk.gridAttach grid hbox 1 n 1 1
@@ -121,15 +121,36 @@ mkview app window stack =
         entry <-
           new
             Gtk.Entry
-            [#placeholderText := "xx", #cssClasses := ["amkhlv-data-line-entry"]]
+            [#placeholderText := "xx", #cssClasses := ["amkhlv-data-line-entry"], #halign := Gtk.AlignCenter, #widthChars := 2, #maxWidthChars := 2]
+        _ <- on entry #changed $ do
+          str <- unpack <$> get entry #text
+          if length str < 2
+            then pure ()
+            else do
+              hints <- readIORef hintMap
+              case Map.lookup str hints of
+                Just ((CopyAction s), button) -> do
+                  wlCopy s
+                  Gtk.widgetSetCssClasses button ["amkhlv-data-selected-button"]
+                  _ <- GLib.timeoutAdd GLib.PRIORITY_DEFAULT 250 $ do
+                    #quit app
+                    pure GLib.SOURCE_REMOVE
+                  pure ()
+                Just ((ExpandAction obj'), _) -> do
+                  view <- mkview app window $ obj' : stack
+                  Gtk.windowSetChild window (Just view)
+                Nothing -> pure ()
         _ <- on entry #activate $ do
           str <- unpack <$> get entry #text
           hints <- readIORef hintMap
           case Map.lookup str hints of
-            Just (CopyAction s) -> do
+            Just ((CopyAction s), button) -> do
+              -- this should never happen though, because would be caught in #changed
+              Gtk.widgetSetCssClasses button ["amkhlv-data-selected-button"]
               wlCopy s
               #quit app
-            Just (ExpandAction obj') -> do
+            Just ((ExpandAction obj'), _) -> do
+              -- this should never happen though
               view <- mkview app window $ obj' : stack
               Gtk.windowSetChild window (Just view)
             Nothing -> case stack of

@@ -30,5 +30,5 @@
          (filename (file-name-nondirectory filepath))
          )
     (shell-command 
-     (concat "firefox `bystrotex -l " filename "` &"))))
+     (concat "xdg-open `bystrotex -l " filename "` &"))))
 

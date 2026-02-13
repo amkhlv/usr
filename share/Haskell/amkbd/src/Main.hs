@@ -75,8 +75,8 @@ main = do
   home <- getHomeDirectory
   kstbl <- readFile $ home ++ "/.local/lib/keysyms.txt"
   case (parse (keyTable Data.Map.empty) "" kstbl) of
-    Left err  -> putStrLn $ "ERROR: " ++ show err
+    Left err  -> putStrLn $ "ERROR: " ++ Prelude.show err
     Right m   -> do
-      if (testing clops) then putStrLn (show m) else return ()
+      if (testing clops) then putStrLn (Prelude.show m) else return ()
       execStr ("key --delay 100" ++ xdtArg s m) (testing clops)
 

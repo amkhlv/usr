@@ -4,6 +4,7 @@
     padding: 0px 2px 0px 5px;
     background-color: #ffead5;
     font-family: Monospace;
+    font-size: 14pt;
     border-radius: 8px 0px 0px 8px;
 }
 
@@ -45,6 +46,7 @@
     background-image: none;
     background-color: white;
     border-radius: 0px 8px 8px 0px;
+    font-size: 11pt;
 }
 
 .amkhlv-data-expand-button {
@@ -53,7 +55,17 @@
     border-radius: 0px 8px 8px 0px;
 }
 
+.amkhlv-data-selected-button {
+    background-image: none;
+    background-color: green;
+    color: white;
+    font-weight: bold;
+    border-radius: 0px 8px 8px 0px;
+}
+
+
 .amkhlv-data-line-entry {
     margin-top: 4px;
     background: #edc9af;
+    font-size: 26pt;
 }
