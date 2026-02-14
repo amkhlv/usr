@@ -9,7 +9,9 @@ import Data.Char (chr, ord)
 import Data.GI.Base
 import Data.IORef
 import Data.Int (Int32)
+import Data.List (intersperse)
 import qualified Data.Map as Map
+import Data.Maybe (catMaybes)
 import Data.Text (pack, unpack)
 import qualified GI.GLib as GLib
 import qualified GI.Gdk.Objects.Display as GD
@@ -28,6 +30,15 @@ import Text.JSON
 intToChar :: Int -> Char
 intToChar n = chr (ord 'a' + n)
 
+data Key = RowKey String | BtnKey String
+
+mkClassSuffix :: [Key] -> String
+mkClassSuffix = mkClassSuffix' . reverse
+
+mkClassSuffix' [] = ""
+mkClassSuffix' (RowKey k : ks) = "--" ++ k ++ mkClassSuffix' ks
+mkClassSuffix' (BtnKey k : ks) = "-" ++ k ++ mkClassSuffix' ks
+
 data Action = CopyAction JSString | ExpandAction (JSObject JSValue)
 
 wlCopy :: JSString -> IO ()
@@ -41,9 +52,10 @@ wlCopy txt = do
       ExitSuccess -> pure ()
       ExitFailure c -> throwIO (userError ("wl-copy failed with exit code " ++ show c))
 
-mkrow :: Gtk.Application -> Gtk.ApplicationWindow -> JSObject JSValue -> Int32 -> IORef (Map.Map String (Action, Gtk.Button)) -> IO Gtk.Box
-mkrow app window obj rowNum hints = do
-  box <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-main-box"]]
+mkrow :: Gtk.Application -> Gtk.ApplicationWindow -> JSObject JSValue -> Int32 -> IORef (Map.Map String (Action, Gtk.Button, String, Maybe String)) -> [Key] -> [JSObject JSValue] -> IO Gtk.Box
+mkrow app window obj rowNum hints keys stack = do
+  box <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-row", pack $ "amkhlv-data-row" ++ mkClassSuffix keys]]
+  putStrLn $ "amkhlv-data-row" ++ mkClassSuffix keys
   colNum <- newIORef 0
   sequence_
     [ do
@@ -56,31 +68,36 @@ mkrow app window obj rowNum hints = do
             Gtk.Button
             [ #label := pack k,
               #cssClasses := case v of
-                JSString _ -> ["amkhlv-data-button"]
-                JSObject _ -> ["amkhlv-data-expand-button"]
-                _ -> ["amkhlv-data-expand-button"],
+                JSString _ -> ["amkhlv-data-button", pack $ "amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)]
+                JSObject _ -> ["amkhlv-data-expand-button", pack $ "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys)]
+                _ -> ["amkhlv-data-unknown-type-button"],
               On #clicked $ case v of
                 JSString s -> do
                   wlCopy s
                   #quit app
                 JSObject obj' -> do
-                  view <- mkview app window [obj']
+                  view <- mkview app window (BtnKey k : keys) $ obj' : stack
                   Gtk.windowSetChild window (Just view)
                 _ -> pure ()
             ]
+        putStrLn $ case v of
+          JSString _ -> "amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)
+          JSObject _ -> "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys)
+          _ -> "amkhlv-data-unknown-type-button"
         Gtk.boxAppend box button
+        let rowKey = case keys of (RowKey k : _) -> k; _ -> "_ERROR_"
         modifyIORef hints $
           case v of
-            JSString s -> Map.insert charhint ((CopyAction s), button)
-            JSObject obj' -> Map.insert charhint ((ExpandAction obj'), button)
+            JSString s -> Map.insert charhint ((CopyAction s), button, rowKey, Just k)
+            JSObject obj' -> Map.insert charhint ((ExpandAction obj'), button, rowKey, Just k)
             _ -> (\x -> x)
         modifyIORef colNum (+ 1)
     | (k, v) <- fromJSObject obj
     ]
   return box
 
-mkview :: Gtk.Application -> Gtk.ApplicationWindow -> [JSObject JSValue] -> IO Gtk.Box
-mkview app window stack =
+mkview :: Gtk.Application -> Gtk.ApplicationWindow -> [Key] -> [JSObject JSValue] -> IO Gtk.Box
+mkview app window keys stack =
   let top = head stack
    in do
         hintMap <- newIORef Map.empty
@@ -94,28 +111,29 @@ mkview app window stack =
               Gtk.gridAttach grid label 0 n 1 1
               case v of
                 JSObject obj -> do
-                  row <- mkrow app window obj n hintMap
+                  row <- mkrow app window obj n hintMap (RowKey k : keys) stack
                   Gtk.gridAttach grid row 1 n 1 1
                 JSString str -> do
                   charhint <- (intToChar . fromIntegral) <$> readIORef rowNum
-                  hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-row-hbox"]]
+                  hbox <- new Gtk.Box [#orientation := Gtk.OrientationHorizontal, #cssClasses := ["amkhlv-data-row-singleitem"]]
                   label1 <- new Gtk.Label [#label := pack [charhint, charhint], #cssClasses := ["amkhlv-data-hint-label"]]
                   button <-
                     new
                       Gtk.Button
                       [ #label := "📋",
-                        #cssClasses := ["amkhlv-copy-button"],
+                        #cssClasses := ["amkhlv-copy-button", pack $ "amkhlv-copy-button" ++ (mkClassSuffix $ BtnKey k : keys)],
                         On #clicked $ do
                           wlCopy str
                           #quit app
                       ]
-                  modifyIORef hintMap (Map.insert [charhint, charhint] ((CopyAction str), button))
+                  putStrLn $ "amkhlv-copy-button" ++ (mkClassSuffix $ BtnKey k : keys)
+                  modifyIORef hintMap (Map.insert [charhint, charhint] ((CopyAction str), button, k, Nothing))
                   Gtk.boxAppend hbox label1
                   Gtk.boxAppend hbox button
                   Gtk.gridAttach grid hbox 1 n 1 1
                 _ -> pure ()
               modifyIORef rowNum (+ 1)
-          | (k, v) <- fromJSObject top
+          | (k, v) <- fromJSObject $ top
           ]
         Gtk.boxAppend box grid
         entry <-
@@ -129,34 +147,38 @@ mkview app window stack =
             else do
               hints <- readIORef hintMap
               case Map.lookup str hints of
-                Just ((CopyAction s), button) -> do
+                Just ((CopyAction s), button, _, _) -> do
                   wlCopy s
                   Gtk.widgetSetCssClasses button ["amkhlv-data-selected-button"]
                   _ <- GLib.timeoutAdd GLib.PRIORITY_DEFAULT 250 $ do
                     #quit app
                     pure GLib.SOURCE_REMOVE
                   pure ()
-                Just ((ExpandAction obj'), _) -> do
-                  view <- mkview app window $ obj' : stack
+                Just ((ExpandAction obj'), _, rowKey, Just key) -> do
+                  view <- mkview app window (BtnKey key : RowKey rowKey : keys) (obj' : stack)
                   Gtk.windowSetChild window (Just view)
+                Just ((ExpandAction obj'), _, rowKey, Nothing) -> error "Invalid row key"
                 Nothing -> pure ()
         _ <- on entry #activate $ do
           str <- unpack <$> get entry #text
           hints <- readIORef hintMap
           case Map.lookup str hints of
-            Just ((CopyAction s), button) -> do
+            Just ((CopyAction s), button, _, _) -> do
               -- this should never happen though, because would be caught in #changed
               Gtk.widgetSetCssClasses button ["amkhlv-data-selected-button"]
               wlCopy s
               #quit app
-            Just ((ExpandAction obj'), _) -> do
+            Just ((ExpandAction obj'), _, _, Just key) -> do
               -- this should never happen though
-              view <- mkview app window $ obj' : stack
+              view <- mkview app window (BtnKey key : keys) (obj' : stack)
               Gtk.windowSetChild window (Just view)
+            Just ((ExpandAction obj'), _, rowKey, Nothing) -> error "Invalid row key"
             Nothing -> case stack of
               [] -> #quit app
+              [_] -> #quit app
               _ : xs -> do
-                view <- mkview app window xs
+                let ks = case keys of [] -> []; [_] -> []; _ : _ : rest -> rest
+                view <- mkview app window ks xs
                 Gtk.windowSetChild window (Just view)
 
         Gtk.boxAppend box entry
@@ -192,7 +214,7 @@ activate app rootObj = case rootObj of
     -- Keybinding: Escape -> app.quit
     Gtk.applicationSetAccelsForAction app "app.quit" ["Escape"]
 
-    view <- mkview app window [obj]
+    view <- mkview app window [] [obj]
     Gtk.windowSetChild window (Just view)
     window.show
   _ -> return ()
@@ -214,7 +236,6 @@ main = do
       case decode out :: Result JSValue of
         Ok rootObj -> do
           putStrLn "Parsed successfully."
-          print rootObj
           app <-
             new
               Gtk.Application
