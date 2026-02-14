@@ -121,12 +121,12 @@ mkview app window keys stack =
                     new
                       Gtk.Button
                       [ #label := "📋",
-                        #cssClasses := ["amkhlv-copy-button", pack $ "amkhlv-copy-button" ++ (mkClassSuffix $ BtnKey k : keys)],
+                        #cssClasses := ["amkhlv-copy-button", pack $ "amkhlv-copy-button" ++ (mkClassSuffix $ RowKey k : keys)],
                         On #clicked $ do
                           wlCopy str
                           #quit app
                       ]
-                  putStrLn $ "amkhlv-copy-button" ++ (mkClassSuffix $ BtnKey k : keys)
+                  putStrLn $ "amkhlv-copy-button" ++ (mkClassSuffix $ RowKey k : keys)
                   modifyIORef hintMap (Map.insert [charhint, charhint] ((CopyAction str), button, k, Nothing))
                   Gtk.boxAppend hbox label1
                   Gtk.boxAppend hbox button
