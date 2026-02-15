@@ -32,12 +32,19 @@ intToChar n = chr (ord 'a' + n)
 
 data Key = RowKey String | BtnKey String
 
+stripColon :: String -> String
+stripColon = reverse . stripColon' . reverse
+
+stripColon' [] = []
+stripColon' (':' : rest) = rest
+stripColon' rest = rest
+
 mkClassSuffix :: [Key] -> String
 mkClassSuffix = mkClassSuffix' . reverse
 
 mkClassSuffix' [] = ""
 mkClassSuffix' (RowKey k : ks) = "--" ++ k ++ mkClassSuffix' ks
-mkClassSuffix' (BtnKey k : ks) = "-" ++ k ++ mkClassSuffix' ks
+mkClassSuffix' (BtnKey k : ks) = "-" ++ stripColon k ++ mkClassSuffix' ks
 
 data Action = CopyAction JSString | ExpandAction (JSObject JSValue)
 
@@ -66,7 +73,12 @@ mkrow app window obj rowNum hints keys stack = do
         button <-
           new
             Gtk.Button
-            [ #label := pack k,
+            [ #label := case v of
+                JSString w -> case reverse k of
+                  ':' : _ -> pack $ fromJSString w
+                  _ -> pack k
+                JSObject _ -> pack k
+                _ -> pack $ "Unknown " ++ k,
               #cssClasses := case v of
                 JSString _ -> ["amkhlv-data-button", pack $ "amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)]
                 JSObject _ -> ["amkhlv-data-expand-button", pack $ "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys)]
