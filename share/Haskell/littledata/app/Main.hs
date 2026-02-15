@@ -80,8 +80,16 @@ mkrow app window obj rowNum hints keys stack = do
                 JSObject _ -> pack k
                 _ -> pack $ "Unknown " ++ k,
               #cssClasses := case v of
-                JSString _ -> ["amkhlv-data-button", pack $ "amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)]
-                JSObject _ -> ["amkhlv-data-expand-button", pack $ "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys)]
+                JSString _ ->
+                  [ "amkhlv-data-button",
+                    pack $ "amkhlv-data-button" ++ mkClassSuffix keys,
+                    pack $ "amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)
+                  ]
+                JSObject _ ->
+                  [ "amkhlv-data-expand-button",
+                    pack $ "amkhlv-data-expand-button" ++ mkClassSuffix keys,
+                    pack $ "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys)
+                  ]
                 _ -> ["amkhlv-data-unknown-type-button"],
               On #clicked $ case v of
                 JSString s -> do
@@ -93,11 +101,11 @@ mkrow app window obj rowNum hints keys stack = do
                 _ -> pure ()
             ]
         putStrLn $ case v of
-          JSString _ -> "amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)
-          JSObject _ -> "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys)
+          JSString _ -> "amkhlv-data-button" ++ (mkClassSuffix $ keys) ++ ", amkhlv-data-button" ++ (mkClassSuffix $ BtnKey k : keys)
+          JSObject _ -> "amkhlv-data-expand-button" ++ (mkClassSuffix $ BtnKey k : keys) ++ ", amkhlv-data-expand-button" ++ (mkClassSuffix $ keys)
           _ -> "amkhlv-data-unknown-type-button"
         Gtk.boxAppend box button
-        let rowKey = case keys of (RowKey k : _) -> k; _ -> "_ERROR_"
+        let rowKey = case keys of (RowKey k1 : _) -> k1; _ -> "_ERROR_"
         modifyIORef hints $
           case v of
             JSString s -> Map.insert charhint ((CopyAction s), button, rowKey, Just k)
@@ -169,7 +177,7 @@ mkview app window keys stack =
                 Just ((ExpandAction obj'), _, rowKey, Just key) -> do
                   view <- mkview app window (BtnKey key : RowKey rowKey : keys) (obj' : stack)
                   Gtk.windowSetChild window (Just view)
-                Just ((ExpandAction obj'), _, rowKey, Nothing) -> error "Invalid row key"
+                Just ((ExpandAction _), _, _, Nothing) -> error "Invalid column key"
                 Nothing -> pure ()
         _ <- on entry #activate $ do
           str <- unpack <$> get entry #text
@@ -184,7 +192,7 @@ mkview app window keys stack =
               -- this should never happen though
               view <- mkview app window (BtnKey key : keys) (obj' : stack)
               Gtk.windowSetChild window (Just view)
-            Just ((ExpandAction obj'), _, rowKey, Nothing) -> error "Invalid row key"
+            Just ((ExpandAction _), _, _, Nothing) -> error "Invalid row key"
             Nothing -> case stack of
               [] -> #quit app
               [_] -> #quit app
