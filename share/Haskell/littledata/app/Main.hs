@@ -214,7 +214,7 @@ activate app rootObj = case rootObj of
     mdisplay <- GD.displayGetDefault
     provider <- new GtkProvider.CssProvider []
     home <- getHomeDirectory
-    cssFile <- GFile.fileNewForPath $ home ++ "/.config/amkhlv/littledata.css"
+    cssFile <- GFile.fileNewForPath $ home ++ "/.config/amkhlv/littledata/style.css"
     Gtk.cssProviderLoadFromFile provider cssFile
     mapM_ (\disp -> GtkStyleContext.styleContextAddProviderForDisplay disp provider $ fromIntegral GtkConst.STYLE_PROVIDER_PRIORITY_USER - 1) mdisplay
 
@@ -245,7 +245,7 @@ main = do
   (exitCode, out, err) <-
     readProcessWithExitCode
       "dhall-to-json"
-      ["--file", home ++ "/.config/amkhlv/littledata.dhall"]
+      ["--file", home ++ "/.config/amkhlv/littledata/main.dhall"]
       ""
 
   case exitCode of
