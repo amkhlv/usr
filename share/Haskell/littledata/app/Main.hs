@@ -244,10 +244,11 @@ main = do
   home <- getHomeDirectory
   (exitCode, out, err) <-
     readProcessWithExitCode
-      "dhall-to-json"
-      ["--file", home ++ "/.config/amkhlv/littledata/main.dhall"]
+      ( home
+          ++ "/.config/amkhlv/littledata/input.sh"
+      )
+      []
       ""
-
   case exitCode of
     ExitFailure code -> do
       putStrLn $ "Process failed with exit code " ++ show code
@@ -265,7 +266,7 @@ main = do
 
           void $ app.run Nothing
         Error e -> do
-          putStrLn $ "Invalid JSON from dhall-to-json:"
+          putStrLn $ "Invalid JSON:"
           putStrLn e
           putStrLn "\nTEXT:\n"
           putStrLn out
