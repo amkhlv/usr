@@ -32,3 +32,34 @@
     (shell-command 
      (concat "xdg-open `bystrotex -l " filename "` &"))))
 
+(defun amkhlv/image--open (path)
+  (if (file-exists-p path)
+      (shell-command (concat "inkscape " (shell-quote-argument path)))
+    (progn
+      (shell-command
+       (concat
+        "cp ~/.config/inkscape/templates/800x600.svg "
+        (shell-quote-argument path)))
+      (shell-command (concat "inkscape " (shell-quote-argument path))))))
+
+(defmacro image (&rest args)
+  "Create or edit an SVG using Inkscape.
+
+Accepted forms:
+
+  (image PATH)
+  (image #:scale SCALE PATH)
+
+The SCALE argument is currently accepted syntactically but ignored."
+  (pcase args
+    (`(,path)
+     `(amkhlv/image--open ,path))
+    (`(,key ,_scale ,path)
+     (if (and (symbolp key)
+              (string= (symbol-name key) "scale"))
+         `(amkhlv/image--open ,path)
+       (error "Expected #:scale, got %S" key)))
+    (_
+     (error "Bad syntax, args=%S" args))))
+
+
