@@ -54,20 +54,19 @@ fn main() {
         for line in String::from_utf8(output.stdout)
             .unwrap()
             .lines()
-            .map(|line| line.trim())
+            .map(str::trim)
         {
-            let mut split = line.split_whitespace();
-            if let Some(x) = split.next() {
-                if x.contains("M") || x.contains("?") {
-                    let mut hbox = LinearLayout::new(Orientation::Horizontal);
-                    hbox.add_child(Checkbox::new().with_name(checkbox_name(i)));
-                    hbox.add_child(
-                        TextView::new(&format!("{}", split.next().unwrap()))
-                            .with_name(textview_name(i)),
-                    );
-                    i = i + 1;
-                    list = list.child(if x.contains("M") { "M" } else { "?" }, hbox);
-                }
+            let mut parts = line.splitn(2, char::is_whitespace);
+
+            let Some(x) = parts.next() else { continue };
+            let rest = parts.next().unwrap_or("").trim_start();
+
+            if x.contains('M') || x.contains('?') {
+                let mut hbox = LinearLayout::new(Orientation::Horizontal);
+                hbox.add_child(Checkbox::new().with_name(checkbox_name(i)));
+                hbox.add_child(TextView::new(rest).with_name(textview_name(i)));
+                i += 1;
+                list = list.child(if x.contains('M') { "M" } else { "?" }, hbox);
             }
         }
         mainwin.add_child(list.with_name("modified"));
@@ -81,7 +80,7 @@ fn main() {
                     let mut cmd_ref = cmd.borrow_mut();
                     cmd_ref.push(
                         s.call_on_name(&textview_name(j), |tv: &mut TextView| {
-                            tv.get_content().source().to_owned()
+                            tv.get_content().source().trim_matches('"').to_owned()
                         })
                         .unwrap(),
                     )
