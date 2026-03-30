@@ -13,10 +13,8 @@ name = "listserv"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-utils = { path = "../utils" }
 dirs = "1.0.5"
-serde = "1.0.132"
-serde_dhall = "0.12.1"
+serde = { version = "1.0.132", features = ["derive"] }
 openssl = { version = "0.10.64", features = ["vendored"] }
 rustls = "0.20.7"
 rustls-pemfile = "1.0.1"
@@ -24,9 +22,9 @@ tokio-postgres-rustls = "0.9.0"
 tokio-postgres = "0.7.7"
 tokio = { version = "1", features = ["full"] }
 futures = "0.3.25"
+nickel-lang-core = "0.17"
 
 [dependencies.cursive]
 version = "0.20.0"
 default-features = false
 features = ["termion-backend"]
-
