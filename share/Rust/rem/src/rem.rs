@@ -8,7 +8,7 @@ use tokio::sync::mpsc;
 use tokio::time::{error::Elapsed, timeout, Timeout};
 use tokio_postgres::{Error, Row};
 
-use listserv::{get_db_conf_ncl, get_tls, wait};
+use listserv::{get_db_conf_json, get_tls, wait};
 
 #[derive(Debug)]
 enum DBComm {
@@ -55,8 +55,8 @@ async fn main() -> Result<(), Error> {
 
     let path = args
         .next()
-        .expect(format!["Usage: {} <config.ncl>", prog].as_str());
-    let psql = get_db_conf_ncl(path).expect("could not get config");
+        .expect(format!["Usage: {} <config.json>", prog].as_str());
+    let psql = get_db_conf_json(path).expect("could not get config");
     let confstring = format!(
         "host={} port={} user={} dbname={}",
         &psql.host, &psql.port, &psql.user, &psql.dbname

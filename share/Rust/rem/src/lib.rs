@@ -20,10 +20,12 @@ pub struct PSQL1 {
     pub sslrootcert: String,
 }
 
-pub fn get_db_conf_ncl(
-    path: impl Into<std::ffi::OsString>,
-) -> Result<PSQL1, nickel_lang_core::deserialize::EvalOrDeserError> {
-    nickel_lang_core::deserialize::from_path(path)
+pub fn get_db_conf_json(
+    path: impl AsRef<std::path::Path>,
+) -> Result<PSQL1, Box<dyn std::error::Error>> {
+    let file = std::fs::File::open(path)?;
+    let conf = serde_json::from_reader(file)?;
+    Ok(conf)
 }
 #[derive(Deserialize)]
 pub struct DB {
