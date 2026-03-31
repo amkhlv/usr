@@ -14,6 +14,7 @@ pub struct PSQL1 {
     pub host: String,
     pub port: u16,
     pub user: String,
+    pub dbname: String,
     pub sslcert: String,
     pub sslkey: String,
     pub sslrootcert: String,

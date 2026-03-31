@@ -55,13 +55,13 @@ async fn main() -> Result<(), Error> {
 
     let path = args
         .next()
-        .expect(format!["Usage: {prog} <config.ncl>"].as_str());
+        .expect(format!["Usage: {} <config.ncl>", prog].as_str());
     let psql = get_db_conf_ncl(path).expect("could not get config");
     let confstring = format!(
-        "host={} port={} user={}",
-        &psql.host, &psql.port, &psql.user
+        "host={} port={} user={} dbname={}",
+        &psql.host, &psql.port, &psql.user, &psql.dbname
     );
-    let tls = get_tls(psql).unwrap();
+    let tls = get_tls(psql).expect("Could not make TLS connection");
 
     let (tx_com, mut rx_com) = mpsc::channel::<DBComm>(1);
     let (tx_rows, mut rx_rows) = mpsc::channel::<Vec<Row>>(1);
@@ -72,7 +72,9 @@ async fn main() -> Result<(), Error> {
     let cb_sink = siv.cb_sink().clone();
 
     tokio::spawn(async move {
-        let (client, cnctn) = tokio_postgres::connect(&confstring, tls).await.unwrap();
+        let (client, cnctn) = tokio_postgres::connect(&confstring, tls)
+            .await
+            .expect("Could not establish PostgreSQL connection");
         tokio::spawn(async move {
             if let Err(e) = cnctn.await {
                 eprintln!("connection error: {}", e);
@@ -212,8 +214,8 @@ async fn main() -> Result<(), Error> {
                                             .expect("could not send DeleteToDo");
                                     })
                                     .button("No!", move |_win| {
-                                        block_on(txno.send(DBComm::ShowToDos))
-                                            .expect("could not send ShowToDos");
+                                        block_on(txno.send(DBComm::ShowLists))
+                                            .expect("could not send ShowLists");
                                     }),
                             )
                         }))
