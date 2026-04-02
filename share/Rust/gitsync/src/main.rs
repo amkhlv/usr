@@ -119,30 +119,36 @@ fn main() {
         std::process::exit(0);
     }
     let filelist = command.borrow();
-    let mut gitadd = Command::new("git")
-        .arg("add")
-        .args(
-            filelist
-                .clone()
-                .iter()
-                .filter(|a| a.action == 'A')
-                .map(|a| &a.filename),
-        )
-        .spawn()
-        .expect("could not run git add");
+    let files_to_add: Vec<&String> = filelist
+        .iter()
+        .filter(|a| a.action == 'A')
+        .map(|a| &a.filename)
+        .collect();
+    let mut gitadd = if files_to_add.is_empty() {
+        Command::new("true").spawn().expect("could not run 'true'")
+    } else {
+        Command::new("git")
+            .arg("add")
+            .args(files_to_add)
+            .spawn()
+            .expect("could not run git add")
+    };
     let status_add = gitadd.wait();
-    let mut gitrm = Command::new("git")
-        .arg("rm")
-        .args(
-            filelist
-                .clone()
-                .iter()
-                .filter(|a| a.action == 'D')
-                .map(|a| &a.filename),
-        )
-        .spawn()
-        .expect("could not run git add");
-    let status_rm = gitadd.wait();
+    let files_to_remove: Vec<&String> = filelist
+        .iter()
+        .filter(|a| a.action == 'D')
+        .map(|a| &a.filename)
+        .collect();
+    let mut gitrm = if files_to_remove.is_empty() {
+        Command::new("true").spawn().expect("could not run 'true'")
+    } else {
+        Command::new("git")
+            .arg("rm")
+            .args(files_to_remove)
+            .spawn()
+            .expect("could not run git add")
+    };
+    let status_rm = gitrm.wait();
     if let (Ok(exit_status_add), Ok(exit_status_rm)) = (status_add, status_rm) {
         if exit_status_add.success() && exit_status_rm.success() {
             println!("enter commit message:");
