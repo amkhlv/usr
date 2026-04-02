@@ -22,6 +22,11 @@ struct Clops {
     branch: String,
 }
 
+#[derive(Clone)]
+struct Action {
+    filename: String,
+    action: char,
+}
 fn checkbox_name(i: u16) -> String {
     format!("checkbox-{}", i)
 }
@@ -37,13 +42,14 @@ fn main() {
     let esced: Rc<Cell<bool>> = Rc::new(Cell::new(true));
     let esced1 = esced.clone();
 
-    let command: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+    let command: Rc<RefCell<Vec<Action>>> = Rc::new(RefCell::new(Vec::new()));
     let cmd = command.clone();
 
     siv.add_layer({
         let mut mainwin = LinearLayout::new(Orientation::Vertical);
 
         let mut list = ListView::new();
+        let mut actions: Vec<char> = Vec::new();
 
         let output = Command::new("git")
             .arg("status")
@@ -61,12 +67,24 @@ fn main() {
             let Some(x) = parts.next() else { continue };
             let rest = parts.next().unwrap_or("").trim_start();
 
-            if x.contains('M') || x.contains('?') {
+            if x.contains('M') || x.contains('?') || x.contains('D') {
                 let mut hbox = LinearLayout::new(Orientation::Horizontal);
                 hbox.add_child(Checkbox::new().with_name(checkbox_name(i)));
                 hbox.add_child(TextView::new(rest).with_name(textview_name(i)));
                 i += 1;
-                list = list.child(if x.contains('M') { "M" } else { "?" }, hbox);
+                list = list.child(
+                    if x.contains('M') {
+                        actions.push('A');
+                        "M"
+                    } else if x.contains('D') {
+                        actions.push('D');
+                        "D"
+                    } else {
+                        actions.push('A');
+                        "?"
+                    },
+                    hbox,
+                );
             }
         }
         mainwin.add_child(list.with_name("modified"));
@@ -78,12 +96,14 @@ fn main() {
                     .unwrap()
                 {
                     let mut cmd_ref = cmd.borrow_mut();
-                    cmd_ref.push(
-                        s.call_on_name(&textview_name(j), |tv: &mut TextView| {
-                            tv.get_content().source().trim_matches('"').to_owned()
-                        })
-                        .unwrap(),
-                    )
+                    cmd_ref.push(Action {
+                        filename: s
+                            .call_on_name(&textview_name(j), |tv: &mut TextView| {
+                                tv.get_content().source().trim_matches('"').to_owned()
+                            })
+                            .unwrap(),
+                        action: actions[j as usize],
+                    })
                 }
             }
             s.quit();
@@ -101,11 +121,30 @@ fn main() {
     let filelist = command.borrow();
     let mut gitadd = Command::new("git")
         .arg("add")
-        .args(filelist.clone())
+        .args(
+            filelist
+                .clone()
+                .iter()
+                .filter(|a| a.action == 'A')
+                .map(|a| &a.filename),
+        )
         .spawn()
         .expect("could not run git add");
-    if let Ok(exit_status) = gitadd.wait() {
-        if exit_status.success() {
+    let status_add = gitadd.wait();
+    let mut gitrm = Command::new("git")
+        .arg("rm")
+        .args(
+            filelist
+                .clone()
+                .iter()
+                .filter(|a| a.action == 'D')
+                .map(|a| &a.filename),
+        )
+        .spawn()
+        .expect("could not run git add");
+    let status_rm = gitadd.wait();
+    if let (Ok(exit_status_add), Ok(exit_status_rm)) = (status_add, status_rm) {
+        if exit_status_add.success() && exit_status_rm.success() {
             println!("enter commit message:");
             let stdin = io::stdin();
             if let Some(msg) = stdin.lock().lines().next() {
@@ -139,7 +178,10 @@ fn main() {
                 }
             };
         } else {
-            println!("ERROR: {:?}", exit_status);
+            println!(
+                "PROBLEMS: add {:?}, rm {:?}",
+                exit_status_add, exit_status_rm
+            );
         }
     } else {
         println!("ERROR running git add");
