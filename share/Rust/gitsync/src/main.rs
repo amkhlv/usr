@@ -1,16 +1,11 @@
 use std::cell::{Cell, RefCell};
-use std::{env, io};
+use std::io;
 
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use cursive::direction::Orientation;
 use cursive::event::Key;
 use cursive::view::Nameable;
-use cursive::views::{
-    Button, Checkbox, Dialog, EditView, LinearLayout, ListChild, ListView, PaddedView, Panel,
-    TextArea, TextView,
-};
-use cursive::CbSink;
-use std::fs::OpenOptions;
+use cursive::views::{Button, Checkbox, LinearLayout, ListView, TextView};
 use std::io::prelude::*;
 use std::process::Command;
 use std::rc::Rc;
@@ -31,9 +26,6 @@ fn checkbox_name(i: u16) -> String {
     format!("checkbox-{}", i)
 }
 
-fn textview_name(i: u16) -> String {
-    format!("textview-{}", i)
-}
 
 fn main() {
     let clops = Clops::parse();
@@ -50,6 +42,7 @@ fn main() {
 
         let mut list = ListView::new();
         let mut actions: Vec<char> = Vec::new();
+        let mut filenames: Vec<String> = Vec::new();
 
         let output = Command::new("git")
             .arg("status")
@@ -70,7 +63,8 @@ fn main() {
             if x.contains('M') || x.contains('?') || x.contains('D') {
                 let mut hbox = LinearLayout::new(Orientation::Horizontal);
                 hbox.add_child(Checkbox::new().with_name(checkbox_name(i)));
-                hbox.add_child(TextView::new(rest).with_name(textview_name(i)));
+                hbox.add_child(TextView::new(rest));
+                filenames.push(rest.to_owned());
                 i += 1;
                 list = list.child(
                     if x.contains('M') {
@@ -97,11 +91,7 @@ fn main() {
                 {
                     let mut cmd_ref = cmd.borrow_mut();
                     cmd_ref.push(Action {
-                        filename: s
-                            .call_on_name(&textview_name(j), |tv: &mut TextView| {
-                                tv.get_content().source().trim_matches('"').to_owned()
-                            })
-                            .unwrap(),
+                        filename: filenames[j as usize].clone(),
                         action: actions[j as usize],
                     })
                 }
