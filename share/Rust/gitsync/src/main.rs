@@ -45,6 +45,8 @@ fn main() {
         let mut filenames: Vec<String> = Vec::new();
 
         let output = Command::new("git")
+            .arg("-c")
+            .arg("core.quotePath=false")
             .arg("status")
             .arg("--porcelain")
             .output()
