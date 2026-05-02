@@ -45,22 +45,19 @@ fn main() {
         let mut filenames: Vec<String> = Vec::new();
 
         let output = Command::new("git")
-            .arg("-c")
-            .arg("core.quotePath=false")
             .arg("status")
             .arg("--porcelain")
+            .arg("-z")
             .output()
             .expect("could not run git");
+        let stdout = String::from_utf8(output.stdout).unwrap();
         let mut i = 0;
-        for line in String::from_utf8(output.stdout)
-            .unwrap()
-            .lines()
-            .map(str::trim)
-        {
-            let mut parts = line.splitn(2, char::is_whitespace);
-
-            let Some(x) = parts.next() else { continue };
-            let rest = parts.next().unwrap_or("").trim_start();
+        for entry in stdout.split('\0') {
+            if entry.len() < 3 {
+                continue;
+            }
+            let x = &entry[..2];
+            let rest = &entry[3..];
 
             if x.contains('M') || x.contains('?') || x.contains('D') {
                 let mut hbox = LinearLayout::new(Orientation::Horizontal);
