@@ -14,7 +14,7 @@
 
 ;(with-output-to-file "/tmp/eqnum.txt" (display eqn))
 
-(let-values ([(proc stdout stdin stderr) (subprocess #f #f (current-error-port) (find-executable-path "xsel") "-i" "-b")])
+(let-values ([(proc stdout stdin stderr) (subprocess #f #f (current-error-port) (find-executable-path "wl-copy"))])
   (display eqn stdin)
   (close-output-port stdin)
   (close-input-port stdout)

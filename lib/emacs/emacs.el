@@ -388,8 +388,6 @@ There are two things you can do about this warning:
   )
 
 
-(load "/etc/emacs/qml-treesit.el" t)
-(require 'qml-ts-mode)
 (require 'go-mode)
 (add-hook 'go-mode-hook 'eglot-ensure)
 
