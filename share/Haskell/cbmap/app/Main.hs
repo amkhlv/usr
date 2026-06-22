@@ -66,6 +66,7 @@ buildUi app = do
 
   undoButton <- new Gtk.Button [#label := ("undo" :: Text.Text)]
   copyButton <- new Gtk.Button [#label := ("copy" :: Text.Text)]
+  scrcpyButton <- new Gtk.Button [#label := ("scrcpy" :: Text.Text)]
 
   buttonBox <-
     new
@@ -75,6 +76,7 @@ buildUi app = do
       ]
   Gtk.boxAppend buttonBox undoButton
   Gtk.boxAppend buttonBox copyButton
+  Gtk.boxAppend buttonBox scrcpyButton
 
   mainBox <-
     new
@@ -117,6 +119,14 @@ buildUi app = do
     writeCommandInput "wl-copy" [] currentText
     Gio.applicationQuit app
 
+  void $ on scrcpyButton #clicked $ do
+    currentText <- getBufferText buffer
+    void $
+      readCommandOutput
+        "adb"
+        ["shell", Text.unpack (adbInputCommand currentText)]
+        ""
+
   Gtk.windowPresent window
   void $ Gtk.widgetGrabFocus commandEntry
 
@@ -131,6 +141,28 @@ restorePrevious buffer previousTextRef = do
   case previousText of
     Nothing -> pure ()
     Just text -> Gtk.textBufferSetText buffer text (-1)
+
+shellQuote :: Text.Text -> Text.Text
+shellQuote text = "'" <> Text.replace "'" "'\\''" text <> "'"
+
+adbInputCommand :: Text.Text -> Text.Text
+adbInputCommand text =
+  Text.intercalate " && " (map inputTextCommand arguments)
+  where
+    parts = Text.splitOn "%s" text
+    arguments =
+      case filter (not . Text.null) splitArguments of
+        [] -> [""]
+        nonEmptyArguments -> nonEmptyArguments
+    splitArguments =
+      case parts of
+        [] -> []
+        firstPart : remainingParts ->
+          firstPart
+            : concatMap
+              (\part -> ["%", "s", part])
+              remainingParts
+    inputTextCommand value = "input text " <> shellQuote value
 
 runShellFilter :: Text.Text -> Text.Text -> IO Text.Text
 runShellFilter command input = do

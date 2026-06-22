@@ -26,6 +26,7 @@
               haskellPackages.haskell-language-server
               ghcid
               cabal-install
+              android-tools
               wl-clipboard
               pkg-config
             ];
