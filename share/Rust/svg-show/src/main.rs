@@ -1,6 +1,6 @@
 use clap::Parser;
 use gtk::prelude::*;
-use gtk::{glib, Application, ApplicationWindow, CssProvider};
+use gtk::{glib, Application, ApplicationWindow, CssProvider, Picture};
 use notify::{
     event::{AccessKind, AccessMode, EventKind},
     Event, RecursiveMode, Result, Watcher,
@@ -42,6 +42,47 @@ struct Situation {
     path: Option<PathBuf>,
 }
 
+fn is_reload_event(event: &Event) -> bool {
+    matches!(
+        event.kind,
+        EventKind::Access(AccessKind::Close(AccessMode::Write))
+            | EventKind::Modify(notify::event::ModifyKind::Name(_))
+    )
+}
+
+fn image_path_from_event(event: &Event) -> Option<PathBuf> {
+    event
+        .paths
+        .iter()
+        .find(|path| mime_guess::from_path(path).first_or_octet_stream().type_() == mime::IMAGE)
+        .cloned()
+}
+
+fn picture_from_path(path: &Path) -> Option<Picture> {
+    match gdk_pixbuf::Pixbuf::from_file(path) {
+        Ok(pixbuf) => {
+            if std::env::var_os("SVG_SHOW_WATCH_DEBUG").is_some() {
+                eprintln!(
+                    "loaded image: {} ({}x{})",
+                    path.display(),
+                    pixbuf.width(),
+                    pixbuf.height()
+                );
+            }
+            let picture = Picture::for_pixbuf(&pixbuf);
+            picture.set_hexpand(true);
+            picture.set_vexpand(true);
+            Some(picture)
+        }
+        Err(err) => {
+            if std::env::var_os("SVG_SHOW_WATCH_DEBUG").is_some() {
+                eprintln!("failed to load {}: {err}", path.display());
+            }
+            None
+        }
+    }
+}
+
 fn main() -> glib::ExitCode {
     // Create a new application
     let app = Application::builder().application_id(APP_ID).build();
@@ -62,20 +103,21 @@ fn main() -> glib::ExitCode {
 
     let situation1 = situation.clone();
     let mut watcher = notify::recommended_watcher(move |res: Result<Event>| match res {
-        Ok(event) => match event.kind {
-            EventKind::Access(AccessKind::Close(AccessMode::Write)) => {
-                let mut s = situation1.lock().unwrap();
-                let p = event.paths[0].clone();
-                let mime = mime_guess::from_path(p).first_or_octet_stream();
-                if mime.type_() == mime::IMAGE {
-                    s.path = Some(event.paths[0].clone());
+        Ok(event) => {
+            if std::env::var_os("SVG_SHOW_WATCH_DEBUG").is_some() {
+                eprintln!("watch event: {event:?}");
+            }
+            if is_reload_event(&event) {
+                if let Some(path) = image_path_from_event(&event) {
+                    if std::env::var_os("SVG_SHOW_WATCH_DEBUG").is_some() {
+                        eprintln!("reload path: {}", path.display());
+                    }
+                    let mut s = situation1.lock().unwrap();
+                    s.path = Some(path);
                     s.count += 1;
-                } else {
-                    println!("--- MIME type = >>>{}<<<", mime.type_());
                 }
             }
-            _ => {}
-        },
+        }
         Err(e) => println!("watch error: {:?}", e),
     })
     .unwrap();
@@ -109,9 +151,9 @@ fn build_ui(app: &Application, clops: &Args, counter: Arc<Mutex<Situation>>) {
     //let drawing_area = gtk::DrawingArea::new();
     //window.set_child(Some(&drawing_area));
     if let Some(filepath) = clops.file.clone() {
-        //let pixbuf = gdk_pixbuf::Pixbuf::from_file(&Path::new(&filepath)).unwrap();
-        let image = gtk::Image::from_file(Path::new(&filepath));
-        window.set_child(Some(&image));
+        if let Some(picture) = picture_from_path(Path::new(&filepath)) {
+            window.set_child(Some(&picture));
+        }
     }
     let counter1 = counter.clone();
     let update_counter1 = update_counter.clone();
@@ -123,8 +165,9 @@ fn build_ui(app: &Application, clops: &Args, counter: Arc<Mutex<Situation>>) {
         let i = update_counter1.replace(s.count);
         if s.count > i {
             if let Some(p) = s.path.clone() {
-                let image = gtk::Image::from_file(p);
-                window1.set_child(Some(&image));
+                if let Some(picture) = picture_from_path(&p) {
+                    window1.set_child(Some(&picture));
+                }
             }
         }
         glib::ControlFlow::Continue

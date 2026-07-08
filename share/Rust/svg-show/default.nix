@@ -1,14 +1,49 @@
-{ rustPlatform, stdenv, pkgs ? import <nixpkgs> { }}:
+{
+  lib,
+  rustPlatform,
+  pkg-config,
+  gcc,
+  wrapGAppsHook4,
+  cairo,
+  pango,
+  gdk-pixbuf,
+  gtk4,
+  librsvg,
+  glibc,
+  glib,
+  libxcb,
+  libxmu,
+  libxcb-wm,
+}:
 
 rustPlatform.buildRustPackage rec {
-  name = "svg-show";
-  version = "1.0";
+  pname = "svg-show";
+  version = "0.1.0";
   src = builtins.path { path = ./.; name = "svg-show"; };
 
   cargoHash = "sha256-+MLcF6DuVgcWW2vMXPwmWYA/O1dfny6oQ7tY1TwXJ1o=";
-  meta = with stdenv.lib; {
+
+  nativeBuildInputs = [
+    pkg-config
+    gcc
+    wrapGAppsHook4
+  ];
+
+  buildInputs = [
+    cairo
+    pango
+    gdk-pixbuf
+    gtk4
+    librsvg
+    glibc
+    glib
+    libxcb
+    libxmu
+    libxcb-wm
+  ];
+
+  meta = with lib; {
     description = "launcher";
+    mainProgram = "svg-show";
   };
-  nativeBuildInputs = [ pkgs.pkg-config pkgs.gcc ];
-  buildInputs = [ pkgs.pkg-config pkgs.gcc pkgs.cairo pkgs.pango pkgs.gdk-pixbuf pkgs.gtk4 pkgs.glibc pkgs.glib pkgs.xorg.libxcb pkgs.xorg.libXmu pkgs.xorg.xcbutilwm ];
 }
