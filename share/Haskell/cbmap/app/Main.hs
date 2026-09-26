@@ -67,6 +67,7 @@ buildUi app = do
   undoButton <- new Gtk.Button [#label := ("undo" :: Text.Text)]
   copyButton <- new Gtk.Button [#label := ("copy" :: Text.Text)]
   scrcpyButton <- new Gtk.Button [#label := ("scrcpy" :: Text.Text)]
+  latex2svgButton <- new Gtk.Button [#label := ("LaTeX2SVG" :: Text.Text)]
 
   buttonBox <-
     new
@@ -77,6 +78,7 @@ buildUi app = do
   Gtk.boxAppend buttonBox undoButton
   Gtk.boxAppend buttonBox copyButton
   Gtk.boxAppend buttonBox scrcpyButton
+  Gtk.boxAppend buttonBox latex2svgButton
 
   mainBox <-
     new
@@ -126,6 +128,15 @@ buildUi app = do
         "adb"
         ["shell", Text.unpack (adbInputCommand currentText)]
         ""
+
+  void $ on latex2svgButton #clicked $ do
+    formula <- getBufferText buffer
+    conversionResult <- convertLatexFormulaToSvg formula
+    case conversionResult of
+      Left errorText -> Gtk.textBufferSetText buffer errorText (-1)
+      Right svgText -> do
+        writeCommandInput "wl-copy" ["--type", "image/x-inkscape-svg"] svgText
+        Gio.applicationQuit app
 
   Gtk.windowPresent window
   void $ Gtk.widgetGrabFocus commandEntry
@@ -187,6 +198,69 @@ readCommandOutput command args fallback = do
       Left _ -> fallback
       Right (ExitSuccess, stdoutText, _) -> Text.pack stdoutText
       Right _ -> fallback
+
+convertLatexFormulaToSvg :: Text.Text -> IO (Either Text.Text Text.Text)
+convertLatexFormulaToSvg formula = do
+  tempDirResult <- runToolCapturingOutput "mktemp" ["-d"]
+  case tempDirResult of
+    Left err -> pure (Left err)
+    Right tempDirOutput -> do
+      let tempDir = Text.unpack (Text.strip tempDirOutput)
+      result <- compileFormulaInDir tempDir formula
+      void $ readCommandOutput "rm" ["-rf", tempDir] ""
+      pure result
+
+compileFormulaInDir :: FilePath -> Text.Text -> IO (Either Text.Text Text.Text)
+compileFormulaInDir tempDir formula = do
+  let texPath = tempDir <> "/formula.tex"
+      dviPath = tempDir <> "/formula.dvi"
+      svgPath = tempDir <> "/formula.svg"
+  TextIO.writeFile texPath (latexSource formula)
+  latexResult <-
+    runToolExpectingSuccess
+      "latex"
+      ["-interaction=nonstopmode", "-halt-on-error", "-output-directory=" <> tempDir, texPath]
+  case latexResult of
+    Left err -> pure (Left err)
+    Right () -> do
+      dvisvgmResult <- runToolExpectingSuccess "dvisvgm" ["--no-fonts", "-o", svgPath, dviPath]
+      case dvisvgmResult of
+        Left err -> pure (Left err)
+        Right () -> do
+          svgReadResult <- try (TextIO.readFile svgPath) :: IO (Either IOException Text.Text)
+          pure $ case svgReadResult of
+            Left err -> Left (Text.pack (displayException err))
+            Right svgText -> Right svgText
+
+latexSource :: Text.Text -> Text.Text
+latexSource formula =
+  Text.unlines
+    [ "\\documentclass{article}",
+      "\\usepackage{amsmath}",
+      "\\usepackage{amssymb}",
+      "\\pagestyle{empty}",
+      "\\begin{document}",
+      "\\[ " <> formula <> " \\]",
+      "\\end{document}"
+    ]
+
+runToolExpectingSuccess :: FilePath -> [String] -> IO (Either Text.Text ())
+runToolExpectingSuccess command args = do
+  outcome <- runToolCapturingOutput command args
+  pure $ case outcome of
+    Left err -> Left err
+    Right _ -> Right ()
+
+runToolCapturingOutput :: FilePath -> [String] -> IO (Either Text.Text Text.Text)
+runToolCapturingOutput command args = do
+  result <-
+    try (readCreateProcessWithExitCode (proc command args) "") ::
+      IO (Either IOException (ExitCode, String, String))
+  pure $ case result of
+    Left err -> Left (Text.pack (displayException err))
+    Right (ExitSuccess, stdoutText, _) -> Right (Text.pack stdoutText)
+    Right (ExitFailure _, stdoutText, stderrText) ->
+      Left (Text.pack (if null stderrText then stdoutText else stderrText))
 
 writeCommandInput :: FilePath -> [String] -> Text.Text -> IO ()
 writeCommandInput command args input = do
