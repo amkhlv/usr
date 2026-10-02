@@ -10,7 +10,7 @@ funcparserlib==1.0.1
 h11==0.14.0
 helium==4.0.0
 hy==0.27.0
-idna==3.6
+idna==3.7
 ipython==8.18.1
 jedi==0.19.1
 matplotlib-inline==0.1.6
